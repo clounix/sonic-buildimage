@@ -1,0 +1,14 @@
+[Unit]
+Description=Clx8000 temp sensor monitor service
+Before=determine-reboot-cause.service
+After=clx8000-48c8d-platform-init.service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/clxProcess/temp_hw_monitor.py install
+ExecStop=/usr/local/bin/clxProcess/temp_hw_monitor.py uninstall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

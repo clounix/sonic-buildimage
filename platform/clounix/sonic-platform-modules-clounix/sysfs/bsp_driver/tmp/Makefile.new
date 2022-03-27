@@ -1,0 +1,58 @@
+PWD		= $(shell pwd)
+
+MAKEFILE_FILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
+DEV_SYSFS_HEADER_DIR = $(abspath $(MAKEFILE_FILE_PATH)/../../s3ip_sysfs_frame/include)
+SWITCH_DVR_HEADER_DIR = $(abspath $(MAKEFILE_FILE_PATH)/../../s3ip_sysfs_frame/include)
+EXTRA_CFLAGS:= -I$(M)/include
+EXTRA_CFLAGS+= -I$(DEV_SYSFS_HEADER_DIR)
+EXTRA_CFLAGS+= -I$(SWITCH_DVR_HEADER_DIR)
+EXTRA_CFLAGS+= -Wall
+
+#obj-m := syseeprom_device_driver.o
+#obj-m += fan_device_driver.o
+#obj-m += cpld_device_driver.o
+#obj-m += sysled_device_driver.o
+#obj-m += slot_device_driver.o
+#obj-m += psu_device_driver.o
+#obj-m += transceiver_device_driver.o
+#obj-m += temp_sensor_device_driver.o
+#obj-m += vol_sensor_device_driver.o
+#obj-m += curr_sensor_device_driver.o
+#obj-m += fpga_device_driver.o
+#obj-m += watchdog_device_driver.o
+
+SYSEEPROM_DRIVER_NAME := syseeprom_device_driver
+FAN_DRIVER_NAME := fan_device_driver
+CPLD_DRIVER_NAME := cpld_device_driver
+SYSLED_DRIVER_NAME := sysled_device_driver.o
+SLOT_DRIVER_NAME := slot_device_driver.o
+PSU_DRIVER_NAME := psu_device_driver.o
+TRCV_DRIVER_NAME := transceiver_device_driver.o
+TEMP_DRIVER_NAME := temp_sensor_device_driver.o
+VOL_DRIVER_NAME := vol_sensor_device_driver.o
+CURR_DRIVER_NAME := curr_sensor_device_driver.o
+FPGA_DRIVER_NAME := fpga_device_driver.o
+WATCHDOG_DRIVER_NAME := watchdog_device_driver.o
+
+$(SYSEEPROM_DRIVER_NAME)-objs = syseeprom_device_driver.o
+$(FAN_DRIVER_NAME)-objs += fan_device_driver.o
+#$(CPLD_MODULE_NAME)-objs += cpld_device_driver.o if/clx_driver.o if/cpld_interface.o driver/cpld_driverA.o
+$(SYSLED_DRIVER_NAME)-objs += sysled_device_driver.o
+$(SLOT_DRIVER_NAME)-objs += slot_device_driver.o
+$(PSU_DRIVER_NAME)-objs += psu_device_driver.o
+$(TRCV_DRIVER_NAME)-objs += transceiver_device_driver.o
+$(TEMP_DRIVER_NAME)-objs += temp_sensor_device_driver.o
+$(VOL_DRIVER_NAME)-objs += vol_sensor_device_driver.o
+$(CURR_DRIVER_NAME)-objs += curr_sensor_device_driver.o
+$(FPGA_DRIVER_NAME)-objs += fpga_device_driver.o
+$(WATCHDOG_DRIVER_NAME)-objs += watchdog_device_driver.o
+
+all:
+	$(MAKE) -C $(KERNEL_SRC)/build M=$(PWD) modules
+	@if [ ! -d $(sysfs_out_put_dir) ]; then mkdir -p $(sysfs_out_put_dir) ;fi
+	cp -p  $(PWD)/*.ko $(sysfs_out_put_dir)
+clean:
+	rm -f $(PWD)/*.o $(PWD)/*.ko $(PWD)/*.mod.c $(PWD)/.*.cmd 
+	rm -f $(PWD)/Module.markers $(PWD)/Module.symvers $(PWD)/modules.order 
+	rm -rf $(PWD)/.tmp_versions
+	rm -rf $(PWD)/.cache.mk
