@@ -2,7 +2,7 @@
 #ifndef __CLOUNIX_FPGA_H__
 #define __CLOUNIX_FPGA_H__
 #include <linux/device.h>
-#include "clounix_pub_clx8000.h"
+#include "clounix/clounix_pub.h"
 
 #define FPGA_PCI_VENDOR_ID 0x10EE
 #define FPGA_PCI_DEVICE_ID 0x7021

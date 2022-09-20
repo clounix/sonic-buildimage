@@ -4,7 +4,7 @@
 #include <linux/io.h>
 
 #include "xcvr_interface.h"
-#include "clounix_pub_clx8000.h"
+#include "clounix/clounix_pub.h"
 
 #define XCVR_PORT_MAX 56
 #define XCVR_CHIP_NUM 1

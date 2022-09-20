@@ -13,6 +13,29 @@
 #include <linux/reboot.h>
 
 #include "clounix_fpga_clx8000.h"
+#include "device_driver_common.h"
+
+static int g_fpga_clx8000_loglevel = 0x2;
+#define FPGA_CLX8000_INFO(fmt, args...) do {                                        \
+    if (g_fpga_clx8000_loglevel & INFO) { \
+        printk(KERN_INFO "[FPGA_CLX8000][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define FPGA_CLX8000_ERR(fmt, args...) do {                                        \
+    if (g_fpga_clx8000_loglevel & ERR) { \
+        printk(KERN_ERR "[FPGA_CLX8000][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define FPGA_CLX8000_DBG(fmt, args...) do {                                        \
+    if (g_fpga_clx8000_loglevel & DBG) { \
+        printk(KERN_DEBUG "[FPGA_CLX8000][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+module_param(g_fpga_clx8000_loglevel, int, 0644);
+MODULE_PARM_DESC(g_fpga_clx8000_loglevel, "The log level(info=0x1, err=0x2, dbg=0x4).\n");
 
 void __iomem *clounix_fpga_base = NULL;
 EXPORT_SYMBOL(clounix_fpga_base);
@@ -61,7 +84,7 @@ static irqreturn_t clounix_fpga_irq_hd(int irq, void *dev_id)
 
     spin_lock(&fpga_msi_lock);
     pci_read_config_word(pdev, pdev->msi_cap + PCI_MSI_DATA_32, &data);
-    printk(KERN_ALERT "%s: %x\n", __func__, data);
+    FPGA_CLX8000_ERR("%s: %x\n", __func__, data);
     spin_unlock(&fpga_msi_lock);
 
     return IRQ_HANDLED;
@@ -72,18 +95,18 @@ static int clounix_fpga_probe(struct pci_dev *pdev, const struct pci_device_id *
     int err;
 
     if (pci_find_capability(pdev, PCI_CAP_ID_MSI) == 0) {
-        printk(KERN_ERR "%s[%d] MSI not support.\r\n", __func__, __LINE__);
+        FPGA_CLX8000_ERR("%s[%d] MSI not support.\r\n", __func__, __LINE__);
         return -EPERM;
     }
         
     err = pci_enable_device(pdev);
     if (err) {
-        printk(KERN_ERR "%s[%d] can't enbale device.\r\n", __func__, __LINE__);
+        FPGA_CLX8000_ERR("%s[%d] can't enbale device.\r\n", __func__, __LINE__);
         return -EPERM;
     }
     
     if (devm_request_mem_region(&pdev->dev, pci_resource_start(pdev, 0), pci_resource_len(pdev, 0), "clounix_fpga") == 0) {
-        printk(KERN_ERR "%s[%d] can't request iomem (0x%llx).\r\n", __func__, __LINE__, pci_resource_start(pdev, 0));
+        FPGA_CLX8000_ERR("%s[%d] can't request iomem (0x%llx).\r\n", __func__, __LINE__, pci_resource_start(pdev, 0));
         err = -EBUSY;
         goto err_request;
     }
@@ -92,22 +115,22 @@ static int clounix_fpga_probe(struct pci_dev *pdev, const struct pci_device_id *
     
     clounix_fpga_base = devm_ioremap(&pdev->dev, pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
     if (clounix_fpga_base  == NULL) {
-        printk(KERN_ERR "%s[%d] ioremap resource fail.\r\n", __func__, __LINE__);
+        FPGA_CLX8000_ERR("%s[%d] ioremap resource fail.\r\n", __func__, __LINE__);
         err = -EIO;
         goto err_ioremap;
     } 
     pci_set_drvdata(pdev, clounix_fpga_base);
 
-    printk(KERN_ALERT "support %d msi vector\n", pci_msi_vec_count(pdev));
+    FPGA_CLX8000_ERR("support %d msi vector\n", pci_msi_vec_count(pdev));
     err = pci_alloc_irq_vectors(pdev, 1, 1, PCI_IRQ_MSI | PCI_IRQ_AFFINITY);
     if (err < 0) {
-        printk(KERN_ERR "%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
+        FPGA_CLX8000_ERR("%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
         goto err_alloc_msi;
     }
 
     err = request_irq(pci_irq_vector(pdev, 0), clounix_fpga_irq_hd, IRQF_SHARED, pdev->driver->name, pdev);
     if (err < 0) {
-        printk(KERN_ERR "%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
+        FPGA_CLX8000_ERR("%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
         goto err_irq;
     }
 

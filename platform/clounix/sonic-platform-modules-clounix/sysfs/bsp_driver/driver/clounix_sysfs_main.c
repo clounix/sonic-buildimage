@@ -1,6 +1,28 @@
 #include "clounix_sysfs_common.h"
 #include "clounix_sysfs_var.h"
 
+static int g_clx_sysfs_loglevel = 0x2;
+#define CLX_SYSFS_INFO(fmt, args...) do {                                        \
+    if (g_clx_sysfs_loglevel & INFO) { \
+        printk(KERN_INFO "[CLX_SYSFS][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define CLX_SYSFS_ERR(fmt, args...) do {                                        \
+    if (g_clx_sysfs_loglevel & ERR) { \
+        printk(KERN_ERR "[CLX_SYSFS][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define CLX_SYSFS_DBG(fmt, args...) do {                                        \
+    if (g_clx_sysfs_loglevel & DBG) { \
+        printk(KERN_DEBUG "[CLX_SYSFS][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+module_param(g_clx_sysfs_loglevel, int, 0644);
+MODULE_PARM_DESC(g_clx_sysfs_loglevel, "The log level(info=0x1, err=0x2, dbg=0x4).\n");
+
 static struct kobject *clounix_switch;
 static struct kernfs_node *fail_node = NULL;
 atomic_t is_work = ATOMIC_INIT(0);
@@ -48,7 +70,7 @@ static void traverse_sysfs_by_rbtree(struct kernfs_node *parent)
 
     while (node != NULL) {
         sd = container_of(node, struct kernfs_node, rb);
-        printk("node name: %s \t type: %x parent dir %s\r\n", sd->name ? sd->name : "null", sd->flags, sd->parent->name);
+        CLX_SYSFS_DBG("node name: %s \t type: %x parent dir %s\r\n", sd->name ? sd->name : "null", sd->flags, sd->parent->name);
         node = rb_next(node);
     }
 }
@@ -100,7 +122,7 @@ static struct kernfs_node *pass_path(struct kobject **kobj, struct kernfs_node *
     char *start, *end;
 
     if ((start = skip_root(path)) == NULL) {
-        printk(KERN_EMERG "path format err\r\n");
+        CLX_SYSFS_ERR("path format err\r\n");
         return NULL;
     }
 
@@ -114,7 +136,7 @@ static struct kernfs_node *pass_path(struct kobject **kobj, struct kernfs_node *
                 if ((*kobj = kobject_create_and_add(start, root->priv)) == NULL)
                     goto path_err;
 
-                printk(KERN_EMERG "create missing dir %s\r\n", (*kobj)->sd->name);
+                CLX_SYSFS_INFO("create missing dir %s\r\n", (*kobj)->sd->name);
                 sd = (*kobj)->sd;
                 sysfs_get(sd);
             }
@@ -149,7 +171,7 @@ static int create_link_auto(struct kernfs_node *root, struct kernfs_node *target
 
     if ((sd = sysfs_get_dirent(root, start)) != NULL) {
         sysfs_put(sd);
-        printk(KERN_EMERG "link exist\r\n");
+        CLX_SYSFS_INFO("link exist\r\n");
         return -EEXIST;
     }
     /*
@@ -160,7 +182,7 @@ static int create_link_auto(struct kernfs_node *root, struct kernfs_node *target
     fake_kobj.sd = target;
 
     if ((err_no = sysfs_create_link(kobj, &fake_kobj, start)) != 0) {
-        printk(KERN_EMERG "fail to create link %s in dir %s\r\n", start, kobj->sd->name);
+        CLX_SYSFS_ERR("Failed to create link %s in dir %s\r\n", start, kobj->sd->name);
         return err_no;  
     }
 
@@ -262,7 +284,7 @@ static int add_node(struct kernfs_node *root, char *buf)
 
     if ((tmp = sysfs_get_dirent(root, node_path)) != NULL) {
         sysfs_put(tmp);
-        printk(KERN_EMERG "node exist\r\n");
+        CLX_SYSFS_INFO("node exist\r\n");
         return -EEXIST;
     }
 
@@ -316,7 +338,7 @@ static int del_node(struct kernfs_node *root, char *link)
     return 0;
 
 not_find:
-    printk(KERN_EMERG "del target not found\r\n");
+    CLX_SYSFS_INFO("Delete target not found\r\n");
     return -1;
 }
 
@@ -345,7 +367,7 @@ static int add_new_link(struct kernfs_node *root, char *src, char *node)
     return 0;
 
 path_err:
-    printk(KERN_EMERG "not find sysfs node: %s\r\n", src);
+    CLX_SYSFS_ERR("Not find sysfs node: %s\r\n", src);
     return -1;
 }
 
@@ -399,9 +421,9 @@ static ssize_t cmd_store(struct kobject *kobj, struct kobj_attribute *attr, cons
     return count;
 
 path_err:
-    printk(KERN_EMERG "not find %s\r\n", buf);
+    CLX_SYSFS_ERR("Not find %s\r\n", buf);
 format_err:
-    printk(KERN_ALERT PATH_FORMAT); 
+    CLX_SYSFS_ERR(KERN_ALERT PATH_FORMAT); 
     kfree(src);
     out_work();
     return count;
@@ -422,7 +444,7 @@ static int __init main_init(void)
 {
     int err_no = 0;
 
-    printk("clounix kobj node_init!\r\n");
+    CLX_SYSFS_INFO("clounix kobj node_init!\r\n");
 
     clounix_switch = kobject_create_and_add(CLOUNIX_DIR_NAME, NULL);
     if (clounix_switch == NULL)
@@ -434,14 +456,14 @@ static int __init main_init(void)
     return 0;
 
 err_out:
-    printk(KERN_EMERG "has err_no %d\r\n", err_no);
+    CLX_SYSFS_ERR("Error code: %d\r\n", err_no);
     kobject_put(clounix_switch);
     return -ENOMEM;
 }
 
 static void __exit main_exit(void)
 {
-    printk("clounix kobj node_del!\r\n");
+    CLX_SYSFS_INFO("clounix kobj node_del!\r\n");
 
     if (atomic_sub_return(2, &is_work) != -2) {
         while (atomic_read(&is_work) != -2) {};

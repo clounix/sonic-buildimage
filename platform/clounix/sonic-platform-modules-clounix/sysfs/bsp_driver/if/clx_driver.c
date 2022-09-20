@@ -178,7 +178,7 @@ static int clx_driver_clx8000_board(void)
 	memcpy(bd->curr.name, curr_name, sizeof(curr_name));
 	//sysled info
 	memcpy(bd->vol.name, vol_name, sizeof(vol_name));
-	printk(KERN_ALERT "syseeprom_if_create_driver\n");
+	printk(KERN_INFO "syseeprom_if_create_driver\n");
 
 	return 0;
 }

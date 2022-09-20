@@ -1,5 +1,2 @@
 #!/bin/bash
 docker exec -i pmon sensors "$@"
-
-#To probe sensors not part of lm-sensors
-clounix_clx8000-48c8d_util.py cmd device sensors

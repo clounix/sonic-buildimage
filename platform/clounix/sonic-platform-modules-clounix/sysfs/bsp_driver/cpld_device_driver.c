@@ -233,7 +233,6 @@ static int __init cpld_device_driver_init(void)
     int ret;
 
     CPLD_INFO("cpld_init...\n");
-    printk(KERN_ALERT "cpld_device_driver_init\n");
     cpld_if_create_driver();
 
     ret = s3ip_sysfs_cpld_drivers_register(&drivers);

@@ -1,1 +1,1 @@
-platform drivers of Pegatron products for the SONiC project
+platform drivers of Clounix EVB products for the SONiC project

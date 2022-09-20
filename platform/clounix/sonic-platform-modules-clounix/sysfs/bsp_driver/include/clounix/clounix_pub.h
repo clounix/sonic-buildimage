@@ -1,6 +1,6 @@
 
-#ifndef __PEGATRON_PUB_H__
-#define __PEGATRON_PUB_H__
+#ifndef __CLOUNIX_PUB_H__
+#define __CLOUNIX_PUB_H__
 
 #include <linux/printk.h>
 

@@ -5,7 +5,7 @@ CLX_DRIVER_DIR:= driver
 
 MAKEFILE_FILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
 DEV_SYSFS_HEADER_DIR = $(abspath $(MAKEFILE_FILE_PATH)/../../s3ip_sysfs_frame/include)
-SWITCH_DVR_HEADER_DIR = $(abspath $(MAKEFILE_FILE_PATH)/../../s3ip_sysfs_frame/include)
+SWITCH_DVR_HEADER_DIR = $(abspath $(MAKEFILE_FILE_PATH)/../../bsp_driver/include)
 EXTRA_CFLAGS:= -I$(M)/include -I$(M)/$(INTERFACE_DIR) $(M)/$(CLX_DRIVER_DIR)
 EXTRA_CFLAGS+= -I$(DEV_SYSFS_HEADER_DIR)
 EXTRA_CFLAGS+= -I$(SWITCH_DVR_HEADER_DIR)
@@ -89,11 +89,14 @@ obj-m += tps546b24a.o
 obj-m += tmp75.o
 obj-m += adm1166.o
 obj-m += cputemp.o
+obj-m += s3ip_netlink.o
 
 all:
 	$(MAKE) -C $(KERNEL_SRC)/build M=$(PWD) modules
+	$(CC) -o s3ip_proxy s3ip_proxy.c -I./include
 	@if [ ! -d $(sysfs_out_put_dir) ]; then mkdir -p $(sysfs_out_put_dir) ;fi
 	cp -p  $(PWD)/*.ko $(sysfs_out_put_dir)
+	
 clean:
 	rm -f $(PWD)/*.o $(PWD)/*.ko $(PWD)/*.mod.c $(PWD)/.*.cmd $(PWD)/*.mod 
 	rm -f $(PWD)/Module.markers $(PWD)/Module.symvers $(PWD)/modules.order 

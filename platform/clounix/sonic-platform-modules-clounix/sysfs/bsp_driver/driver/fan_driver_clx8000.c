@@ -402,7 +402,7 @@ static int clx_driver_clx8000_set_fan_motor_ratio(void *fan, unsigned int fan_in
 static int clx_driver_clx8000_fan_dev_init(struct fan_driver_clx8000 *fan)
 {
     if (clounix_fpga_base == NULL) {
-        printk(KERN_ERR "fpga resource is not available.\r\n");
+        FAN_ERR("fpga resource is not available.\r\n");
         return -ENXIO;
     }
     fan->fan_base = clounix_fpga_base + FAN_BASE_ADDRESS;

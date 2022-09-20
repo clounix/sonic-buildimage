@@ -33,10 +33,6 @@ static int32_t clx_i2c_smbus_transfer(int bus, int addr, int read_write, int off
             bus, addr, offset, size, read_write, rv);
         rv = DRIVER_ERR;
     } else {
-#if 0
-        printk(KERN_ERR "i2c dev[bus=%d addr=0x%x offset=0x%x size=%d rw=%d data=0x%x rv=%d] transfer success\r\n",
-            bus, addr, offset, size, read_write, data.byte, rv);
-#endif
             rv = DRIVER_OK;
     }
 
@@ -59,7 +55,7 @@ int32_t clx_i2c_read(int bus, int addr, int offset, uint8_t *buf, uint32_t size)
     for (i = 0; i < size; i++) {
         rv = clx_i2c_smbus_transfer(bus, addr, I2C_SMBUS_READ, offset, &buf[i], I2C_SMBUS_BYTE_DATA);
         if (rv < 0) {
-            printk(KERN_ERR "clx_i2c_read[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
+            printk(KERN_ERR "clx_i2c_read[bus=%d addr=0x%x offset=0x%x] fail, rv=%d\r\n",
                 bus, addr, offset, rv);
             return rv;
         }
@@ -77,7 +73,7 @@ int32_t clx_i2c_write(int bus, int addr, int offset, uint8_t *buf, uint32_t size
     for (i = 0; i < size; i++) {
         rv = clx_i2c_smbus_transfer(bus, addr, I2C_SMBUS_WRITE, offset, &buf[i], I2C_SMBUS_BYTE_DATA);
         if (rv < 0) {
-            printk(KERN_ERR "clx_i2c_write[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
+            printk(KERN_ERR "clx_i2c_write[bus=%d addr=0x%x offset=0x%x] fail, rv=%d\r\n",
                 bus, addr, offset, rv);
             return rv;
         }
@@ -96,7 +92,7 @@ int32_t clx_i2c_mux_read(int bus, int addr, int offset, uint8_t *buf, uint32_t s
     for (i = 0; i < size; i++) {
         rv = clx_i2c_smbus_transfer(bus, addr, I2C_SMBUS_READ, offset, &buf[i], I2C_SMBUS_BYTE);
         if (rv < 0) {
-            printk(KERN_ERR "clx_i2c_read[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
+            printk(KERN_ERR "clx_i2c_read[bus=%d addr=0x%x offset=0x%x] fail, rv=%d\r\n",
                 bus, addr, offset, rv);
             return rv;
         }
@@ -114,7 +110,7 @@ int32_t clx_i2c_mux_write(int bus, int addr, int offset, uint8_t *buf, uint32_t 
     for (i = 0; i < size; i++) {
         rv = clx_i2c_smbus_transfer(bus, addr, I2C_SMBUS_WRITE, offset, &buf[i], I2C_SMBUS_BYTE);
         if (rv < 0) {
-            printk(KERN_ERR "clx_i2c_write[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
+            printk(KERN_ERR "clx_i2c_write[bus=%d addr=0x%x offset=0x%x] fail, rv=%d\r\n",
                 bus, addr, offset, rv);
             return rv;
         }

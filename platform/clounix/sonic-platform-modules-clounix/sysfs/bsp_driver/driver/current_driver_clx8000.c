@@ -22,7 +22,7 @@ struct current_driver_clx8000 driver_current_clx8000;
 #define CURR_DIR "_label"
 #define CURR_VALUE "_input"
 
-DEFINE_RWLOCK(list_lock);
+static DEFINE_RWLOCK(list_lock);
 /*
     [0]:addr
     [1]:location in sensor_arry
@@ -315,7 +315,7 @@ void clx_driver_clx8000_current_init(void **current_driver)
 {
     struct current_driver_clx8000 *curr = &driver_current_clx8000;
 
-    printk(KERN_ALERT "clx_driver_clx8000_current_init\n");
+    CURR_SENSOR_INFO("clx_driver_clx8000_current_init\n");
     clx_driver_clx8000_current_dev_init(curr);
     curr->current_if.get_main_board_curr_number = clx_driver_clx8000_get_main_board_curr_number;
     curr->current_if.get_main_board_curr_alias = clx_driver_clx8000_get_main_board_curr_alias;
@@ -326,7 +326,7 @@ void clx_driver_clx8000_current_init(void **current_driver)
     curr->current_if.set_main_board_curr_min = clx_driver_clx8000_set_main_board_curr_min;
     curr->current_if.get_main_board_curr_value = clx_driver_clx8000_get_main_board_curr_value;
     *current_driver = curr;
-    printk(KERN_INFO "CURRENT driver clx8000 initialization done.\r\n");
+    CURR_SENSOR_INFO("CURRENT driver clx8000 initialization done.\r\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_current_init);
 

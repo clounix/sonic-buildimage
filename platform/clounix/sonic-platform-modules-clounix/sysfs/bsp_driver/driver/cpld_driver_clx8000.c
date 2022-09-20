@@ -2,12 +2,54 @@
 
 #include "cpld_driver_clx8000.h"
 #include "clx_driver.h"
+#include "clounix_fpga_clx8000.h"
 
 //external function declaration
 extern void __iomem *clounix_fpga_base;
 
 //internal function declaration
 struct cpld_driver_clx8000 driver_cpld_clx8000;
+
+static int set_cpld_enable(struct cpld_driver_clx8000 *cpld, unsigned int cpld_index, unsigned int flag)
+{
+    uint32_t data = 0,val = 0;
+    int en_bit = 0;
+
+    data = readl(cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    CPLD_DBG(" reg: %x, data: %x\r\n", CPLD_INTR_CFG_ADDR, data);
+    if(0 == cpld_index) {
+        en_bit = CPLD0_EN_BIT;
+    }else{
+        en_bit = CPLD1_EN_BIT;
+    }
+    if(flag)
+        SET_BIT(data, en_bit);
+    else
+        CLEAR_BIT(data, en_bit);
+    writel(data, cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    return 0;
+}
+
+static int set_cpld_reset(struct cpld_driver_clx8000 *cpld,  unsigned int cpld_index, unsigned int flag)
+{
+    uint32_t data = 0;
+    int rst_bit = 0;
+
+    data = readl(cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    CPLD_DBG(" reg: %x, data: %x\r\n", CPLD_INTR_CFG_ADDR, data);
+    if(0 == cpld_index) {
+        rst_bit = CPLD0_RST_BIT;
+    }else{
+        rst_bit = CPLD1_RST_BIT;
+    }
+    if(flag)
+        SET_BIT(data,rst_bit);
+    else
+        CLEAR_BIT(data, rst_bit);
+    writel(data, cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    return 0;
+}
+
 
 static int clx_driver_clx8000_get_main_board_cpld_number(void *cpld)
 {
@@ -125,11 +167,26 @@ static int clx_driver_clx8000_set_main_board_cpld_test_reg(void *cpld, unsigned 
 
 static int clx_driver_clx8000_cpld_dev_init(struct cpld_driver_clx8000 *cpld)
 {
+    unsigned int cpld_index = 0;
+    unsigned int data;
+
     if (clounix_fpga_base == NULL) {
         CPLD_ERR("fpga resource is not available.\r\n");
         return -ENXIO;
     }
     cpld->cpld_base = clounix_fpga_base + CPLD_BASE_ADDRESS;
+    //enable CPLD interface
+    data = 0x5000c34f;
+    writel(data, cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    data = readl(cpld->cpld_base + CPLD_INTR_CFG_ADDR);
+    CPLD_INFO("CPLD interface config:0x%x.\r\n", data);
+    #if 0
+    for (cpld_index = 0; cpld_index < CPLD_CHIP_NUM; cpld_index++) {
+        set_cpld_reset(cpld, cpld_index, 1);
+        set_cpld_reset(cpld, cpld_index, 0);
+        set_cpld_enable(cpld, cpld_index, 1);
+    }
+    #endif
 
     return DRIVER_OK;
 }
@@ -149,7 +206,7 @@ void clx_driver_clx8000_cpld_init(void **cpld_driver)
     cpld->cpld_if.get_main_board_cpld_test_reg = clx_driver_clx8000_get_main_board_cpld_test_reg;
     cpld->cpld_if.set_main_board_cpld_test_reg = clx_driver_clx8000_set_main_board_cpld_test_reg;
     *cpld_driver = cpld;
-    printk(KERN_INFO "CPLD driver clx8000 initialization done.\r\n");
+    CPLD_INFO("CPLD driver clx8000 initialization done.\r\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_cpld_init);
 

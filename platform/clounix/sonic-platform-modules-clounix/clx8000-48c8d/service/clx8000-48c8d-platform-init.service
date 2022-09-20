@@ -1,12 +1,13 @@
 [Unit]
 Description=Clounix clx8000-48c8d Platform initialization service
-Before=network.target determine-reboot-cause.service
+Before=network.target determine-reboot-cause.service pmon.service
 DefaultDependencies=no
 
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/clxProcess/main.py install
-ExecStop=/usr/local/bin/clounix_clx8000-48c8d_util.py uninstall
+ExecStop=/usr/sbin/service pmon stop
+ExecStop=/usr/local/bin/clxProcess/main.py uninstall
 RemainAfterExit=yes
 
 [Install]

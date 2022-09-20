@@ -9,7 +9,7 @@
 #include "clx_driver.h"
 #include "clounix/pmbus_dev_common.h"
 
-DEFINE_RWLOCK(list_lock);
+static DEFINE_RWLOCK(list_lock);
 #define PER_PSU_TEMP_NUM (3)
 
 #define MAX_PSU_DATA_NUM (2)
@@ -155,7 +155,6 @@ int get_priv_attr_val_by_name(struct device *dev, char *node_name, char *buf)
 
     for (i=0; dev->groups[i] != NULL; i++) {
         attrs = dev->groups[i]->attrs;
-        //attrs = group->attrs;
         for (j=0; attrs[j] != NULL; j++) {
             a = attrs[j];
             if (strcmp(a->name, node_name) == 0) {
@@ -1088,7 +1087,7 @@ void clx_driver_clx8000_psu_init(void **psu_driver)
 {
     struct psu_driver_clx8000 *psu = &driver_psu_clx8000;
 
-    printk(KERN_INFO "clx_driver_clx8000_psu_init\n");
+    PSU_INFO("clx_driver_clx8000_psu_init\n");
     clx_driver_clx8000_psu_dev_init(psu);
     psu->psu_if.get_psu_number = clx_driver_clx8000_get_psu_number;
     psu->psu_if.get_psu_temp_number = clx_driver_clx8000_get_psu_temp_number;
@@ -1124,6 +1123,6 @@ void clx_driver_clx8000_psu_init(void **psu_driver)
     psu->psu_if.set_psu_temp_max_hyst = clx_driver_clx8000_set_psu_temp_max_hyst;
 
     *psu_driver = psu;
-    printk(KERN_INFO "PSU driver clx8000 initialization done.\n");
+    PSU_INFO("PSU driver clx8000 initialization done.\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_psu_init);

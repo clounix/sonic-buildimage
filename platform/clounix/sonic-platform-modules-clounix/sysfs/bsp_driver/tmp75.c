@@ -258,7 +258,7 @@ static const struct regmap_config lm75_regmap_config = {
 	.use_single_rw = true,
 };
 
-struct device *hwmon_dev = NULL;
+static struct device *hwmon_dev = NULL;
 extern int hwmon_sensor_add(struct device *dev);
 extern void hwmon_sensor_del(struct device *dev);
 static void lm75_remove(void *data)
@@ -266,7 +266,6 @@ static void lm75_remove(void *data)
 	struct lm75_data *lm75 = data;
 	struct i2c_client *client = lm75->client;
 
-    hwmon_sensor_del(hwmon_dev);
 	i2c_smbus_write_byte_data(client, LM75_REG_CONF, lm75->orig_conf);
 }
 
@@ -407,9 +406,9 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if (IS_ERR(hwmon_dev))
 		return PTR_ERR(hwmon_dev);
 
-	dev_info(dev, "%s: sensor '%s'\n", dev_name(hwmon_dev), client->name);
-
     hwmon_sensor_add(hwmon_dev);
+
+	dev_info(dev, "%s: sensor '%s'\n", dev_name(hwmon_dev), client->name);
 
 	return 0;
 }
@@ -666,20 +665,28 @@ static const struct dev_pm_ops lm75_dev_pm_ops = {
 #define LM75_DEV_PM_OPS NULL
 #endif /* CONFIG_PM */
 
-static struct i2c_driver lm75_driver = {
+int lm75_del(struct i2c_client *client)
+{
+    hwmon_sensor_del(hwmon_dev);
+
+    return 0;
+}
+
+static struct i2c_driver tmp75_driver = {
 	.class		= I2C_CLASS_HWMON,
 	.driver = {
-		.name	= "lm75",
+		.name	= "tmp75",
 		.of_match_table = of_match_ptr(lm75_of_match),
 		.pm	= LM75_DEV_PM_OPS,
 	},
 	.probe		= lm75_probe,
+    .remove = lm75_del,
 	.id_table	= lm75_ids,
 	.detect		= lm75_detect,
 	.address_list	= normal_i2c,
 };
 
-module_i2c_driver(lm75_driver);
+module_i2c_driver(tmp75_driver);
 
 MODULE_AUTHOR("Frodo Looijaard <frodol@dds.nl>");
 MODULE_DESCRIPTION("LM75 driver");

@@ -25,7 +25,7 @@
 #define TEMP_MAX_HYST "_max_hyst"
 #define CPU_TEMP_MAX_HYST "_crit"
 
-DEFINE_RWLOCK(list_lock);
+static DEFINE_RWLOCK(list_lock);
 
 struct sensor_descript sensor_map_index[] = {
     {"cpu package", 0, "cpu package"},
@@ -333,7 +333,7 @@ void clx_driver_clx8000_temp_init(void **temp_driver)
 {
     struct temp_driver_clx8000 *temp = &driver_temp_clx8000;
 
-    printk(KERN_ALERT "clx_driver_clx8000_temp_init\n");
+    TEMP_SENSOR_INFO("clx_driver_clx8000_temp_init\n");
     clx_driver_clx8000_temp_dev_init(temp);
     temp->temp_if.get_main_board_temp_number = clx_driver_clx8000_get_main_board_temp_number;
     temp->temp_if.get_main_board_temp_alias = clx_driver_clx8000_get_main_board_temp_alias;
@@ -350,6 +350,6 @@ void clx_driver_clx8000_temp_init(void **temp_driver)
 
     temp->temp_if.get_main_board_temp_value = clx_driver_clx8000_get_main_board_temp_value;
     *temp_driver = temp;
-    printk(KERN_INFO "TEMP driver clx8000 initialization done.\r\n");
+    TEMP_SENSOR_INFO("TEMP driver clx8000 initialization done.\r\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_temp_init);

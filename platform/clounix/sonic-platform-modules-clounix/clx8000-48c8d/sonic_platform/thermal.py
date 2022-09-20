@@ -23,12 +23,12 @@ class Thermal(ThermalBase):
     def __init__(self, thermal_index,thermal_conf):
         self.__index = thermal_index
         self.__conf = thermal_conf
-        
+
         if self.__conf[self.__index]['container'] == 'psu':
             self.__attr_path_prefix = '/sys/switch/psu/psu{}/temp{}/'.format(self.__conf[self.__index]['container_index']+1,self.__index)
         else:
             self.__attr_path_prefix = '/sys/switch/sensor/temp{}/'.format(self.__index)
-            
+
         self.__api_helper = APIHelper()
 
         self.name = self.get_name()
@@ -47,7 +47,7 @@ class Thermal(ThermalBase):
         temperature = 0.0
 
         attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'temp_input')
-        if (attr_rv != None):
+        if ((attr_rv != None) and (attr_rv != 'NA')):
             attr_rv = int(attr_rv, 10)
             temperature = float(attr_rv/1000)
         return temperature

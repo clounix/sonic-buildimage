@@ -23,7 +23,7 @@ struct voltage_driver_clx8000 driver_voltage_clx8000;
 #define VOL_DIR "_label"
 #define VOL_VALUE "_input"
 
-DEFINE_RWLOCK(list_lock);
+static DEFINE_RWLOCK(list_lock);
 /*
     [0]:addr
     [1]:location in sensor_arry
@@ -351,7 +351,7 @@ void clx_driver_clx8000_voltage_init(void **voltage_driver)
 {
     struct voltage_driver_clx8000 *voltage = &driver_voltage_clx8000;
 
-    printk(KERN_ALERT "clx_driver_clx8000_voltage_init\n");
+    VOL_SENSOR_INFO("clx_driver_clx8000_voltage_init\n");
     clx_driver_clx8000_voltage_dev_init(voltage);
     voltage->voltage_if.get_main_board_vol_number = clx_driver_clx8000_get_main_board_vol_number;
     voltage->voltage_if.get_main_board_vol_alias = clx_driver_clx8000_get_main_board_vol_alias;
@@ -364,7 +364,7 @@ void clx_driver_clx8000_voltage_init(void **voltage_driver)
     voltage->voltage_if.get_main_board_vol_nominal_value = clx_driver_clx8000_get_main_board_vol_nominal_value;
     voltage->voltage_if.get_main_board_vol_value = clx_driver_clx8000_get_main_board_vol_value;
     *voltage_driver = voltage;
-    printk(KERN_INFO "VOLTAGE driver clx8000 initialization done.\r\n");
+    VOL_SENSOR_INFO("VOLTAGE driver clx8000 initialization done.\r\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_voltage_init);
 

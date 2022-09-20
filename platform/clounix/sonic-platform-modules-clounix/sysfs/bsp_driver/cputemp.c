@@ -41,7 +41,7 @@
 #include <asm/processor.h>
 #include <asm/cpu_device_id.h>
 
-#define DRVNAME	"coretemp"
+#define DRVNAME	"cpu_coretemp"
 
 /*
  * force_tjmax only matters when TjMax can't be read from the CPU itself.
@@ -736,7 +736,7 @@ MODULE_DEVICE_TABLE(x86cpu, coretemp_ids);
 
 static enum cpuhp_state coretemp_hp_online;
 
-static int __init coretemp_init(void)
+static int __init cpu_coretemp_init(void)
 {
 	int err;
 
@@ -770,15 +770,15 @@ outdrv:
 	kfree(pkg_devices);
 	return err;
 }
-module_init(coretemp_init)
+module_init(cpu_coretemp_init)
 
-static void __exit coretemp_exit(void)
+static void __exit cpu_coretemp_exit(void)
 {
 	cpuhp_remove_state(coretemp_hp_online);
 	platform_driver_unregister(&coretemp_driver);
 	kfree(pkg_devices);
 }
-module_exit(coretemp_exit)
+module_exit(cpu_coretemp_exit)
 
 MODULE_AUTHOR("Rudolf Marek <r.marek@assembler.cz>");
 MODULE_DESCRIPTION("Intel Core temperature monitor");

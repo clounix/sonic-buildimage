@@ -2,10 +2,6 @@ PWD		= $(shell pwd)
 SYSFS_OUT_PUT := $(PWD)/build
 sysfs_out_put_dir := $(SYSFS_OUT_PUT)/S3IP_sysfs/
 export sysfs_out_put_dir
-#KERNEL_SRC=/lib/modules/$(shell uname -r)
-#KERNEL_SRC=/lib/modules/5.10.0-6-amd64
-#KERNEL_SRC=/lib/modules/4.19.0-12-2-amd64
-#export KERNEL_SRC
 prefix ?= usr/local
 SYSFS_DRIVER_DIR = $(PWD)/s3ip_sysfs_frame
 SWITCH_DRIVER_DIR = $(PWD)/bsp_driver
@@ -35,8 +31,6 @@ install:
 		$(DESTDIR)/etc/s3ip/s3ip_sysfs_conf.json
 	install -D scripts/s3ip_sysfs_tool.sh \
 		$(DESTDIR)/$(prefix)/bin/s3ip_sysfs_tool.sh
-#install -D scripts/s3ip-sysfs.service \
-		$(DESTDIR)/lib/systemd/system/s3ip-sysfs.service
 
 
 uninstall:

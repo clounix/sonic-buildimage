@@ -24,7 +24,7 @@ void voltage_if_create_driver(void)
 	struct driver_map *it;
 	int i;
 
-	printk(KERN_ALERT "clx_driver_clx8000_voltage_init\n");
+	printk(KERN_INFO "clx_driver_clx8000_voltage_init\n");
     //get driver 
     driver_type = clx_driver_identify(CLX_DRIVER_TYPES_VOL);
     for (i = 0; i < sizeof(voltage_drv_map)/sizeof(voltage_drv_map[0]); i++)
@@ -35,9 +35,8 @@ void voltage_if_create_driver(void)
 		    it->driver_init((void *)&voltage_driver);
 	    }
     }
-//	__initcall_clx_driverA_voltage_init(&voltage_driver);
-
 }
+
 void voltage_if_delete_driver(void) 
 {
 }

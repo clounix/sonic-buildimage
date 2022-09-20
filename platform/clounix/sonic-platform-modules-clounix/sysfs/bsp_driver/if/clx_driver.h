@@ -2,6 +2,7 @@
 #define _CLX_DRIVER_H_
 
 #include <linux/module.h>
+#include "device_driver_common.h"
 
 //#include "cpld_interface.h"
 /* driver init call prototype */

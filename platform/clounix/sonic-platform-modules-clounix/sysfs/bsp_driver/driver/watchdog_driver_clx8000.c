@@ -112,7 +112,7 @@ static int clx_driver_clx8000_set_watchdog_enable_status(void *driver, int value
 static int clx_driver_clx8000_watchdog_dev_init(struct watchdog_driver_clx8000 *watchdog)
 {
     if (clounix_fpga_base == NULL) {
-        printk(KERN_ERR "fpga resource is not available.\r\n");
+        WDT_INFO("fpga resource is not available.\r\n");
         return -ENXIO;
     }
     watchdog->watchdog_base = clounix_fpga_base + WATCHDOG_BASE_ADDRESS;
@@ -125,7 +125,7 @@ void clx_driver_clx8000_watchdog_init(void **watchdog_driver)
 {
     struct watchdog_driver_clx8000 *watchdog = &driver_watchdog_clx8000;
 
-    printk(KERN_ALERT "clx_driver_clx8000_watchdog_init\n");
+    WDT_INFO("clx_driver_clx8000_watchdog_init\n");
     clx_driver_clx8000_watchdog_dev_init(watchdog);
     watchdog->watchdog_if.get_watchdog_identify = clx_driver_clx8000_get_watchdog_identify;
     watchdog->watchdog_if.get_watchdog_state = clx_driver_clx8000_get_watchdog_state;
@@ -135,7 +135,7 @@ void clx_driver_clx8000_watchdog_init(void **watchdog_driver)
     watchdog->watchdog_if.get_watchdog_enable_status = clx_driver_clx8000_get_watchdog_enable_status;
     watchdog->watchdog_if.set_watchdog_enable_status = clx_driver_clx8000_set_watchdog_enable_status;
     *watchdog_driver = watchdog;
-    printk(KERN_INFO "WATCHDOG driver clx8000 initialization done.\r\n");
+    WDT_INFO("WATCHDOG driver clx8000 initialization done.\r\n");
 }
 //clx_driver_define_initcall(clx_driver_clx8000_watchdog_init);
 

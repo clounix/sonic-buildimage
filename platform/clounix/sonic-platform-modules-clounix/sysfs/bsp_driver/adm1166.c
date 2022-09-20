@@ -11,6 +11,7 @@
 #include <linux/jiffies.h>
 
 #include <linux/hwmon-sysfs.h>
+#include "device_driver_common.h"
 
 #define MAX_RAM_ADDR (0xff)
 #define MAX_EEPROM_LEN (0x400)
@@ -30,6 +31,28 @@
 
 #define SENSOR_DEVICE_ATTR_RO(_name, _func, _index)     \
     SENSOR_DEVICE_ATTR(_name, 0444, _func##_show, NULL, _index)
+
+static int g_adm1166_loglevel = 0x2;
+#define ADM1166_INFO(fmt, args...) do {                                        \
+    if (g_adm1166_loglevel & INFO) { \
+        printk(KERN_INFO "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define ADM1166_ERR(fmt, args...) do {                                        \
+    if (g_adm1166_loglevel & ERR) { \
+        printk(KERN_ERR "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define ADM1166_DBG(fmt, args...) do {                                        \
+    if (g_adm1166_loglevel & DBG) { \
+        printk(KERN_DEBUG "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+module_param(g_adm1166_loglevel, int, 0644);
+MODULE_PARM_DESC(g_adm1166_loglevel, "The log level(info=0x1, err=0x2, dbg=0x4).\n");
 
 
 ssize_t chip_id_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -283,9 +306,9 @@ static void fault_log_space_check(struct i2c_client *client)
     i2c_master_recv(client, &data, 1);
 
     if (data == 0) {
-        printk("%s %x fault log full!\n", client->name, client->addr);
+        ADM1166_INFO("%s %x fault log full!\n", client->name, client->addr);
     } else {
-        printk("%s %x fault log at 0xf980 + %x\n", client->name, client->addr, data);
+        ADM1166_INFO("%s %x fault log at 0xf980 + %x\n", client->name, client->addr, data);
         return;
     }
 
@@ -299,7 +322,7 @@ static void fault_log_space_check(struct i2c_client *client)
     addr[1] = 5;
     i2c_master_send(client, addr, 2);
 
-    for (i=0; i<fault_msg_len/I2C_SMBUS_BLOCK_MAX; i++) {
+    for (i = 0; i < fault_msg_len/I2C_SMBUS_BLOCK_MAX; i++) {
         addr[0] = (EEPROM_START_ADDR + fault_msg_offset + i*I2C_SMBUS_BLOCK_MAX) >> 8;
         addr[1] = (EEPROM_START_ADDR + fault_msg_offset + i*I2C_SMBUS_BLOCK_MAX) & 0xff;
         i2c_master_send(client, addr, 2);
@@ -324,12 +347,12 @@ static void fault_log_space_check(struct i2c_client *client)
         i2c_master_recv(client, &data, 1);
 
         if (data == 0x80) {
-            printk("%s %x fault log clear over\n", client->name, client->addr);
+            ADM1166_INFO("%s %x fault log clear over\n", client->name, client->addr);
             break;
         }
 
         if (time_after(jiffies, time)) {
-            printk("%s %x fault log clear fail\n", client->name, client->addr);
+            ADM1166_INFO("%s %x fault log clear fail\n", client->name, client->addr);
             break;
         }
     }
@@ -344,7 +367,7 @@ static void fault_log_space_check(struct i2c_client *client)
 
 static int adm1166_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-    printk(KERN_ALERT "i2c slave:%s addr:%x start probe.", client->name, client->addr);
+    ADM1166_INFO("i2c slave:%s addr:%x start probe.", client->name, client->addr);
 
     fault_log_space_check(client);
 

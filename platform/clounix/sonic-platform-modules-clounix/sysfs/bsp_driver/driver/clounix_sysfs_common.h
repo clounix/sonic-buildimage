@@ -7,6 +7,7 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/types.h>
+#include "device_driver_common.h"
 
 struct clounix_node_info {
     struct list_head node;
