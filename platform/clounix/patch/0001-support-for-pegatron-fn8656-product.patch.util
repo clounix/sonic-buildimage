@@ -1,0 +1,42 @@
+From 211e0de70a20c7d913909beb604960bc302055db Mon Sep 17 00:00:00 2001
+From: "Zhou,Junde" <zhoujd@clounix.com>
+Date: Sat, 19 Mar 2022 09:21:34 +0800
+Subject: [PATCH] support for pegatron fn8656 product
+
+---
+ config/main.py      | 2 ++
+ scripts/fast-reboot | 5 +++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/config/main.py b/config/main.py
+index 1dd077c..e5ce955 100644
+--- a/config/main.py
++++ b/config/main.py
+@@ -2042,6 +2042,8 @@ def reload(ctx, no_dynamic_buffer, dry_run, json_data):
+     log.log_info("'qos reload' executing...")
+     _clear_qos()
+ 
++    time.sleep(5)
++
+     _, hwsku_path = device_info.get_paths_to_platform_and_hwsku_dirs()
+     sonic_version_file = device_info.get_sonic_version_file()
+     from_db = "-d --write-to-db"
+diff --git a/scripts/fast-reboot b/scripts/fast-reboot
+index 45a4292..843661e 100755
+--- a/scripts/fast-reboot
++++ b/scripts/fast-reboot
+@@ -705,6 +705,11 @@ then
+   systemctl stop "$service_name"
+ fi
+ 
++if [[ "$sonic_asic_type" = 'clounix' ]];
++then
++  systemctl stop clx-modules.service || debug "Ignore stopping clounix service error $?"
++fi
++
+ if [[ "$REBOOT_TYPE" = "fast-reboot" ]]; then
+     # Remove FLEX_COUNTER_TABLE from config_db.json
+     # This is done so that in fast-reboot recovery path, FLEX_COUNTER polling is delayed.
+-- 
+2.17.1
+

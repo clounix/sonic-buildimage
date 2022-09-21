@@ -1,0 +1,66 @@
+From c57e3f6dc3ac197d95b0b6dcfae912e09d5d2f19 Mon Sep 17 00:00:00 2001
+From: "Zhou,Junde" <zhoujd@clounix.com>
+Date: Sun, 27 Mar 2022 09:21:09 +0800
+Subject: [PATCH] support for pegatron fn8656 product
+
+---
+ configure.ac                       | 1 +
+ syncd/Makefile.am                  | 5 +++++
+ syncd/scripts/syncd_init_common.sh | 6 ++++++
+ 3 files changed, 12 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index 7955b0c..33022e8 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -14,6 +14,7 @@ AM_PATH_PYTHON
+ AM_PATH_PYTHON3
+ 
+ AM_CONDITIONAL(sonic_asic_platform_barefoot,   test x$CONFIGURED_PLATFORM = xbarefoot)
++AM_CONDITIONAL(sonic_asic_platform_clounix,   test x$CONFIGURED_PLATFORM = xclounix)
+ 
+ AC_ARG_ENABLE(debug,
+ [  --enable-debug          turn on debugging],
+diff --git a/syncd/Makefile.am b/syncd/Makefile.am
+index a5327f9..ae97746 100644
+--- a/syncd/Makefile.am
++++ b/syncd/Makefile.am
+@@ -71,6 +71,11 @@ syncd_CPPFLAGS += -DSAITHRIFT=yes
+ syncd_LDADD += -lrpcserver -lthrift
+ endif
+ 
++if sonic_asic_platform_clounix
++syncd_CPPFLAGS += -DSAI_SUPPORT_UNINIT_DATA_PLANE_ON_REMOVAL
++libSyncd_a_CPPFLAGS += -DSAI_SUPPORT_UNINIT_DATA_PLANE_ON_REMOVAL
++endif
++
+ libSyncdRequestShutdown_a_SOURCES = \
+ 								 RequestShutdown.cpp \
+ 								 RequestShutdownCommandLineOptions.cpp \
+diff --git a/syncd/scripts/syncd_init_common.sh b/syncd/scripts/syncd_init_common.sh
+index 061b094..ab57640 100755
+--- a/syncd/scripts/syncd_init_common.sh
++++ b/syncd/scripts/syncd_init_common.sh
+@@ -197,6 +197,10 @@ config_syncd_vs()
+     CMD_ARGS+=" -p $HWSKU_DIR/sai.profile"
+ }
+ 
++config_syncd_clounix()
++{
++    CMD_ARGS+=" -p $HWSKU_DIR/sai.profile"
++}
+ config_syncd_innovium()
+ {
+     CMD_ARGS+=" -p $HWSKU_DIR/sai.profile"
+@@ -237,6 +241,8 @@ config_syncd()
+         config_syncd_vs
+     elif [ "$SONIC_ASIC_TYPE" == "innovium" ]; then
+         config_syncd_innovium
++    elif [ "$SONIC_ASIC_TYPE" == "clounix" ]; then
++        config_syncd_clounix
+     elif [ "$SONIC_ASIC_TYPE" == "cisco-8000" ]; then
+         config_syncd_cisco_8000
+     else
+-- 
+2.17.1
+
