@@ -1,7 +1,7 @@
-From b4fbfce483da886dad3075cb4867131e8af52453 Mon Sep 17 00:00:00 2001
+From c7dfa1eac53607e54c5685e13f48d3a474b8ddf2 Mon Sep 17 00:00:00 2001
 From: "Zhou,Junde" <zhoujd@clounix.com>
 Date: Sat, 19 Mar 2022 09:18:21 +0800
-Subject: [PATCH] support for pegatron fn8656 product
+Subject: [PATCH] support evb8t for sonic-swss
 
 ---
  cfgmgr/coppmgr.cpp               |  9 ++-

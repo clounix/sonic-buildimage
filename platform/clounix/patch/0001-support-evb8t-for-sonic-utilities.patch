@@ -1,7 +1,7 @@
-From 211e0de70a20c7d913909beb604960bc302055db Mon Sep 17 00:00:00 2001
+From 76727535c5018c6431cd89bcc14a7de989e37105 Mon Sep 17 00:00:00 2001
 From: "Zhou,Junde" <zhoujd@clounix.com>
 Date: Sat, 19 Mar 2022 09:21:34 +0800
-Subject: [PATCH] support for pegatron fn8656 product
+Subject: [PATCH] support evb8t for sonic-utilities
 
 ---
  config/main.py      | 2 ++

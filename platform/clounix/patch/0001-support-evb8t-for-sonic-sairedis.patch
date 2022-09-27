@@ -1,7 +1,7 @@
-From c57e3f6dc3ac197d95b0b6dcfae912e09d5d2f19 Mon Sep 17 00:00:00 2001
+From df455e6978901104a8bc6ad7d6eb08aeb6ce22ff Mon Sep 17 00:00:00 2001
 From: "Zhou,Junde" <zhoujd@clounix.com>
 Date: Sun, 27 Mar 2022 09:21:09 +0800
-Subject: [PATCH] support for pegatron fn8656 product
+Subject: [PATCH] support evb8t for sonic-sairedis
 
 ---
  configure.ac                       | 1 +
