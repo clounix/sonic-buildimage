@@ -262,6 +262,24 @@ static ssize_t vol_sensor_nominal_value_show(struct switch_obj *obj, struct swit
     return ret;
 }
 
+static ssize_t vol_sensor_alarm_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
+{
+    unsigned int vol_index;
+    int ret;
+
+    check_p(g_vol_sensor_drv);
+    check_p(g_vol_sensor_drv->get_main_board_vol_alarm);
+
+    vol_index = obj->index;
+    VOL_SENSOR_DBG("vol index: %u\n", vol_index);
+    ret = g_vol_sensor_drv->get_main_board_vol_alarm(vol_index, buf, PAGE_SIZE);
+    if (ret < 0) {
+        VOL_SENSOR_ERR("get vol%u alarm failed, ret: %d\n", vol_index, ret);
+        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
+    }
+    return ret;
+}
+
 /************************************vol_sensor dir and attrs*******************************************/
 static struct switch_attribute num_vol_att = __ATTR(num_in_sensors, S_IRUGO, vol_sensor_number_show, NULL);
 
@@ -283,7 +301,7 @@ static struct switch_attribute vol_min_attr = __ATTR(in_min,  S_IRUGO | S_IWUSR,
 static struct switch_attribute vol_crit_attr = __ATTR(in_crit,  S_IRUGO | S_IWUSR, vol_sensor_crit_show, vol_sensor_crit_store);
 static struct switch_attribute vol_range_attr = __ATTR(in_range, S_IRUGO, vol_sensor_range_show, NULL);
 static struct switch_attribute vol_nominal_value_attr = __ATTR(in_nominal_value, S_IRUGO, vol_sensor_nominal_value_show, NULL);
-
+static struct switch_attribute vol_alarm_attr = __ATTR(in_alarm, S_IRUGO, vol_sensor_alarm_show, NULL);
 
 static struct attribute *vol_sensor_attrs[] = {
     &vol_value_attr.attr,
@@ -294,6 +312,7 @@ static struct attribute *vol_sensor_attrs[] = {
     &vol_crit_attr.attr,
     &vol_range_attr.attr,
     &vol_nominal_value_attr.attr,
+    &vol_alarm_attr.attr,
     NULL,
 };
 

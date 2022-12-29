@@ -77,7 +77,6 @@ static ssize_t fpga_debug_store(struct switch_obj *obj, struct switch_attribute 
     ret = g_fpga_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         FPGA_ERR("set fpga debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -108,7 +107,6 @@ static ssize_t fpga_loglevel_store(struct switch_obj *obj, struct switch_attribu
     ret = g_fpga_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         FPGA_ERR("set fpga loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }

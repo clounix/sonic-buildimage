@@ -13,21 +13,25 @@
 #include "psu_sysfs.h"
 #include "psu_interface.h"
 
-static int g_loglevel = 0;
-
 /********************************************psu**********************************************/
 
 static ssize_t clx_get_psu_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_CPLD]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_PSU], buf, count);
 }
 
-static ssize_t clx_set_psu_loglevel(char *buf, size_t count)
+static ssize_t clx_set_psu_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_PSU] = loglevel;
@@ -36,10 +40,13 @@ static ssize_t clx_set_psu_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_psu_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "check PSU info: \n"
+                        "cat /sys/switch/psu/psu*/*\n"
+                        "check PSU temerature: \n"
+                        "cat /sys/switch/psu/psu1/temp*/*\n");
 }
 
-static ssize_t clx_set_psu_debug(char *buf, size_t count)
+static ssize_t clx_set_psu_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -776,15 +783,19 @@ static int __init psu_dev_drv_init(void)
 {
     int ret;
 
-    PSU_INFO("s3ip psu_init...\n");
-    psu_if_create_driver();
+    LOG_INFO(CLX_DRIVER_TYPES_PSU, "s3ip psu_init...\n");
+    ret = psu_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_PSU, "s3ip psu if create err, ret %d.\n", ret);
+        return ret;
+    }
 
     ret = s3ip_sysfs_psu_drivers_register(&drivers);
     if (ret < 0) {
-        PSU_ERR("s3ip psu drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_PSU, "s3ip psu drivers register err, ret %d.\n", ret);
         return ret;
     }
-    PSU_INFO("s3ip psu_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_PSU, "s3ip psu_init success.\n");
     return 0;
 }
 
@@ -792,15 +803,14 @@ static void __exit psu_dev_drv_exit(void)
 {
     psu_if_delete_driver();
     s3ip_sysfs_psu_drivers_unregister();
-    PSU_INFO("psu_exit ok.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_PSU, "psu_exit ok.\n");
 
     return;
 }
 
 module_init(psu_dev_drv_init);
 module_exit(psu_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("psu device driver");

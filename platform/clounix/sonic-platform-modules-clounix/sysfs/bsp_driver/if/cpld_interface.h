@@ -24,25 +24,8 @@ struct cpld_fn_if {
 #define ERR_CPLD_INIT_FAIL ((ERR_MODULLE_CPLD << 16) | 0x1)
 #define ERR_CPLD_REG_FAIL ((ERR_MODULLE_CPLD << 16) | 0x2)
 
-extern int g_dev_loglevel[];
-#define CPLD_LOG_INFO(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_CPLD], INFO, fmt, ##args); \
-} while (0)
-
-#define CPLD_LOG_ERR(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_CPLD], ERR, fmt, ##args); \
-} while (0)
-
-#define CPLD_LOG_DBG(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_CPLD], DBG, fmt, ##args); \
-} while (0)
-
-#define CPLD_INFO(fmt, args...) CPLD_LOG_INFO("cpld@INFO ", fmt, ##args)
-#define CPLD_ERR(fmt, args...)  CPLD_LOG_ERR("cpld@ERR ", fmt, ##args)
-#define CPLD_DBG(fmt, args...)  CPLD_LOG_DBG("cpld@DBG ", fmt, ##args)
-
 struct cpld_fn_if *get_cpld(void);
-void cpld_if_create_driver(void);
+int cpld_if_create_driver(void);
 void cpld_if_delete_driver(void);
 #endif //_CPLD_INTERFACE_H_
 

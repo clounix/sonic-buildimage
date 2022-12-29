@@ -14,20 +14,24 @@
 #include "syseeprom_sysfs.h"
 #include "syseeprom_interface.h"
 
-static int g_loglevel = 1;
-
 /*****************************************syseeprom*******************************************/\
 static ssize_t clx_get_syseeprom_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_SYSEEPROM]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_SYSEEPROM], buf, count);
 }
 
-static ssize_t clx_set_syseeprom_loglevel(char *buf, size_t count)
+static ssize_t clx_set_syseeprom_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_SYSEEPROM] = loglevel;
@@ -36,10 +40,11 @@ static ssize_t clx_set_syseeprom_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_syseeprom_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "read eeprom: \n"
+                        "hexdump -C /sys/switch/syseeprom/eeprom\n");
 }
 
-static ssize_t clx_set_syseeprom_debug(char *buf, size_t count)
+static ssize_t clx_set_syseeprom_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -110,6 +115,7 @@ static struct s3ip_sysfs_syseeprom_drivers_s drivers = {
      * set ODM syseeprom drivers to /sys/s3ip/syseeprom,
      * if not support the function, set corresponding hook to NULL.
      */
+    .get_bsp_version = clx_get_bsp_version_loglevel,
     .get_loglevel = clx_get_syseeprom_loglevel,
     .set_loglevel = clx_set_syseeprom_loglevel,
     .get_debug = clx_get_syseeprom_debug,
@@ -123,15 +129,19 @@ static int __init syseeprom_dev_drv_init(void)
 {
     int ret;
 
-    SYSE2_INFO("syseeprom_dev_drv_init...\n");
-    syseeprom_if_create_driver();
+    LOG_INFO(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom_dev_drv_init...\n");
+    ret = syseeprom_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom if create err, ret %d.\n", ret);
+        return ret;
+    }
 
     ret = s3ip_sysfs_syseeprom_drivers_register(&drivers);
     if (ret < 0) {
-        SYSE2_ERR("syseeprom drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom drivers register err, ret %d.\n", ret);
         return ret;
     }
-    SYSE2_INFO("syseeprom_dev_drv_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom_dev_drv_init success.\n");
     return 0;
 }
 
@@ -139,14 +149,13 @@ static void __exit syseeprom_dev_drv_exit(void)
 {
     syseeprom_if_delete_driver();
     s3ip_sysfs_syseeprom_drivers_unregister();
-    SYSE2_INFO("syseeprom_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom_exit success.\n");
     return;
 }
 
 module_init(syseeprom_dev_drv_init);
 module_exit(syseeprom_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("syseeprom device driver");

@@ -3,9 +3,9 @@
 
 struct s3ip_sysfs_sysled_drivers_s {
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
     ssize_t (*get_sys_led_status)(char *buf, size_t count);
     int (*set_sys_led_status)(int status);
     ssize_t (*get_bmc_led_status)(char *buf, size_t count);

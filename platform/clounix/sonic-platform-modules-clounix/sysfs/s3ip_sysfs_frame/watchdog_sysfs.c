@@ -67,7 +67,6 @@ static ssize_t watchdog_debug_store(struct switch_obj *obj, struct switch_attrib
     ret = g_wdt_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         WDT_ERR("set watchdog debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -98,7 +97,6 @@ static ssize_t watchdog_loglevel_store(struct switch_obj *obj, struct switch_att
     ret = g_wdt_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         WDT_ERR("set watchdog loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -233,6 +231,7 @@ static ssize_t watchdog_reset_store(struct switch_obj *obj, struct switch_attrib
                    const char *buf, size_t count)
 {
     return count;
+    /*
     int ret, value;
 
     check_p(g_wdt_drv);
@@ -251,6 +250,7 @@ static ssize_t watchdog_reset_store(struct switch_obj *obj, struct switch_attrib
     }
     WDT_DBG("set watchdog reset %d success\n", ret);
     return count;
+    */
 }
 
 /************************************watchdog*******************************************/

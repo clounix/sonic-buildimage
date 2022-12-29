@@ -83,7 +83,6 @@ static ssize_t psu_debug_store(struct switch_obj *obj, struct switch_attribute *
     ret = g_psu_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         PSU_ERR("set psu debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -114,7 +113,6 @@ static ssize_t psu_loglevel_store(struct switch_obj *obj, struct switch_attribut
     ret = g_psu_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         PSU_ERR("set psu loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }

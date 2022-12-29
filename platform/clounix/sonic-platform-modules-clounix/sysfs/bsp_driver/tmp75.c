@@ -258,7 +258,6 @@ static const struct regmap_config lm75_regmap_config = {
 	.use_single_rw = true,
 };
 
-static struct device *hwmon_dev = NULL;
 extern int hwmon_sensor_add(struct device *dev);
 extern void hwmon_sensor_del(struct device *dev);
 static void lm75_remove(void *data)
@@ -273,6 +272,7 @@ static int
 lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct device *dev = &client->dev;
+	struct device *hwmon_dev = NULL;
 	struct lm75_data *data;
 	int status, err;
 	u8 set_mask, clr_mask;
@@ -406,6 +406,7 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if (IS_ERR(hwmon_dev))
 		return PTR_ERR(hwmon_dev);
 
+    i2c_set_clientdata(client, hwmon_dev);
     hwmon_sensor_add(hwmon_dev);
 
 	dev_info(dev, "%s: sensor '%s'\n", dev_name(hwmon_dev), client->name);
@@ -667,6 +668,8 @@ static const struct dev_pm_ops lm75_dev_pm_ops = {
 
 int lm75_del(struct i2c_client *client)
 {
+    struct device *hwmon_dev = i2c_get_clientdata(client);
+
     hwmon_sensor_del(hwmon_dev);
 
     return 0;

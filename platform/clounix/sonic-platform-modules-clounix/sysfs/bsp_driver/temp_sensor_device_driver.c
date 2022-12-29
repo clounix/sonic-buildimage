@@ -14,20 +14,24 @@
 #include "temp_sensor_sysfs.h"
 #include "temp_interface.h"
 
-static int g_loglevel = 0;
-
 /***************************************main board temp*****************************************/
 static ssize_t clx_get_main_board_temp_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_TEMP]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_TEMP], buf, count);
 }
 
-static ssize_t clx_set_main_board_temp_loglevel(char *buf, size_t count)
+static ssize_t clx_set_main_board_temp_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_TEMP] = loglevel;
@@ -36,10 +40,13 @@ static ssize_t clx_set_main_board_temp_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_main_board_temp_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "read sensor info: \n"
+                        "cat /sys/switch/sensor/temp*/*\n"
+                        "cat /sys/switch/sensor/in*/*\n"
+                        "cat /sys/switch/sensor/curr*/*\n");
 }
 
-static ssize_t clx_set_main_board_temp_debug(char *buf, size_t count)
+static ssize_t clx_set_main_board_temp_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -265,15 +272,19 @@ static int __init temp_sensor_dev_drv_init(void)
 {
     int ret;
 
-    TEMP_SENSOR_INFO("temp_sensor_init...\n");
-    temp_if_create_driver();
+    LOG_INFO(CLX_DRIVER_TYPES_TEMP, "temp_sensor_init...\n");
+    ret = temp_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_TEMP, "temp sensor if create err, ret %d.\n", ret);
+        return ret;
+    }
 
     ret = s3ip_sysfs_temp_sensor_drivers_register(&drivers);
     if (ret < 0) {
-        TEMP_SENSOR_ERR("temp sensor drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_TEMP, "temp sensor drivers register err, ret %d.\n", ret);
         return ret;
     }
-    TEMP_SENSOR_INFO("temp_sensor_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_TEMP, "temp_sensor_init success.\n");
     return 0;
 }
 
@@ -281,14 +292,13 @@ static void __exit temp_sensor_dev_drv_exit(void)
 {
     temp_if_delete_driver();
     s3ip_sysfs_temp_sensor_drivers_unregister();
-    TEMP_SENSOR_INFO("temp_sensor_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_TEMP, "temp_sensor_exit success.\n");
     return;
 }
 
 module_init(temp_sensor_dev_drv_init);
 module_exit(temp_sensor_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("temperature sensors device driver");

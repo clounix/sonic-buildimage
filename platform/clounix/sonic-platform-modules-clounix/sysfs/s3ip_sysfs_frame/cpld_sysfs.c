@@ -77,7 +77,6 @@ static ssize_t cpld_debug_store(struct switch_obj *obj, struct switch_attribute 
     ret = g_cpld_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         CPLD_ERR("set cpld debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -108,6 +107,20 @@ static ssize_t cpld_loglevel_store(struct switch_obj *obj, struct switch_attribu
     ret = g_cpld_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         CPLD_ERR("set cpld loglevel failed, ret: %d\n", ret);
+    }
+    return ret;
+}
+
+static ssize_t cpld_reboot_cause(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
+{
+    int ret;
+
+    check_p(g_cpld_drv);
+    check_p(g_cpld_drv->get_reboot_cause);
+
+    ret = g_cpld_drv->get_reboot_cause(buf, PAGE_SIZE);
+    if (ret < 0) {
+        CPLD_ERR("get cpld reboot cause failed, ret: %d\n", ret);
         return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
@@ -227,11 +240,13 @@ static ssize_t cpld_test_reg_store(struct switch_obj *obj, struct switch_attribu
 static struct switch_attribute cpld_number_attr = __ATTR(num, S_IRUGO, cpld_number_show, NULL);
 static struct switch_attribute cpld_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR, cpld_debug_show, cpld_debug_store);
 static struct switch_attribute cpld_loglevel_attr = __ATTR(loglevel, S_IRUGO | S_IWUSR, cpld_loglevel_show, cpld_loglevel_store);
+static struct switch_attribute cpld_reboot_cause_attr = __ATTR(reboot_cause, S_IRUGO, cpld_reboot_cause, NULL);
 
 static struct attribute *cpld_dir_attrs[] = {
     &cpld_number_attr.attr,
     &cpld_debug_attr.attr,
     &cpld_loglevel_attr.attr,
+    &cpld_reboot_cause_attr.attr,
     NULL,
 };
 

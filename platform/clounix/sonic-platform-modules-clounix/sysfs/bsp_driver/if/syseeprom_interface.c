@@ -2,14 +2,13 @@
 #include "clx_driver.h"
 //#include <linux/compiler.h>
 
-//extern void clx_driver_clx8000_syseeprom_init(struct syseeprom_fn_if **syseeprom_driver);
-extern void clx_driver_clx8000_syseeprom_init(void **syseeprom_driver);
-
+extern int drv_syseeprom_init(void **syseeprom_driver);
+extern int drv_clx_syseeprom_init(void **syseeprom_driver);
 
 struct syseeprom_fn_if *syseeprom_driver;
 
 static struct driver_map syseeprom_drv_map[] = {
-	{"syseeprom_clx8000", clx_driver_clx8000_syseeprom_init},
+	{"drv_syseeprom", drv_syseeprom_init, NULL},
 };	
 
 
@@ -18,23 +17,35 @@ struct syseeprom_fn_if *get_syseeprom(void)
 	return syseeprom_driver;
 }
 
-void syseeprom_if_create_driver(void) 
+int syseeprom_if_create_driver(void) 
 {
 	char *driver_type = NULL;
 	struct driver_map *it;
 	int i;
+	struct board_info *bd;
+	int rc = DRIVER_ERR;
 
-	SYSE2_DBG("syseeprom_if_create_driver\n");
     driver_type = clx_driver_identify(CLX_DRIVER_TYPES_SYSEEPROM);
-	SYSE2_DBG("syseeprom_if_create_driver type:%s\n", driver_type);
-    for (i = 0; i < sizeof(syseeprom_drv_map)/sizeof(syseeprom_drv_map[0]); i++)
+	LOG_DBG(CLX_DRIVER_TYPES_SYSEEPROM, "syseeprom_if_create_driver type:%s\n", driver_type);
+    for (i = 0; i < sizeof(syseeprom_drv_map)/sizeof(struct driver_map); i++)
     {
 	    it = &syseeprom_drv_map[i];
 	    if(strcmp((const char*)driver_type, (const char*)it->name) == 0)
 	    {
-		    it->driver_init((void *)&syseeprom_driver);
+		    rc = it->driver_init((void *)&syseeprom_driver);
 	    }
     }
+
+    if (DRIVER_OK == rc) {
+        bd = clx_driver_get_platform_bd();
+        syseeprom_driver->bus = bd->syse2p.bus;
+        syseeprom_driver->addr = bd->syse2p.addr;
+	syseeprom_driver->size = bd->syse2p.size;
+        syseeprom_driver->mux_addr = bd->syse2p.mux_addr;
+        syseeprom_driver->mux_channel = bd->syse2p.mux_channel;
+    }
+
+    return rc;
 //	__initcall_clx_driverA_syseeprom_init(&syseeprom_driver);
 
 }

@@ -4,9 +4,9 @@
 struct s3ip_sysfs_fpga_drivers_s {
     int (*get_main_board_fpga_number)(void);
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
     ssize_t (*get_main_board_fpga_alias)(unsigned int fpga_index, char *buf, size_t count);
     ssize_t (*get_main_board_fpga_type)(unsigned int fpga_index, char *buf, size_t count);
     ssize_t (*get_main_board_fpga_firmware_version)(unsigned int fpga_index, char *buf, size_t count);

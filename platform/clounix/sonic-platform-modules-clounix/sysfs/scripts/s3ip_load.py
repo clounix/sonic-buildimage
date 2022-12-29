@@ -38,6 +38,8 @@ if __name__ == '__main__':
                 os.system(command)
             elif s3ip_sysfs_path['type'] == "elem" :
                 #create for all of the elem
+                if not os.path.exists(s3ip_sysfs_path['value']):
+                    continue
                 for i in os.listdir(s3ip_sysfs_path['value']):
                     source_item = s3ip_sysfs_path['value'] + '/{}'.format(i)
                     target_item = s3ip_sysfs_path['path'] + '/{}'.format(i)

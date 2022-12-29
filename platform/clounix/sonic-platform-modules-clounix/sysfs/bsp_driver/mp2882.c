@@ -124,6 +124,8 @@ static unsigned int process_iout(struct i2c_client *client, int page, int reg)
     exp = data >> 11;
     data = data & 0x7ff;
 
+    data = data*10;
+
     if (exp == 0x1f)
         data = data / 2;
     else if (exp == 0x1e)

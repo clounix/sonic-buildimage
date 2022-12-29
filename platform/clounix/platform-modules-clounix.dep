@@ -1,5 +1,5 @@
 
-MPATH       := $($(CLOUNIX_CLX8000_48C8D_PLATFORM_MODULE)_SRC_PATH)
+MPATH       := $($(CLOUNIX_COMMON_PLATFORM_MODULE)_SRC_PATH)
 DEP_FILES   := $(SONIC_COMMON_FILES_LIST) platform/clounix/platform-modules-clounix.mk platform/clounix/platform-modules-clounix.dep 
 DEP_FILES   += $(SONIC_COMMON_BASE_FILES_LIST)
 DEP_FILES   += $(shell git ls-files $(MPATH))

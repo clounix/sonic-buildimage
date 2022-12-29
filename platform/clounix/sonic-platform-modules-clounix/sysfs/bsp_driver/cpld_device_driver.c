@@ -14,21 +14,25 @@
 #include "cpld_sysfs.h"
 #include "cpld_interface.h"
 
-static int g_loglevel = 0;
-
 /******************************************CPLD***********************************************/
 
 static ssize_t clx_get_main_board_cpld_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_CPLD]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_CPLD], buf, count);
 }
 
-static ssize_t clx_set_main_board_cpld_loglevel(char *buf, size_t count)
+static ssize_t clx_set_main_board_cpld_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_CPLD] = loglevel;
@@ -37,10 +41,16 @@ static ssize_t clx_set_main_board_cpld_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_main_board_cpld_debug(char *buf, size_t count)
 {
+    return sprintf(buf, "check cpld version: \n"
+                        "cat /sys/switch/cpld/cpld1/hw_version\n");
+}
+
+static ssize_t clx_set_main_board_cpld_debug(const char *buf, size_t count)
+{
     return -ENOSYS;
 }
 
-static ssize_t clx_set_main_board_cpld_debug(char *buf, size_t count)
+static ssize_t clx_get_main_board_cpld_reboot_cause(char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -220,6 +230,7 @@ static struct s3ip_sysfs_cpld_drivers_s drivers = {
     .set_loglevel = clx_set_main_board_cpld_loglevel,
     .get_debug = clx_get_main_board_cpld_debug,
     .set_debug = clx_set_main_board_cpld_debug,
+    .get_reboot_cause = clx_get_main_board_cpld_reboot_cause,
     .get_main_board_cpld_alias = clx_get_main_board_cpld_alias,
     .get_main_board_cpld_type = clx_get_main_board_cpld_type,
     .get_main_board_cpld_firmware_version = clx_get_main_board_cpld_firmware_version,
@@ -232,16 +243,20 @@ static int __init cpld_device_driver_init(void)
 {
     int ret;
 
-    CPLD_INFO("cpld_init...\n");
-    cpld_if_create_driver();
-
-    ret = s3ip_sysfs_cpld_drivers_register(&drivers);
-    if (ret < 0) {
-        CPLD_ERR("cpld drivers register err, ret %d.\n", ret);
+    LOG_INFO(CLX_DRIVER_TYPES_CPLD, "cpld_init...\n");
+    ret = cpld_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_CPLD, "cpld if create err, ret %d.\n", ret);
         return ret;
     }
 
-    CPLD_INFO("cpld_init success.\n");
+    ret = s3ip_sysfs_cpld_drivers_register(&drivers);
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_CPLD, "cpld drivers register err, ret %d.\n", ret);
+        return ret;
+    }
+
+    LOG_INFO(CLX_DRIVER_TYPES_CPLD, "cpld_init success.\n");
     return 0;
 }
 
@@ -249,14 +264,13 @@ static void __exit cpld_device_driver_exit(void)
 {
     s3ip_sysfs_cpld_drivers_unregister();
     cpld_if_delete_driver();
-    CPLD_INFO("cpld_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_CPLD, "cpld_exit success.\n");
     return;
 }
 
 module_init(cpld_device_driver_init);
 module_exit(cpld_device_driver_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("cpld device driver");

@@ -78,7 +78,6 @@ static ssize_t sensor_debug_store(struct switch_obj *obj, struct switch_attribut
     ret = g_temp_sensor_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         TEMP_SENSOR_ERR("set sensor debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -109,7 +108,6 @@ static ssize_t sensor_loglevel_store(struct switch_obj *obj, struct switch_attri
     ret = g_temp_sensor_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         TEMP_SENSOR_ERR("set sensor loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -309,7 +307,8 @@ static struct switch_attribute temp_value_attr = __ATTR(temp_input, S_IRUGO, tem
 static struct switch_attribute temp_alias_attr = __ATTR(temp_alias, S_IRUGO, temp_sensor_alias_show, NULL);
 static struct switch_attribute temp_type_attr = __ATTR(temp_type, S_IRUGO, temp_sensor_type_show, NULL);
 static struct switch_attribute temp_max_attr = __ATTR(temp_max, S_IRUGO | S_IWUSR, temp_sensor_max_show, temp_sensor_max_store);
-static struct switch_attribute temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO | S_IWUSR, temp_sensor_max_hyst_show, temp_sensor_max_hyst_store);
+//static struct switch_attribute temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO | S_IWUSR, temp_sensor_max_hyst_show, temp_sensor_max_hyst_store);
+static struct switch_attribute temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO , temp_sensor_max_hyst_show, NULL);
 static struct switch_attribute temp_min_attr = __ATTR(temp_min,  S_IRUGO | S_IWUSR, temp_sensor_min_show, temp_sensor_min_store);
 
 static struct attribute *temp_sensor_attrs[] = {

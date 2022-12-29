@@ -4,9 +4,11 @@
 struct s3ip_sysfs_fan_drivers_s {
     int (*get_fan_number)(void);
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
+    ssize_t (*get_fan_eeprom_wp)(char *buf, size_t count);
+    int (*set_fan_eeprom_wp)(unsigned int enable);
     int (*get_fan_motor_number)(unsigned int fan_index);
     ssize_t (*get_fan_vendor_name)(unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_model_name)(unsigned int fan_index, char *buf, size_t count);

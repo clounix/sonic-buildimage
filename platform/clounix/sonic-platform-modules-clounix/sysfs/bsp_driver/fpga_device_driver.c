@@ -14,21 +14,25 @@
 #include "fpga_sysfs.h"
 #include "fpga_interface.h"
 
-static int g_loglevel = 0;
-
 /******************************************FPGA***********************************************/
 
 static ssize_t clx_get_main_board_fpga_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_CPLD]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_FPGA], buf, count);
 }
 
-static ssize_t clx_set_main_board_fpga_loglevel(char *buf, size_t count)
+static ssize_t clx_set_main_board_fpga_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_FPGA] = loglevel;
@@ -37,10 +41,11 @@ static ssize_t clx_set_main_board_fpga_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_main_board_fpga_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "check FPGA version: \n"
+                        "cat /sys/switch/fpga/fpga*/hw_version\n");
 }
 
-static ssize_t clx_set_main_board_fpga_debug(char *buf, size_t count)
+static ssize_t clx_set_main_board_fpga_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -238,14 +243,19 @@ static int __init fpga_dev_drv_init(void)
 {
     int ret;
 
-    FPGA_INFO("fpga_init...\n");
-    fpga_if_create_driver();
-    ret = s3ip_sysfs_fpga_drivers_register(&drivers);
-    if (ret < 0) {
-        FPGA_ERR("fpga drivers register err, ret %d.\n", ret);
+    LOG_INFO(CLX_DRIVER_TYPES_FPGA, "fpga_init...\n");
+    ret = fpga_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_FPGA, "fpga if create err, ret %d.\n", ret);
         return ret;
     }
-    FPGA_INFO("fpga_init success.\n");
+
+    ret = s3ip_sysfs_fpga_drivers_register(&drivers);
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_FPGA, "fpga drivers register err, ret %d.\n", ret);
+        return ret;
+    }
+    LOG_INFO(CLX_DRIVER_TYPES_FPGA, "fpga_init success.\n");
     return 0;
 }
 
@@ -253,14 +263,13 @@ static void __exit fpga_dev_drv_exit(void)
 {
     fpga_if_delete_driver();
     s3ip_sysfs_fpga_drivers_unregister();
-    FPGA_INFO("fpga_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_FPGA, "fpga_exit success.\n");
     return;
 }
 
 module_init(fpga_dev_drv_init);
 module_exit(fpga_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
-MODULE_LICENSE("GPL");
+
+MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("fpga device driver");

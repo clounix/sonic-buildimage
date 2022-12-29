@@ -460,6 +460,8 @@ static struct temp_data *init_temp_data(unsigned int cpu, int pkg_flag)
 	return tdata;
 }
 
+int s3ip_cpu_temp_sensor_add(struct device *dev, struct attribute **attrs, int auto_inc);
+void s3ip_cpu_temp_sensor_del(struct device *dev, struct attribute **attrs);
 static int create_core_data(struct platform_device *pdev, unsigned int cpu,
 			    int pkg_flag)
 {
@@ -514,7 +516,10 @@ static int create_core_data(struct platform_device *pdev, unsigned int cpu,
 	if (err)
 		goto exit_free;
 
-	return 0;
+    s3ip_cpu_temp_sensor_add(&pdev->dev, pdata->core_data[attr_no]->attrs, 1);
+	
+    return 0;
+
 exit_free:
 	pdata->core_data[attr_no] = NULL;
 	kfree(tdata);
@@ -539,8 +544,6 @@ static void coretemp_remove_core(struct platform_data *pdata, int indx)
 	pdata->core_data[indx] = NULL;
 }
 
-extern int hwmon_cpu_sensor_add(struct device *dev);
-extern void hwmon_cpu_sensor_del(struct device *dev);
 static int coretemp_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -556,9 +559,7 @@ static int coretemp_probe(struct platform_device *pdev)
 
 	pdata->hwmon_dev = devm_hwmon_device_register_with_groups(dev, DRVNAME,
 								  pdata, NULL);
-
-    hwmon_cpu_sensor_add(dev);
-
+    
 	return PTR_ERR_OR_ZERO(pdata->hwmon_dev);
 }
 
@@ -567,11 +568,12 @@ static int coretemp_remove(struct platform_device *pdev)
 	struct platform_data *pdata = platform_get_drvdata(pdev);
 	int i;
 
-    hwmon_cpu_sensor_del(&pdev->dev);
-
-	for (i = MAX_CORE_DATA - 1; i >= 0; --i)
-		if (pdata->core_data[i])
+	for (i = MAX_CORE_DATA - 1; i >= 0; --i) {
+		if (pdata->core_data[i]) {
+            s3ip_cpu_temp_sensor_del(&pdev->dev, pdata->core_data[i]->attrs);
 			coretemp_remove_core(pdata, i);
+        }
+    }
 
 	return 0;
 }
@@ -687,6 +689,7 @@ static int coretemp_cpu_offline(unsigned int cpu)
 
 	pd = platform_get_drvdata(pdev);
 	tdata = pd->core_data[indx];
+	s3ip_cpu_temp_sensor_del(&pdev->dev, pd->core_data[indx]->attrs);
 
 	cpumask_clear_cpu(cpu, &pd->cpumask);
 
@@ -736,7 +739,7 @@ MODULE_DEVICE_TABLE(x86cpu, coretemp_ids);
 
 static enum cpuhp_state coretemp_hp_online;
 
-static int __init cpu_coretemp_init(void)
+int cpu_coretemp_init(void)
 {
 	int err;
 
@@ -770,16 +773,10 @@ outdrv:
 	kfree(pkg_devices);
 	return err;
 }
-module_init(cpu_coretemp_init)
 
-static void __exit cpu_coretemp_exit(void)
+void cpu_coretemp_exit(void)
 {
 	cpuhp_remove_state(coretemp_hp_online);
 	platform_driver_unregister(&coretemp_driver);
 	kfree(pkg_devices);
 }
-module_exit(cpu_coretemp_exit)
-
-MODULE_AUTHOR("Rudolf Marek <r.marek@assembler.cz>");
-MODULE_DESCRIPTION("Intel Core temperature monitor");
-MODULE_LICENSE("GPL");

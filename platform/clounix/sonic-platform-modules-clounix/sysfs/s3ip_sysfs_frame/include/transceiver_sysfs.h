@@ -4,9 +4,9 @@
 struct s3ip_sysfs_transceiver_drivers_s {
     int (*get_eth_number)(void);
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
     ssize_t (*get_transceiver_power_on_status)(char *buf, size_t count);
     int (*set_transceiver_power_on_status)(int status);
     ssize_t (*get_transceiver_presence_status)(char *buf, size_t count);
@@ -20,6 +20,7 @@ struct s3ip_sysfs_transceiver_drivers_s {
     ssize_t (*get_eth_reset_status)(unsigned int eth_index, char *buf, size_t count);
     int (*set_eth_reset_status)(unsigned int eth_index, int status);
     ssize_t (*get_eth_low_power_mode_status)(unsigned int eth_index, char *buf, size_t count);
+    int (*set_eth_low_power_mode_status)(unsigned int eth_index, int status);
     ssize_t (*get_eth_interrupt_status)(unsigned int eth_index, char *buf, size_t count);
     int (*get_eth_eeprom_size)(unsigned int eth_index);
     ssize_t (*read_eth_eeprom_data)(unsigned int eth_index, char *buf, loff_t offset, size_t count);

@@ -53,25 +53,8 @@ struct psu_fn_if {
 #define ERR_PSU_INIT_FAIL ((ERR_MODULLE_PSU << 16) | 0x1)
 #define ERR_PSU_REG_FAIL ((ERR_MODULLE_PSU << 16) | 0x2)
 
-extern int g_dev_loglevel[];
-#define PSU_LOG_INFO(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_PSU], INFO, fmt, ##args); \
-} while (0)
-
-#define PSU_LOG_ERR(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_PSU], ERR, fmt, ##args); \
-} while (0)
-
-#define PSU_LOG_DBG(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_PSU], DBG, fmt, ##args); \
-} while (0)
-
-#define PSU_INFO(fmt, args...) PSU_LOG_INFO("psu@INFO ", fmt, ##args)
-#define PSU_ERR(fmt, args...)  PSU_LOG_ERR("psu@ERR ", fmt, ##args)
-#define PSU_DBG(fmt, args...)  PSU_LOG_DBG("psu@DBG ", fmt, ##args)
-
 struct psu_fn_if *get_psu(void);
-void psu_if_create_driver(void);
+int psu_if_create_driver(void);
 void psu_if_delete_driver(void);
 #endif //_PSU_INTERFACE_H_
 

@@ -14,20 +14,24 @@
 #include "fan_sysfs.h"
 #include "fan_interface.h"
 
-static int g_loglevel = 0;
-
 /********************************************fan**********************************************/
 static ssize_t clx_get_fan_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_FAN]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_FAN], buf, count);
 }
 
-static ssize_t clx_set_fan_loglevel(char *buf, size_t count)
+static ssize_t clx_set_fan_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_FAN] = loglevel;
@@ -36,12 +40,33 @@ static ssize_t clx_set_fan_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_fan_debug(char *buf, size_t count)
 {
+    return sprintf(buf, "fan speed adjust: \n"
+                        "echo <ratio> > /sys/switch/fan/fan1/motor0/ratio\n"
+                        "check fan speed: \n"
+                        "cat /sys/switch/fan/fan1/motor0/speed\n");
+}
+
+static ssize_t clx_set_fan_debug(const char *buf, size_t count)
+{
     return -ENOSYS;
 }
 
-static ssize_t clx_set_fan_debug(char *buf, size_t count)
+static ssize_t clx_get_fan_eeprom_wp(char *buf, size_t count)
 {
-    return -ENOSYS;
+    struct fan_fn_if *fan_dev = get_fan();
+
+    FAN_DEV_VALID(fan_dev);
+    FAN_DEV_VALID(fan_dev->get_fan_eeprom_wp);
+    return fan_dev->get_fan_eeprom_wp(fan_dev, buf, count);
+}
+
+static int clx_set_fan_eeprom_wp(unsigned int enable)
+{
+    struct fan_fn_if *fan_dev = get_fan();
+
+    FAN_DEV_VALID(fan_dev);
+    FAN_DEV_VALID(fan_dev->set_fan_eeprom_wp);
+    return fan_dev->set_fan_eeprom_wp(fan_dev, enable);
 }
 
 static int clx_get_fan_number(void)
@@ -438,7 +463,9 @@ static struct s3ip_sysfs_fan_drivers_s drivers = {
     .get_loglevel = clx_get_fan_loglevel,
     .set_loglevel = clx_set_fan_loglevel,
     .get_debug = clx_get_fan_debug,
-    .set_debug = clx_set_fan_debug,    
+    .set_debug = clx_set_fan_debug,
+    .get_fan_eeprom_wp = clx_get_fan_eeprom_wp,
+    .set_fan_eeprom_wp = clx_set_fan_eeprom_wp,    
     .get_fan_number = clx_get_fan_number,
     .get_fan_motor_number = clx_get_fan_motor_number,
     .get_fan_vendor_name = clx_get_fan_vendor_name,
@@ -463,16 +490,20 @@ static int __init fan_dev_drv_init(void)
 {
     int ret;
 
-    FAN_INFO("fan_init...\n");
-    fan_if_create_driver();
-
-    ret = s3ip_sysfs_fan_drivers_register(&drivers);
-    if (ret < 0) {
-        FAN_ERR("fan drivers register err, ret %d.\n", ret);
+    LOG_INFO(CLX_DRIVER_TYPES_FAN, "fan_init...\n");
+    ret = fan_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_FAN, "fan if create err, ret %d.\n", ret);
         return ret;
     }
 
-    FAN_INFO("fan_init success.\n");
+    ret = s3ip_sysfs_fan_drivers_register(&drivers);
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_FAN, "fan drivers register err, ret %d.\n", ret);
+        return ret;
+    }
+
+    LOG_INFO(CLX_DRIVER_TYPES_FAN, "fan_init success.\n");
     return 0;
 }
 
@@ -480,14 +511,13 @@ static void __exit fan_dev_drv_exit(void)
 {
     fan_if_delete_driver();
     s3ip_sysfs_fan_drivers_unregister();
-    FAN_INFO("fan_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_FAN, "fan_exit success.\n");
     return;
 }
 
 module_init(fan_dev_drv_init);
 module_exit(fan_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("fan device driver");

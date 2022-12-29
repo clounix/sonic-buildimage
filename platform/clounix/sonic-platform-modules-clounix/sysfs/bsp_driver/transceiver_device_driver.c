@@ -14,21 +14,25 @@
 #include "transceiver_sysfs.h"
 #include "xcvr_interface.h"
 
-static int g_loglevel = 0;
-
 /****************************************transceiver******************************************/
 
 static ssize_t clx_get_transceiver_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_CPLD]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_XCVR], buf, count);
 }
 
-static ssize_t clx_set_transceiver_loglevel(char *buf, size_t count)
+static ssize_t clx_set_transceiver_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_XCVR] = loglevel;
@@ -37,10 +41,12 @@ static ssize_t clx_set_transceiver_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_transceiver_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "read transciever info: \n"
+                        "cat /sys/switch/transceiver/present\n"
+                        "hexdump -C /sys/switch/transceiver/eth1/eeprom\n");
 }
 
-static ssize_t clx_set_transceiver_debug(char *buf, size_t count)
+static ssize_t clx_set_transceiver_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -406,6 +412,31 @@ static ssize_t clx_get_eth_low_power_mode_status(unsigned int eth_index, char *b
     return ret;
 }
 
+
+/*
+ * clx_set_eth_reset_status - Used to set port reset status,
+ * @eth_index: start with 1
+ * @status: lpmode status, 0: high power mode, 1: low power mode
+ *
+ * This function returns 0 on success,
+ * otherwise it returns a negative value on failed.
+ */
+static int clx_set_eth_low_power_mode_status(unsigned int eth_index, int status)
+{
+    int ret;
+    struct xcvr_fn_if *xcvr_dev = get_xcvr();
+
+    XCVR_DEV_VALID(xcvr_dev);
+    XCVR_DEV_VALID(xcvr_dev->set_eth_low_power_mode_status);
+    XCVR_ETH_INDEX_MAPPING(eth_index);
+    ret = xcvr_dev->set_eth_low_power_mode_status(xcvr_dev, eth_index, status);
+    if (ret < 0)
+    {
+        return -ENOSYS;
+    }
+
+    return ret;
+}
 /*
  * clx_get_eth_interrupt_status - Used to get port interruption status,
  * filled the value to buf, 0: no interruption, 1: interruption
@@ -537,6 +568,7 @@ static struct s3ip_sysfs_transceiver_drivers_s drivers = {
     .get_eth_reset_status = clx_get_eth_reset_status,
     .set_eth_reset_status = clx_set_eth_reset_status,
     .get_eth_low_power_mode_status = clx_get_eth_low_power_mode_status,
+    .set_eth_low_power_mode_status = clx_set_eth_low_power_mode_status,
     .get_eth_interrupt_status = clx_get_eth_interrupt_status,
     .get_eth_eeprom_size = clx_get_eth_eeprom_size,
     .read_eth_eeprom_data = clx_read_eth_eeprom_data,
@@ -547,15 +579,17 @@ static int __init sff_dev_drv_init(void)
 {
     int ret;
 
-    XCVR_INFO("sff_init...\n");
-    xcvr_if_create_driver();
+    LOG_INFO(CLX_DRIVER_TYPES_XCVR, "sff_init...\n");
+    ret = xcvr_if_create_driver();
+    if (ret != 0)
+        return ret;
 
     ret = s3ip_sysfs_sff_drivers_register(&drivers);
     if (ret < 0) {
-        XCVR_ERR("transceiver drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_XCVR, "transceiver drivers register err, ret %d.\n", ret);
         return ret;
     }
-    XCVR_INFO("sff_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_XCVR, "sff_init success.\n");
     return 0;
 }
 
@@ -563,14 +597,13 @@ static void __exit sff_dev_drv_exit(void)
 {
     xcvr_if_delete_driver();
     s3ip_sysfs_sff_drivers_unregister();
-    XCVR_INFO("sff_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_XCVR, "sff_exit success.\n");
     return;
 }
 
 module_init(sff_dev_drv_init);
 module_exit(sff_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("transceiver device driver");

@@ -1,3 +1,6 @@
+#ifndef _HWMON_DEV_COMMON_H_
+#define _HWMON_DEV_COMMON_H_
+
 #include <linux/hwmon.h>
 #include <linux/hwmon-sysfs.h>
 
@@ -21,24 +24,11 @@ struct hwmon_device {
      const struct attribute_group **groups;
 };
 
-struct temp_data {
-    int temp;
-    int ttarget;
-    int tjmax;
-    unsigned long last_updated;
-    unsigned int cpu;
-    u32 cpu_core_id;
-    u32 status_reg;
-    int attr_size;
-    bool is_pkg_data;
-    bool valid;
-    struct sensor_device_attribute sd_attrs[TOTAL_ATTRS];
-    char attr_name[TOTAL_ATTRS][CORETEMP_NAME_LENGTH];
-    struct attribute *attrs[TOTAL_ATTRS + 1];
-    struct attribute_group attr_group;
-    struct mutex update_lock;
+struct s3ip_cpu_temp_data {
+    struct device *dev;
+    struct attribute **attrs;
+    int auto_inc;
 };
-
 
 struct platform_data {
     struct device       *hwmon_dev;
@@ -48,40 +38,22 @@ struct platform_data {
     struct device_attribute name_attr;
 };
 
-struct sensor_descript {
-    unsigned char *adap_name;
-    unsigned char addr;
-    unsigned char *alias;
-};
-
-inline int get_cpu_hwmon_attr_by_name(struct device *dev, unsigned char *node_name, char *buf)
+inline int get_cpu_hwmon_attr_by_name(struct s3ip_cpu_temp_data *data, unsigned char *node_name, char *buf)
 {
-    struct platform_data *pdata;
-    struct device_attribute *dev_attr;
-    struct temp_data *core_data = NULL;
-    int i, j;
+    struct device_attribute *dev_attr = NULL;
+    int i;
 
-    if (dev == NULL)
-        return -1;
-
-    pdata = dev_get_drvdata(dev);
-   
-    for (i=0; i<MAX_CORE_DATA; i++) {
-        core_data = pdata->core_data[i];
-        if (core_data == NULL)
-            continue;
-
-        for (j=0; j<core_data->attr_size; j++) {
-            if (core_data->attrs[j] != NULL) {
-                if (strcmp(core_data->attrs[j]->name, node_name) == 0) {
-                    dev_attr = to_dev_attr(core_data->attrs[j]);
-                    return dev_attr->show(dev, dev_attr, buf);
-                }
-            }
+    i = 0;
+    while (data->attrs[i] != NULL) {
+        if (strcmp(data->attrs[i]->name, node_name) == 0) {
+            dev_attr = to_dev_attr(data->attrs[i]);
+            return dev_attr->show(data->dev, dev_attr, buf);
         }
+
+        i++;
     }
 
-    return -1;
+    return -ENODATA;
 }
 
 inline int get_sensor_index(struct i2c_client *client, struct sensor_descript *sensor_map_index)
@@ -144,3 +116,4 @@ inline int set_hwmon_attr_by_name(struct device *dev, unsigned char *node_name, 
 
     return -1;
 }
+#endif

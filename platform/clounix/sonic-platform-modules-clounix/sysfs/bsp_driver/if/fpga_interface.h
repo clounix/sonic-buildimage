@@ -24,25 +24,8 @@ struct fpga_fn_if {
 #define ERR_FPGA_INIT_FAIL ((ERR_MODULLE_fpga << 16) | 0x1)
 #define ERR_FPGA_REG_FAIL ((ERR_MODULLE_fpga << 16) | 0x2)
 
-extern int g_dev_loglevel[];
-#define FPGA_LOG_INFO(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_FPGA], INFO, fmt, ##args); \
-} while (0)
-
-#define FPGA_LOG_ERR(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_FPGA], ERR, fmt, ##args); \
-} while (0)
-
-#define FPGA_LOG_DBG(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_FPGA], DBG, fmt, ##args); \
-} while (0)
-
-#define FPGA_INFO(fmt, args...) FPGA_LOG_INFO("fpga@INFO ", fmt, ##args)
-#define FPGA_ERR(fmt, args...)  FPGA_LOG_ERR("fpga@ERR ", fmt, ##args)
-#define FPGA_DBG(fmt, args...)  FPGA_LOG_DBG("fpga@DBG ", fmt, ##args)
-
 struct fpga_fn_if *get_fpga(void);
-void fpga_if_create_driver(void);
+int fpga_if_create_driver(void);
 void fpga_if_delete_driver(void);
 #endif //_FPGA_INTERFACE_H_
 

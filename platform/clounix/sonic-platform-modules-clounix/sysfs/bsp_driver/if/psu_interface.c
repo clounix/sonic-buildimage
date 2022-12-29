@@ -2,14 +2,13 @@
 #include "clx_driver.h"
 //#include <linux/compiler.h>
 
-//extern void clx_driver_clx8000_psu_init(struct psu_fn_if **psu_driver);
-extern void clx_driver_clx8000_psu_init(void **psu_driver);
+extern int drv_psu_clx_init(void **psu_driver);
 
 
 struct psu_fn_if *psu_driver;
 
 static struct driver_map psu_drv_map[] = {
-	{"psu_clx8000", clx_driver_clx8000_psu_init},
+	{"drv_psu_clx", drv_psu_clx_init, NULL},
 };	
 
 
@@ -18,13 +17,13 @@ struct psu_fn_if *get_psu(void)
 	return psu_driver;
 }
 
-void psu_if_create_driver(void) 
+int psu_if_create_driver(void)
 {
 	char *driver_type = NULL;
 	struct driver_map *it;
 	int i;
 
-	printk(KERN_INFO "clx_driver_clx8000_psu_init\n");
+	LOG_INFO(CLX_DRIVER_TYPES_PSU, "psu_if_create_driver\n");
     //get driver 
     driver_type = clx_driver_identify(CLX_DRIVER_TYPES_PSU);
     for (i = 0; i < sizeof(psu_drv_map)/sizeof(psu_drv_map[0]); i++)
@@ -32,9 +31,11 @@ void psu_if_create_driver(void)
 	    it = &psu_drv_map[i];
 	    if(strcmp((const char*)driver_type, (const char*)it->name) == 0)
 	    {
-		    it->driver_init((void *)&psu_driver);
+		    return it->driver_init((void *)&psu_driver);
 	    }
     }
+
+    return -ENODATA;
 }
 
 void psu_if_delete_driver(void) 

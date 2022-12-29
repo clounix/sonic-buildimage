@@ -20,7 +20,7 @@ KVERSION   ?= $(shell uname -r)
 KERNEL_SRC := /lib/modules/$(KVERSION)
 export KERNEL_SRC
 MOD_SRC_DIR:= $(shell pwd)
-MODULE_DIRS:= clx8000-48c8d
+MODULE_DIRS:= common
 MODULE_DIR := modules
 UTILS_DIR := utils
 SERVICE_DIR := service
@@ -28,7 +28,10 @@ SCRIPTS_DIR := scripts
 BIOS_DIR := bios_bin
 CONF_DIR := conf
 PROCESS_DIR := clxProcess
+MODPROBE_DIR := modprobe.d
 IXGBE_VERSION := 5.9.4
+PLATFORM_STRING_LIST:= x86_64-clounix_clx8000_48c8d-r0 clounix_clx12800_32d-r0
+XILINX_PLATFORM_TOOLS_LIST:= x86_64-clounix_clx8000_48c8d-r0
 
 
 MODULE_CFLAGS:=KBUILD_EXTRA_SYMBOLS=$(MOD_SRC_DIR)/sysfs/bsp_driver/Module.symvers
@@ -41,40 +44,16 @@ clean:
 	dh_clean
 
 build:
-	# For clx8000 driver, maurice
+	# For common driver, maurice
 	cd $(MOD_SRC_DIR)/sysfs; \
 	make clean; \
 	make all DESTDIR=$(MOD_SRC_DIR)/debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}; \
 	make install DESTDIR=$(MOD_SRC_DIR)/debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}; \
-	(for mod in $(MODULE_DIRS); do \
-		if [ $$mod = "clx8000-48c8d" ]; then \
-			cd $(MOD_SRC_DIR)/$${mod}; \
-			python2 setup.py build; \
-			python2 setup.py bdist_wheel -d $(MOD_SRC_DIR)/$${mod}/utils; \
-			python3 setup.py build; \
-			python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/$${mod}/utils; \
-			cd $(MOD_SRC_DIR);\
-		fi; \
-		if [ $$mod = "clx12800-32d" ]; then \
-			make clean -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/$${mod}/modules; \
-			make modules -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/$${mod}/modules EXTRA_CFLAGS+=${MODULE_CFLAGS}; \
-			cd $(MOD_SRC_DIR)/$${mod}; \
-			python2 setup.py build; \
-			python2 setup.py bdist_wheel -d $(MOD_SRC_DIR)/$${mod}/utils; \
-			python3 setup.py build; \
-			python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/$${mod}/utils; \
-		fi; \
-	done)
-
-	# Build afulnx_64 for SONiC
-####(for mod in $(MODULE_DIRS); do \
-####	cd $(MOD_SRC_DIR)/$${mod}/$(BIOS_DIR); \
-####	./afulnx_64 /GENDRV KERNEL=$(KERNEL_SRC)/build .;\
-####	./afulnx_64 /MAKEDRV KERNEL=$(KERNEL_SRC)/build .;\
-####	make KERNEL=$(KERNEL_SRC)/build;\
-####	cd $(MOD_SRC_DIR); \
-####done)
-	
+	cd $(MOD_SRC_DIR)/${MODULE_DIRS}; \
+	python2 setup.py build; \
+	python2 setup.py bdist_wheel -d $(MOD_SRC_DIR)/${MODULE_DIRS}/utils; \
+	python3 setup.py build; \
+	python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/${MODULE_DIRS}/utils; \
 
 binary: binary-arch binary-indep
 	# Nothing to do
@@ -93,35 +72,32 @@ binary-indep:
 	dh_installdirs
 
 	# Custom package commands
-	(for mod in $(MODULE_DIRS); do \
-		dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /$(KERNEL_SRC)/$(INSTALL_MOD_DIR); \
-		dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/local/bin; \
-		dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/local/bin/${PROCESS_DIR}; \
-		dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/bin; \
-		dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /lib/systemd/system; \
-		cp $(MOD_SRC_DIR)/$${mod}/$(UTILS_DIR)/* debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
-		cp $(MOD_SRC_DIR)/$${mod}/$(SERVICE_DIR)/*.service debian/$(PACKAGE_PRE_NAME)-$${mod}/lib/systemd/system/; \
-		cp $(MOD_SRC_DIR)/$${mod}/$(SCRIPTS_DIR)/* debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/bin/; \
-		cp $(MOD_SRC_DIR)/$${mod}/${PROCESS_DIR}/* debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/${PROCESS_DIR}; \
-		if [ $$mod = "clx8000-48c8d" ]; then \
-			dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/x86_64-clounix_clx8000_48c8d-r0; \
-			cp $(MOD_SRC_DIR)/$${mod}/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/x86_64-clounix_clx8000_48c8d-r0; \
-			if [ $$CONFIGURED_ARCH = "amd64" ]; then \
-			# Add bios upgrade tool to device(usr/local/bin), maurice 20201125 \
-			cp -r $(MOD_SRC_DIR)/$${mod}/bios_bin debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
-			fi; \
-			cp $(MOD_SRC_DIR)/$${mod}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
-		fi; \
-		if [ $$mod = "clx12800-32d" ]; then \
-			dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/clounix_clx12800_32d-r0; \
-			cp $(MOD_SRC_DIR)/$${mod}/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/clounix_clx12800_32d-r0; \
-			if [ $$CONFIGURED_ARCH = "amd64" ]; then \
-			# Add bios upgrade tool to device(usr/local/bin), maurice 20201125 \
-			cp -r $(MOD_SRC_DIR)/$${mod}/bios_bin debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
-			fi; \
-			cp $(MOD_SRC_DIR)/$${mod}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
-		fi; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /$(KERNEL_SRC)/$(INSTALL_MOD_DIR); \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /usr/local/bin; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /usr/local/bin/${PROCESS_DIR}; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /usr/bin; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /lib/systemd/system; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /etc/${MODPROBE_DIR}; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(UTILS_DIR)/* debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(SERVICE_DIR)/*.service debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/lib/systemd/system/; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(SCRIPTS_DIR)/* debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/bin/; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/${PROCESS_DIR}/* debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/${PROCESS_DIR}; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/modprobe/* debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/etc/${MODPROBE_DIR}; \
+	(for platform_string in $(PLATFORM_STRING_LIST); do \
+		dh_installdirs -p$(PACKAGE_PRE_NAME)-${MODULE_DIRS} /usr/share/sonic/device/$${platform_string}; \
+		cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/share/sonic/device/$${platform_string}; \
 	done)
+	if [ $$CONFIGURED_ARCH = "amd64" ]; then \
+		cd $(MOD_SRC_DIR)/$(MODULE_DIRS)/$(BIOS_DIR); \
+		./afulnx_64 /GENDRV KERNEL=$(KERNEL_SRC)/build .;\
+		./afulnx_64 /MAKEDRV KERNEL=$(KERNEL_SRC)/build .;\
+		make KERNEL=$(KERNEL_SRC)/build;\
+		cd $(MOD_SRC_DIR); \
+		# Add bios upgrade tool to device(usr/local/bin), maurice 20201125 \
+		cp -r $(MOD_SRC_DIR)/${MODULE_DIRS}/bios_bin debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/; \
+	fi; \
+	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/;
+
 	# Resuming debhelper scripts
 	dh_testroot
 	dh_install

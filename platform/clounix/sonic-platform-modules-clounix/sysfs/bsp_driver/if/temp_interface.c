@@ -2,14 +2,13 @@
 #include "clx_driver.h"
 //#include <linux/compiler.h>
 
-//extern void clx_driver_clx8000_temp_init(struct temp_fn_if **temp_driver);
-extern void clx_driver_clx8000_temp_init(void **temp_driver);
-
+extern int drv_sensor_temp_init(void **temp_driver);
+extern int drv_sensor_temp_clx12800_init(void **temp_driver);
 
 struct temp_fn_if *temp_driver;
 
 static struct driver_map temp_drv_map[] = {
-	{"temp_clx8000", clx_driver_clx8000_temp_init},
+	{"drv_temp_sensor", drv_sensor_temp_init, NULL},
 };	
 
 
@@ -18,13 +17,14 @@ struct temp_fn_if *get_temp(void)
 	return temp_driver;
 }
 
-void temp_if_create_driver(void) 
+int temp_if_create_driver(void)
 {
 	char *driver_type = NULL;
 	struct driver_map *it;
 	int i;
+	struct board_info *bd;
+	int rc = DRIVER_ERR;
 
-	printk(KERN_INFO "clx_driver_clx8000_temp_init\n");
     //get driver 
     driver_type = clx_driver_identify(CLX_DRIVER_TYPES_TEMP);
     for (i = 0; i < sizeof(temp_drv_map)/sizeof(temp_drv_map[0]); i++)
@@ -32,12 +32,18 @@ void temp_if_create_driver(void)
 	    it = &temp_drv_map[i];
 	    if(strcmp((const char*)driver_type, (const char*)it->name) == 0)
 	    {
-		    it->driver_init((void *)&temp_driver);
+		    rc = it->driver_init((void *)&temp_driver);
 	    }
     }
+
+	if (DRIVER_OK == rc) {
+        bd = clx_driver_get_platform_bd();
+		memcpy(temp_driver->sensor_map_index, bd->temp.sensor_map_index, sizeof(temp_driver->sensor_map_index));
+    }
+
+    return rc;
 }
 
 void temp_if_delete_driver(void) 
 {
 }
-

@@ -8,17 +8,22 @@
             {
                 "name": "CPLD-1",
                 "description":"MB CPLD#1",
-                "firmware_version_path":"/sys//switch/cpld/cpld1/hw_version"
+                "firmware_version_path":"/sys/switch/cpld/cpld1/hw_version"
             },
             {
                 "name": "CPLD-2",
                 "description":"MB CPLD#2",
-                "firmware_version_path":"/sys//switch/cpld/cpld2/hw_version"
+                "firmware_version_path":"/sys/switch/cpld/cpld2/hw_version"
+            },
+            {
+                "name": "CPLD-FAN",
+                "description":"CPLD FAN",
+                "firmware_version_path":"/sys/switch/fan/fan1/hardware_version"
             },
             {
                 "name": "FPGA",
                 "description":"FPGA",
-                "firmware_version_path":"/sys//switch/fpga/fpga1/hw_version"
+                "firmware_version_path":"/sys/switch/fpga/fpga1/hw_version"
             },
             {
                 "name": "BIOS",
@@ -97,6 +102,26 @@
         ],
         "thermals": [
             {
+                "name": "TMP75C / temp 0x48",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "TMP75C / temp 0x49",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "TMP75C / temp 0x4a",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "LM75BD / FAN 0x48",
+                "position": "LM75BD"
+            },
+            {
+                "name": "LM75BD / FAN 0x49",
+                "position": "LM75BD"
+            },
+            {
                 "name": "CPU / Package",
                 "position": "CPU"
             },
@@ -131,26 +156,6 @@
             {
                 "name": "CPU / Core 7",
                 "position": "CPU"
-            },
-            {
-                "name": "TMP75C / temp 0x48",
-                "position": "fpga i2c temp"
-            },
-            {
-                "name": "TMP75C / temp 0x49",
-                "position": "fpga i2c temp"
-            },
-            {
-                "name": "TMP75C / temp 0x4a",
-                "position": "fpga i2c temp"
-            },
-            {
-                "name": "LM75BD / FAN 0x48",
-                "position": "LM75BD"
-            },
-            {
-                "name": "LM75BD / FAN 0x49",
-                "position": "LM75BD"
             }
         ],
         "sfps": [
@@ -331,7 +336,7 @@
                 "slave_addr":41,
                 "pages":0,
                 "step":1953125,
-                "default":912,
+                "default":921,
                 "step_multiple":1000000,
                 "vout_mask":"0xffff",
                 "vout_cmd_mask":"0xffff",

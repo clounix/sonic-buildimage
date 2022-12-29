@@ -11,13 +11,9 @@
 #include <linux/slab.h>
 
 #include "device_driver_common.h"
+#include "clx_driver.h"
+
 #include "slot_sysfs.h"
-
-#define SLOT_INFO(fmt, args...) LOG_INFO("slot: ", fmt, ##args)
-#define SLOT_ERR(fmt, args...)  LOG_ERR("slot: ", fmt, ##args)
-#define SLOT_DBG(fmt, args...)  LOG_DBG("slot: ", fmt, ##args)
-
-static int g_loglevel = 0;
 
 /******************************************slot***********************************************/
 static int clx_get_slot_number(void)
@@ -891,28 +887,27 @@ static int __init slot_dev_drv_init(void)
 {
     int ret;
 
-    SLOT_INFO("slot_init...\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SLOT, "slot_init...\n");
 
     ret = s3ip_sysfs_slot_drivers_register(&drivers);
     if (ret < 0) {
-        SLOT_ERR("slot drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_SLOT, "slot drivers register err, ret %d.\n", ret);
         return ret;
     }
-    SLOT_INFO("slot_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SLOT, "slot_init success.\n");
     return 0;
 }
 
 static void __exit slot_dev_drv_exit(void)
 {
     s3ip_sysfs_slot_drivers_unregister();
-    SLOT_INFO("slot_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SLOT, "slot_exit success.\n");
     return;
 }
 
 module_init(slot_dev_drv_init);
 module_exit(slot_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("slot device driver");

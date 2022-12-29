@@ -25,25 +25,8 @@ struct watchdog_fn_if {
 #define ERR_WATCHDOG_INIT_FAIL ((ERR_MODULLE_WATCHDOG << 16) | 0x1)
 #define ERR_WATCHDOG_REG_FAIL ((ERR_MODULLE_WATCHDOG << 16) | 0x2)
 
-extern int g_dev_loglevel[];
-#define WATCHDOG_LOG_INFO(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG], INFO, fmt, ##args); \
-} while (0)
-
-#define WATCHDOG_LOG_ERR(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG], ERR, fmt, ##args); \
-} while (0)
-
-#define WATCHDOG_LOG_DBG(_prefix, fmt, args...) do { \
-    dev_log(_prefix, g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG], DBG, fmt, ##args); \
-} while (0)
-
-#define WDT_INFO(fmt, args...) WATCHDOG_LOG_INFO("watchdog@INFO ", fmt, ##args)
-#define WDT_ERR(fmt, args...)  WATCHDOG_LOG_ERR("watchdog@ERR ", fmt, ##args)
-#define WDT_DBG(fmt, args...)  WATCHDOG_LOG_DBG("watchdog@DBG ", fmt, ##args)
-
 struct watchdog_fn_if *get_watchdog(void);
-void watchdog_if_create_driver(void);
+int watchdog_if_create_driver(void);
 void watchdog_if_delete_driver(void);
 #endif //_WATCHDOG_INTERFACE_H_
 

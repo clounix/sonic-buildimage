@@ -14,20 +14,24 @@
 #include "sysled_sysfs.h"
 #include "sysled_interface.h"
 
-static int g_loglevel = 0;
-
 /*****************************************sysled**********************************************/
 static ssize_t clx_get_sysled_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_SYSLED]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_SYSLED], buf, count);
 }
 
-static ssize_t clx_set_sysled_loglevel(char *buf, size_t count)
+static ssize_t clx_set_sysled_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_SYSLED] = loglevel;
@@ -36,10 +40,11 @@ static ssize_t clx_set_sysled_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_sysled_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "set led status: \n"
+                        "echo <status> > /sys/switch/sysled/sys_led_status\n");
 }
 
-static ssize_t clx_set_sysled_debug(char *buf, size_t count)
+static ssize_t clx_set_sysled_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -204,16 +209,20 @@ static int __init sysled_init(void)
 {
     int ret;
 
-    SYSLED_INFO("sysled_init...\n");
-    sysled_if_create_driver();
-
-    ret = s3ip_sysfs_sysled_drivers_register(&drivers);
-    if (ret < 0) {
-        SYSLED_ERR("sysled drivers register err, ret %d.\n", ret);
+    LOG_INFO(CLX_DRIVER_TYPES_SYSLED, "sysled_init...\n");
+    ret = sysled_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_SYSLED, "sysled if create err, ret %d.\n", ret);
         return ret;
     }
 
-    SYSLED_INFO("sysled create success.\n");
+    ret = s3ip_sysfs_sysled_drivers_register(&drivers);
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_SYSLED, "sysled drivers register err, ret %d.\n", ret);
+        return ret;
+    }
+
+    LOG_INFO(CLX_DRIVER_TYPES_SYSLED, "sysled create success.\n");
     return 0;
 }
 
@@ -221,14 +230,13 @@ static void __exit sysled_exit(void)
 {
     sysled_if_delete_driver();
     s3ip_sysfs_sysled_drivers_unregister();
-    SYSLED_INFO("sysled_exit ok.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_SYSLED, "sysled_exit ok.\n");
     return;
 }
 
 module_init(sysled_init);
 module_exit(sysled_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("sysled device driver");

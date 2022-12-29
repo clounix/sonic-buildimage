@@ -3,9 +3,9 @@
 
 struct s3ip_sysfs_watchdog_drivers_s {
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
     ssize_t (*get_watchdog_identify)(char *buf, size_t count);
     ssize_t (*get_watchdog_state)(char *buf, size_t count);
     ssize_t (*get_watchdog_timeleft)(char *buf, size_t count);

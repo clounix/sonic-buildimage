@@ -2,14 +2,13 @@
 #include "clx_driver.h"
 //#include <linux/compiler.h>
 
-//extern void clx_driver_clx8000_voltage_init(struct voltage_fn_if **voltage_driver);
-extern void clx_driver_clx8000_voltage_init(void **voltage_driver);
+extern int drv_sensor_voltage_init(void **voltage_driver);
 
 
 struct voltage_fn_if *voltage_driver;
 
 static struct driver_map voltage_drv_map[] = {
-	{"voltage_clx8000", clx_driver_clx8000_voltage_init},
+	{"drv_vol_sensor", drv_sensor_voltage_init, NULL},
 };	
 
 
@@ -18,13 +17,13 @@ struct voltage_fn_if *get_voltage(void)
 	return voltage_driver;
 }
 
-void voltage_if_create_driver(void) 
+int voltage_if_create_driver(void) 
 {
 	char *driver_type = NULL;
 	struct driver_map *it;
 	int i;
 
-	printk(KERN_INFO "clx_driver_clx8000_voltage_init\n");
+	printk(KERN_INFO "voltage_if_create_driver\n");
     //get driver 
     driver_type = clx_driver_identify(CLX_DRIVER_TYPES_VOL);
     for (i = 0; i < sizeof(voltage_drv_map)/sizeof(voltage_drv_map[0]); i++)
@@ -32,9 +31,11 @@ void voltage_if_create_driver(void)
 	    it = &voltage_drv_map[i];
 	    if(strcmp((const char*)driver_type, (const char*)it->name) == 0)
 	    {
-		    it->driver_init((void *)&voltage_driver);
+		    return it->driver_init((void *)&voltage_driver);
 	    }
     }
+
+    return -ENODATA;
 }
 
 void voltage_if_delete_driver(void) 

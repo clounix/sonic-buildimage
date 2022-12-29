@@ -83,7 +83,6 @@ static ssize_t fan_debug_store(struct switch_obj *obj, struct switch_attribute *
     ret = g_fan_drv->set_debug(buf, PAGE_SIZE);
     if (ret < 0) {
         FAN_ERR("set fan debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
 }
@@ -114,9 +113,45 @@ static ssize_t fan_loglevel_store(struct switch_obj *obj, struct switch_attribut
     ret = g_fan_drv->set_loglevel(buf, PAGE_SIZE);
     if (ret < 0) {
         FAN_ERR("set fan loglevel failed, ret: %d\n", ret);
+    }
+    return ret;
+}
+
+static ssize_t fan_eeprom_wp_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
+{
+    int ret;
+
+    check_p(g_fan_drv);
+    check_p(g_fan_drv->get_fan_eeprom_wp);
+
+    ret = g_fan_drv->get_fan_eeprom_wp(buf, PAGE_SIZE);
+    if (ret < 0) {
+        FAN_ERR("get fan eeprom write-protect failed, ret: %d\n", ret);
         return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
     }
     return ret;
+}
+
+static ssize_t fan_eeprom_wp_store(struct switch_obj *obj, struct switch_attribute *attr,
+                   const char* buf, size_t count)
+{
+    int ret;
+    int value = 0;
+
+    check_p(g_fan_drv);
+    check_p(g_fan_drv->set_fan_eeprom_wp);
+
+    sscanf(buf, "%d", &value);
+    if (value < 0 || value > 1) {
+        FAN_ERR("invalid value: %d, can't set fan write-protect.\n", value);
+        return -EINVAL;
+    }
+
+    ret = g_fan_drv->set_fan_eeprom_wp(value);
+    if (ret < 0) {
+        FAN_ERR("set fan write-protect failed, ret: %d\n", ret);
+    }
+    return count;
 }
 
 static ssize_t fan_motor_number_show(struct switch_obj *obj, struct switch_attribute *attr,
@@ -466,11 +501,13 @@ ssize_t fan_direction_show(struct switch_obj *obj, struct switch_attribute *attr
 static struct switch_attribute fan_number_attr = __ATTR(num, S_IRUGO, fan_number_show, NULL);
 static struct switch_attribute fan_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR, fan_debug_show, fan_debug_store);
 static struct switch_attribute fan_loglevel_attr = __ATTR(loglevel, S_IRUGO | S_IWUSR, fan_loglevel_show, fan_loglevel_store);
+static struct switch_attribute fan_eeprom_wp_attr = __ATTR(eepromwp, S_IRUGO | S_IWUSR, fan_eeprom_wp_show, fan_eeprom_wp_store);
 
 static struct attribute *fan_dir_attrs[] = {
     &fan_number_attr.attr,
     &fan_debug_attr.attr,
     &fan_loglevel_attr.attr,
+    &fan_eeprom_wp_attr.attr,
     NULL,
 };
 

@@ -14,8 +14,6 @@
 #include "vol_sensor_sysfs.h"
 #include "voltage_interface.h"
 
-static int g_loglevel = 0;
-
 /*************************************main board voltage***************************************/
 static int clx_get_main_board_vol_number(void)
 {
@@ -223,6 +221,22 @@ static ssize_t clx_get_main_board_vol_nominal_value(unsigned int vol_index, char
 }
 
 /*
+ * clx_get_main_board_vol_alarm - Used to get the alarm of voltage sensor
+ * filled the value to buf
+ * @vol_index: start with 1
+ * @buf: Data receiving buffer
+ * @count: length of buf
+ *
+ * This function returns the length of the filled buffer,
+ * if not support this attributes filled "NA" to buf,
+ * otherwise it returns a negative value on failed.
+ */
+static ssize_t clx_get_main_board_vol_alarm(unsigned int vol_index, char *buf, size_t count)
+{
+    return ENOSYS;
+}
+
+/*
  * clx_get_main_board_vol_value - Used to get the input value of voltage sensor
  * filled the value to buf, and the value keep three decimal places
  * @vol_index: start with 1
@@ -258,6 +272,7 @@ static struct s3ip_sysfs_vol_sensor_drivers_s drivers = {
     .set_main_board_vol_crit = clx_set_main_board_vol_crit,
     .get_main_board_vol_range = clx_get_main_board_vol_range,
     .get_main_board_vol_nominal_value = clx_get_main_board_vol_nominal_value,
+    .get_main_board_vol_alarm = clx_get_main_board_vol_alarm,
     .get_main_board_vol_value = clx_get_main_board_vol_value,
 };
 
@@ -265,15 +280,19 @@ static int __init vol_sensor_dev_drv_init(void)
 {
     int ret;
 
-    VOL_SENSOR_INFO("vol_sensor_init...\n");
-    voltage_if_create_driver();
+    LOG_INFO(CLX_DRIVER_TYPES_VOL, "vol_sensor_init...\n");
+    ret = voltage_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_VOL, "vol sensor if create err, ret %d.\n", ret);
+        return ret;
+    }
 
     ret = s3ip_sysfs_vol_sensor_drivers_register(&drivers);
     if (ret < 0) {
-        VOL_SENSOR_ERR("vol sensor drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_VOL, "vol sensor drivers register err, ret %d.\n", ret);
         return ret;
     }
-    VOL_SENSOR_INFO("vol_sensor_init success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_VOL, "vol_sensor_init success.\n");
     return 0;
 }
 
@@ -281,14 +300,13 @@ static void __exit vol_sensor_dev_drv_exit(void)
 {
     voltage_if_delete_driver();
     s3ip_sysfs_vol_sensor_drivers_unregister();
-    VOL_SENSOR_INFO("vol_sensor_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_VOL, "vol_sensor_exit success.\n");
     return;
 }
 
 module_init(vol_sensor_dev_drv_init);
 module_exit(vol_sensor_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("voltage sensors device driver");

@@ -4,9 +4,9 @@
 struct s3ip_sysfs_temp_sensor_drivers_s {
     int (*get_main_board_temp_number)(void);
     ssize_t (*get_loglevel)(char *buf, size_t count);
-    ssize_t (*set_loglevel)(char *buf, size_t count);
+    ssize_t (*set_loglevel)(const char *buf, size_t count);
     ssize_t (*get_debug)(char *buf, size_t count);
-    ssize_t (*set_debug)(char *buf, size_t count);
+    ssize_t (*set_debug)(const char *buf, size_t count);
     ssize_t (*get_main_board_temp_alias)(unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_main_board_temp_type)(unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_main_board_temp_max)(unsigned int temp_index, char *buf, size_t count);

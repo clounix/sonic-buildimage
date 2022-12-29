@@ -14,20 +14,24 @@
 #include "watchdog_sysfs.h"
 #include "watchdog_interface.h"
 
-static int g_loglevel = 0;
-
 /****************************************watchdog*********************************************/
 static ssize_t clx_get_watchdog_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG], buf, count);
 }
 
-static ssize_t clx_set_watchdog_loglevel(char *buf, size_t count)
+static ssize_t clx_set_watchdog_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG] = loglevel;
@@ -36,10 +40,12 @@ static ssize_t clx_set_watchdog_loglevel(char *buf, size_t count)
 
 static ssize_t clx_get_watchdog_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "watchdog debug: \n"
+                        "echo 120 > /sys/switch/watchdog/timeout\n"
+                        "cat /sys/switch/watchdog/timeleft\n");
 }
 
-static ssize_t clx_set_watchdog_debug(char *buf, size_t count)
+static ssize_t clx_set_watchdog_debug(const char *buf, size_t count)
 {
     return -ENOSYS;
 }
@@ -205,15 +211,19 @@ static int __init watchdog_dev_drv_init(void)
 {
     int ret;
 
-    WDT_INFO("watchdog_init...\n");
-    watchdog_if_create_driver();    
+    LOG_INFO(CLX_DRIVER_TYPES_WATCHDOG, "watchdog_init...\n");
+    ret = watchdog_if_create_driver();    
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_WATCHDOG, "watchdog if create err, ret %d.\n", ret);
+        return ret;
+    }
 
     ret = s3ip_sysfs_watchdog_drivers_register(&drivers);
     if (ret < 0) {
-        WDT_ERR("watchdog drivers register err, ret %d.\n", ret);
+        LOG_ERR(CLX_DRIVER_TYPES_WATCHDOG, "watchdog drivers register err, ret %d.\n", ret);
         return ret;
     }
-    WDT_INFO("watchdog create success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_WATCHDOG, "watchdog create success.\n");
     return 0;
 }
 
@@ -221,14 +231,13 @@ static void __exit watchdog_dev_drv_exit(void)
 {
     watchdog_if_delete_driver(); 
     s3ip_sysfs_watchdog_drivers_unregister();
-    WDT_INFO("watchdog_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_WATCHDOG, "watchdog_exit success.\n");
     return;
 }
 
 module_init(watchdog_dev_drv_init);
 module_exit(watchdog_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("watchdog device driver");

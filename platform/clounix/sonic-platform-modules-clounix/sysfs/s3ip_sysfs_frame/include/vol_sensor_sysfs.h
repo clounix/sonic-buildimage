@@ -18,6 +18,7 @@ struct s3ip_sysfs_vol_sensor_drivers_s {
     int (*set_main_board_vol_crit)(unsigned int vol_index, const char *buf, size_t count);
     ssize_t (*get_main_board_vol_range)(unsigned int vol_index, char *buf, size_t count);
     ssize_t (*get_main_board_vol_nominal_value)(unsigned int vol_index, char *buf, size_t count);
+    ssize_t (*get_main_board_vol_alarm)(unsigned int vol_index, char *buf, size_t count);
     ssize_t (*get_main_board_vol_value)(unsigned int vol_index, char *buf, size_t count);
 };
 

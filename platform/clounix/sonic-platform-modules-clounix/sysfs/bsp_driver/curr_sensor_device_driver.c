@@ -14,8 +14,6 @@
 #include "curr_sensor_sysfs.h"
 #include "current_interface.h"
 
-static int g_loglevel = 0;
-
 /*************************************main board current***************************************/
 static int clx_get_main_board_curr_number(void)
 {
@@ -241,16 +239,20 @@ static int __init curr_sensor_dev_drv_init(void)
 {
     int ret;
 
-    CURR_SENSOR_INFO("curr_sensor_init...\n");
-    current_if_create_driver();
-
-    ret = s3ip_sysfs_curr_sensor_drivers_register(&drivers);
-    if (ret < 0) {
-        CURR_SENSOR_ERR("curr sensor drivers register err, ret %d.\n", ret);
+    LOG_INFO(CLX_DRIVER_TYPES_CURR, "curr_sensor_init...\n");
+    ret = current_if_create_driver();
+    if (ret != 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_CURR, "curr sensor if create err, ret %d.\n", ret);
         return ret;
     }
 
-    CURR_SENSOR_INFO("curr_sensor_init success.\n");
+    ret = s3ip_sysfs_curr_sensor_drivers_register(&drivers);
+    if (ret < 0) {
+        LOG_ERR(CLX_DRIVER_TYPES_CURR, "curr sensor drivers register err, ret %d.\n", ret);
+        return ret;
+    }
+
+    LOG_INFO(CLX_DRIVER_TYPES_CURR, "curr_sensor_init success.\n");
     return 0;
 }
 
@@ -258,14 +260,13 @@ static void __exit curr_sensor_dev_drv_exit(void)
 {
     current_if_delete_driver();
     s3ip_sysfs_curr_sensor_drivers_unregister();
-    CURR_SENSOR_INFO("curr_sensor_exit success.\n");
+    LOG_INFO(CLX_DRIVER_TYPES_CURR, "curr_sensor_exit success.\n");
     return;
 }
 
 module_init(curr_sensor_dev_drv_init);
 module_exit(curr_sensor_dev_drv_exit);
-module_param(g_loglevel, int, 0644);
-MODULE_PARM_DESC(g_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4, all=0xf).\n");
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("sonic S3IP sysfs");
 MODULE_DESCRIPTION("current sensors device driver");
