@@ -96,7 +96,7 @@ typedef UI8_T   CLX_MAC_T[6];
 typedef UI32_T  CLX_IPV4_T;
 typedef UI8_T   CLX_IPV6_T[16];
 
-typedef UI32_T  CLX_TIME_T;
+typedef UI64_T  CLX_TIME_T;
 
 /* Bridge Domain id data type. */
 typedef UI32_T CLX_BRIDGE_DOMAIN_T;

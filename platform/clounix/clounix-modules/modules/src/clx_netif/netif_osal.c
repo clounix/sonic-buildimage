@@ -476,8 +476,8 @@ osal_getTime(
     struct timespec64          usec_time;
 
     ktime_get_real_ts64(&usec_time);
-    *(CLX_TIME_T *)ptr_time = (usec_time.tv_sec * OSAL_US_PER_SECOND) + usec_time.tv_nsec;
-
+    *(CLX_TIME_T *)ptr_time = (usec_time.tv_sec * OSAL_US_PER_SECOND * OSAL_NS_PER_USECOND) 
+                              + usec_time.tv_nsec;
     return (CLX_E_OK);
 }
 
@@ -608,11 +608,11 @@ osal_dma_alloc(
 {
     struct device           *ptr_dev = &_ptr_ext_pci_dev->dev;
     linux_dma_t             *ptr_dma_node = NULL;
-    dma_addr_t              phy_addr = 0x0;
+    dma_addr_t              bus_addr = 0x0;
 
-    ptr_dma_node = dma_alloc_coherent(ptr_dev, sizeof(linux_dma_t) + size, &phy_addr, GFP_ATOMIC);
+    ptr_dma_node = dma_alloc_coherent(ptr_dev, sizeof(linux_dma_t) + size, &bus_addr, GFP_ATOMIC);
     ptr_dma_node->size = sizeof(linux_dma_t) + size;
-    ptr_dma_node->phy_addr = phy_addr;
+    ptr_dma_node->phy_addr = bus_addr;
 
     return (void *)ptr_dma_node->data;
 }

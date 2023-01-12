@@ -121,6 +121,7 @@ typedef struct
     CLX_ADDR_T                  phy_addr;
     UI32_T                      size;
     struct list_head            list;
+    CLX_ADDR_T                  bus_addr;
 
 } OSAL_MDC_USER_MODE_DMA_NODE_T;
 #endif
@@ -2029,7 +2030,7 @@ _osal_mdc_clearSysDmaList(
         dma_free_coherent(ptr_dma_info->ptr_dma_dev,
                           ptr_curr_node_data->size, 
                           phys_to_virt(ptr_curr_node_data->phy_addr),
-                          ptr_curr_node_data->phy_addr);
+                          ptr_curr_node_data->bus_addr);
         kfree(ptr_curr_node_data);
     }
 
@@ -2073,15 +2074,17 @@ _osal_mdc_ioctl_allocSysDmaMemCallback(
     if (NULL != ptr_node_data)
     {
         memset(ptr_node_data, 0, sizeof(OSAL_MDC_USER_MODE_DMA_NODE_T));
-        ptr_node_data->phy_addr      = ptr_ioctl_data->phy_addr;
+        ptr_node_data->phy_addr      = virt_to_phys(virt_addr);
         ptr_node_data->size          = ptr_ioctl_data->size;
+        ptr_node_data->bus_addr      = ptr_ioctl_data->phy_addr;
         list_add(&(ptr_node_data->list), &_osal_mdc_sysDmaList[_osal_mdc_sysCurDmaListIdx]);
-        ptr_ioctl_data->phy_addr      = virt_to_phys(virt_addr);
+        ptr_ioctl_data->bus_addr     = ptr_ioctl_data->phy_addr;
+        ptr_ioctl_data->phy_addr     = virt_to_phys(virt_addr);
     }
     else
     {
         dma_free_coherent(ptr_dma_info->ptr_dma_dev, ptr_ioctl_data->size,
-                          virt_addr, ptr_ioctl_data->phy_addr);
+                          virt_addr, ptr_ioctl_data->bus_addr);
 
         return (CLX_E_NO_MEMORY);
     }
@@ -2113,7 +2116,7 @@ _osal_mdc_ioctl_freeSysDmaMemCallback(
     }
 
     dma_free_coherent(ptr_dma_info->ptr_dma_dev, ptr_ioctl_data->size,
-                      phys_to_virt(ptr_ioctl_data->phy_addr), ptr_ioctl_data->phy_addr);
+                      phys_to_virt(ptr_ioctl_data->phy_addr), ptr_ioctl_data->bus_addr);
 
     return (CLX_E_OK);
 }
@@ -2134,7 +2137,6 @@ _osal_mdc_getPciInfoToIoctlData(
         {
             ptr_dev_data->pci_mmio_phy_start[idx] =
                 pci_resource_start(ptr_dev_list[idx].ptr_pci_dev, OSAL_MDC_PCI_BAR0_OFFSET);
-
             ptr_dev_data->pci_mmio_size[idx] =
                 pci_resource_len(ptr_dev_list[idx].ptr_pci_dev, OSAL_MDC_PCI_BAR0_OFFSET);
         }

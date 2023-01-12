@@ -90,6 +90,11 @@
 #define HAL_LIGHTNING_PKT_DBG_NETLINK         (0x1UL << 6)
 
 extern UI32_T                           ext_dbg_flag;
+/*push vlan to rx enqueue pkt flag*/
+extern UI32_T                           vlan_push_flag;
+extern UI32_T                           frame_vid;
+
+extern UI32_T                           intel_iommu_flag;
 
 #define HAL_LIGHTNING_PKT_DBG(__flag__, ...)      do                  \
 {                                                               \
@@ -249,6 +254,8 @@ typedef struct
     /* SYNC_INTR */
     CLX_SEMAPHORE_ID_T              sync_intr_sema;
 
+    CLX_ADDR_T                      bus_addr;
+
 } HAL_LIGHTNING_PKT_TX_PDMA_T;
 
 typedef struct
@@ -285,6 +292,7 @@ typedef struct
     HAL_LIGHTNING_PKT_RX_GPD_T            *ptr_gpd_align_start_addr;
     BOOL_T                          err_flag;
     struct sk_buff                  **pptr_skb_ring;
+    CLX_ADDR_T                      bus_addr;
 } HAL_LIGHTNING_PKT_RX_PDMA_T;
 
 typedef struct
@@ -1713,7 +1721,7 @@ _hal_lightning_pkt_initTxPdmaRing(
     CLX_ERROR_NO_T                  rc = CLX_E_OK;
     HAL_LIGHTNING_PKT_TX_PDMA_T           *ptr_tx_pdma = HAL_LIGHTNING_PKT_GET_TX_PDMA_PTR(unit, channel);
     volatile HAL_LIGHTNING_PKT_TX_GPD_T   *ptr_tx_gpd = NULL;
-    CLX_ADDR_T                      phy_addr = 0;
+    CLX_ADDR_T                      bus_addr = 0;
     UI32_T                          gpd_idx = 0;
 
     for (gpd_idx = 0; gpd_idx < ptr_tx_pdma->gpd_num; gpd_idx++)
@@ -1726,8 +1734,8 @@ _hal_lightning_pkt_initTxPdmaRing(
         osal_dma_flushCache((void *)ptr_tx_gpd, sizeof(HAL_LIGHTNING_PKT_TX_GPD_T));
     }
 
-    phy_addr = osal_dma_convertVirtToPhy(ptr_tx_pdma->ptr_gpd_align_start_addr);
-    rc = _hal_lightning_pkt_setTxGpdStartAddrReg(unit, channel, phy_addr, ptr_tx_pdma->gpd_num);
+    bus_addr = ptr_tx_pdma->bus_addr + sizeof(HAL_LIGHTNING_PKT_TX_GPD_T);
+    rc = _hal_lightning_pkt_setTxGpdStartAddrReg(unit, channel, bus_addr, ptr_tx_pdma->gpd_num);
 
     return (rc);
 }
@@ -1753,7 +1761,7 @@ _hal_lightning_pkt_initRxPdmaRing(
     CLX_ERROR_NO_T                  rc = CLX_E_OK;
     HAL_LIGHTNING_PKT_RX_PDMA_T           *ptr_rx_pdma = HAL_LIGHTNING_PKT_GET_RX_PDMA_PTR(unit, channel);
     volatile HAL_LIGHTNING_PKT_RX_GPD_T   *ptr_rx_gpd = NULL;
-    CLX_ADDR_T                      phy_addr = 0;
+    CLX_ADDR_T                      bus_addr = 0;
     UI32_T                          gpd_idx = 0;
 
     for (gpd_idx = 0; gpd_idx < ptr_rx_pdma->gpd_num; gpd_idx++)
@@ -1765,8 +1773,8 @@ _hal_lightning_pkt_initRxPdmaRing(
         osal_dma_flushCache((void *)ptr_rx_gpd, sizeof(HAL_LIGHTNING_PKT_RX_GPD_T));
     }
 
-    phy_addr = osal_dma_convertVirtToPhy(ptr_rx_pdma->ptr_gpd_align_start_addr);
-    rc = _hal_lightning_pkt_setRxGpdStartAddrReg(unit, channel, phy_addr, ptr_rx_pdma->gpd_num);
+    bus_addr = ptr_rx_pdma->bus_addr + sizeof(HAL_LIGHTNING_PKT_RX_GPD_T);
+    rc = _hal_lightning_pkt_setRxGpdStartAddrReg(unit, channel, bus_addr, ptr_rx_pdma->gpd_num);
 
     return (rc);
 }
@@ -2237,10 +2245,20 @@ _hal_lightning_pkt_comparePatternWithPayload(
     CLX_ADDR_T                      phy_addr = 0;
     UI8_T                           *ptr_virt_addr = NULL;
     UI32_T                          idx;
+    HAL_LIGHTNING_PKT_RX_SW_GPD_T   *ptr_sw_gpd;
+    struct sk_buff                  *ptr_skb = NULL;
 
     /* Get the packet payload */
-    phy_addr = CLX_ADDR_32_TO_64(ptr_rx_gpd->data_buf_addr_hi, ptr_rx_gpd->data_buf_addr_lo);
-    ptr_virt_addr = (C8_T *) osal_dma_convertPhyToVirt(phy_addr);
+    if(1 ==  intel_iommu_flag)
+    {
+        ptr_sw_gpd = container_of(ptr_rx_gpd, HAL_LIGHTNING_PKT_RX_SW_GPD_T, rx_gpd);
+        phy_addr = CLX_ADDR_32_TO_64(ptr_sw_gpd->rx_gpd.data_buf_addr_hi, ptr_sw_gpd->rx_gpd.data_buf_addr_lo);
+        ptr_skb = (struct sk_buff *)ptr_sw_gpd->ptr_cookie;
+        ptr_virt_addr = ptr_skb->data;
+    }else{
+        phy_addr = CLX_ADDR_32_TO_64(ptr_rx_gpd->data_buf_addr_hi, ptr_rx_gpd->data_buf_addr_lo);
+        ptr_virt_addr = (C8_T *) osal_dma_convertPhyToVirt(phy_addr);
+    }
 
     for (idx=0; idx<CLX_NETIF_PROFILE_PATTERN_LEN; idx++)
     {
@@ -2416,6 +2434,10 @@ _hal_lightning_pkt_rxEnQueue(
     struct sk_buff                  *ptr_skb = NULL, *ptr_merge_skb = NULL;
     UI32_T                          copy_offset;
     void                            *ptr_dest;
+    UI32_T                          vid_1st = 0;
+    struct ethhdr                   *ether = NULL;
+    static UI8_T stp_mac[ETH_ALEN] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x00 };
+    static UI8_T pvst_mac[ETH_ALEN] = { 0x01, 0x00, 0x0c, 0xcc, 0xcc, 0xcd };
 
 #if defined(PERF_EN_TEST)
     /* To verify kernel Rx performance */
@@ -2489,6 +2511,9 @@ _hal_lightning_pkt_rxEnQueue(
         port = ptr_sw_first_gpd->rx_gpd.itmh_eth.igr_phy_port;
         ptr_net_dev = HAL_LIGHTNING_PKT_GET_PORT_NETDEV(port);
 
+        vid_1st = ptr_sw_first_gpd->rx_gpd.pph_l2.vid_1st;
+        //printk("vid_1st=%d \n",vid_1st);
+
         /* if the packet is composed of multiple gpd (skb), need to merge it into a single skb */
         if (NULL != ptr_sw_first_gpd->ptr_next)
         {
@@ -2552,6 +2577,31 @@ _hal_lightning_pkt_rxEnQueue(
         {
             /* skip ethernet header only for Linux net interface*/
             ptr_skb->protocol = eth_type_trans(ptr_skb, ptr_net_dev);
+
+            ether = eth_hdr(ptr_skb);
+            if(skb_mac_header_was_set(ptr_skb))
+            {
+                if(ether_addr_equal(stp_mac, ether->h_dest) ||
+                    ether_addr_equal(pvst_mac, ether->h_dest))
+                {
+                    if (vlan_push_flag)
+                    {
+                        if ((0 != frame_vid) && (frame_vid < 4095))
+                        {
+                            skb_vlan_push(ptr_skb, htons(ETH_P_8021Q), frame_vid);
+                            HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_RX,
+                                "u=%u, add frame vlan tag, frame_vid=%u\n", unit, frame_vid);
+                        }
+                        else if((0 != vid_1st) && (vid_1st < 4095))
+                        {
+                            skb_vlan_push(ptr_skb, htons(ETH_P_8021Q), vid_1st);
+                            HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_RX,
+                                "u=%u, add vlan tag, vid_1st=%u\n", unit, vid_1st);
+                        }
+                    }
+                }
+            }
+
             osal_skb_recv(ptr_skb);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0)
             ptr_net_dev->last_rx = jiffies;
@@ -4514,6 +4564,7 @@ _hal_lightning_pkt_initTxPdma(
     HAL_LIGHTNING_PKT_TX_CB_T             *ptr_tx_cb = HAL_LIGHTNING_PKT_GET_TX_CB_PTR(unit);
     HAL_LIGHTNING_PKT_TX_PDMA_T           *ptr_tx_pdma = HAL_LIGHTNING_PKT_GET_TX_PDMA_PTR(unit, channel);
     CLX_IRQ_FLAGS_T                 irg_flags;
+    linux_dma_t                     *ptr_dma_node = NULL;
 
     /* Isr lock to protect Tx PDMA */
     osal_createIsrLock("TCH_LCK", &ptr_tx_pdma->ring_lock);
@@ -4536,6 +4587,9 @@ _hal_lightning_pkt_initTxPdma(
     /* Prepare the HW-GPD ring */
     ptr_tx_pdma->ptr_gpd_start_addr = (HAL_LIGHTNING_PKT_TX_GPD_T *)osal_dma_alloc(
         (ptr_tx_pdma->gpd_num + 1) * sizeof(HAL_LIGHTNING_PKT_TX_GPD_T));
+
+    ptr_dma_node = (linux_dma_t *)((void *)ptr_tx_pdma->ptr_gpd_start_addr - sizeof(linux_dma_t));
+    ptr_tx_pdma->bus_addr = ptr_dma_node->phy_addr;
 
     if (NULL != ptr_tx_pdma->ptr_gpd_start_addr)
     {
@@ -4621,6 +4675,7 @@ _hal_lightning_pkt_initRxPdma(
     CLX_ERROR_NO_T                  rc = CLX_E_OK;
     HAL_LIGHTNING_PKT_RX_CB_T             *ptr_rx_cb = HAL_LIGHTNING_PKT_GET_RX_CB_PTR(unit);
     HAL_LIGHTNING_PKT_RX_PDMA_T           *ptr_rx_pdma = HAL_LIGHTNING_PKT_GET_RX_PDMA_PTR(unit, channel);
+    linux_dma_t                           *ptr_dma_node = NULL;
 
     /* Binary semaphore to protect Rx PDMA */
     osal_createSemaphore("RCH_LCK", CLX_SEMAPHORE_BINARY, &ptr_rx_pdma->sema);
@@ -4633,6 +4688,9 @@ _hal_lightning_pkt_initRxPdma(
     /* Prepare the HW-GPD ring */
     ptr_rx_pdma->ptr_gpd_start_addr = (HAL_LIGHTNING_PKT_RX_GPD_T *)osal_dma_alloc(
         (ptr_rx_pdma->gpd_num + 1) * sizeof(HAL_LIGHTNING_PKT_RX_GPD_T));
+
+    ptr_dma_node = (linux_dma_t *)((void *)ptr_rx_pdma->ptr_gpd_start_addr - sizeof(linux_dma_t));
+    ptr_rx_pdma->bus_addr =  ptr_dma_node->phy_addr;
 
     if (NULL != ptr_rx_pdma->ptr_gpd_start_addr)
     {
@@ -5403,6 +5461,8 @@ _hal_lightning_pkt_isProtocolPkt(struct sk_buff *skb)
 		    ether->h_source[0], ether->h_source[1], ether->h_source[2], ether->h_source[3], ether->h_source[4], ether->h_source[5]);
     HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_TX, "Destination: %x:%x:%x:%x:%x:%x\n",
 		    ether->h_dest[0], ether->h_dest[1], ether->h_dest[2], ether->h_dest[3], ether->h_dest[4], ether->h_dest[5]);
+    HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_TX, "pkt type: 0x%x\n",
+                   ether->h_proto);
 
     if (ip_header->protocol == IPPROTO_UDP) {
         udp_header = (struct udphdr *)skb_transport_header(skb);
@@ -5417,6 +5477,11 @@ _hal_lightning_pkt_isProtocolPkt(struct sk_buff *skb)
 		    "OUT packet info: src ip: %u, src port: %u; dest ip: %u, dest port: %u; proto: %u\n",
 		    src_ip, src_port, dest_ip, dest_port, ip_header->protocol);
     HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_TX, "IPv6 protocol: %d\n", ip6h->nexthdr);
+
+    //LLDP
+    if (ntohs(ether->h_proto) == 0x88CC){
+        return 1;
+    }
 
     //UDLD
     if (ether_addr_equal(ether->h_dest, udld_addr)){
@@ -5478,10 +5543,10 @@ _hal_lightning_pkt_isProtocolPkt(struct sk_buff *skb)
             udp_header   = (struct udphdr *)((void *)ip6h + sizeof(struct ipv6hdr));
             tcp_header   = (struct tcphdr *)((void *)ip6h + sizeof(struct ipv6hdr));
 
-            if (ip_header->protocol == IPPROTO_UDP) {
+            if (ip6h->nexthdr == IPPROTO_UDP) {
                 src_port = (unsigned int)ntohs(udp_header->source);
                 dest_port = (unsigned int)ntohs(udp_header->dest);
-            } else if (ip_header->protocol == IPPROTO_TCP) {
+            } else if (ip6h->nexthdr == IPPROTO_TCP) {
                 src_port = (unsigned int)ntohs(tcp_header->source);
                 dest_port = (unsigned int)ntohs(tcp_header->dest);
             } else {
@@ -5491,9 +5556,9 @@ _hal_lightning_pkt_isProtocolPkt(struct sk_buff *skb)
             if ((ip6h->nexthdr == IPPROTO_UDP) && 
                     //DHCPv6
                     ((dest_port == 547) || (dest_port == 546) ||
-		     //BFDv6
-		     (dest_port == 3784) ||
-		     (dest_port == 4784))){
+                     //BFDv6
+                     (dest_port == 3784) ||
+                     (dest_port == 4784))){
                 return 1;
             }
 
@@ -5510,7 +5575,6 @@ _hal_lightning_pkt_isProtocolPkt(struct sk_buff *skb)
             break;
         case ETH_P_ARP:
         case ETH_P_RARP:
-        case 0x88cc: //LLDP
             return 1;
             break;
  
@@ -5558,13 +5622,11 @@ hal_lightning_pkt_prepareGpd(
     ptr_sw_gpd->tx_gpd.pph_l2.mrk_pcp_val            = 7;    /* Max pcp                    */
     ptr_sw_gpd->tx_gpd.pph_l2.mrk_pcp_dei_en         = 1;
 
-    /*
     if (!_hal_lightning_pkt_isProtocolPkt(ptr_skb)){
         ptr_sw_gpd->tx_gpd.itmh_eth.tc               = 0;
         ptr_sw_gpd->tx_gpd.pph_l2.mrk_pcp_val        = 0;
 	HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_TX, "Set TC and PCP to 0\n");
     }
-    */
 
     /* destination index
      * 1. to local ETH port
@@ -6548,10 +6610,20 @@ hal_lightning_pkt_dev_ioctl(
 }
 
 /* ----------------------------------------------------------------------------------- Init/Deinit */
+static int netif_init_done = 0;
 CLX_ERROR_NO_T
 hal_lightning_pkt_init(
     const UI32_T            unit)
 {
+    /* Since the users may kill SDK application without a de-init flow,
+     * we help to detect if NETIF is ever init before, and perform deinit.
+     */
+    if(netif_init_done && _hal_lightning_pkt_drv_cb[unit].init_flag) {
+        HAL_LIGHTNING_PKT_DBG(HAL_LIGHTNING_PKT_DBG_ERR,
+           "BUG!!! u=%u, looks the users may kill SDK app without a de-init flow\n", unit);
+        return(0);
+    }
+
     /* Init Thread */
     osal_init();
 
@@ -6563,12 +6635,12 @@ hal_lightning_pkt_init(
     osal_memset(_hal_lightning_pkt_tx_cb, 0x0,
                 CLX_CFG_MAXIMUM_CHIPS_PER_SYSTEM*sizeof(HAL_LIGHTNING_PKT_TX_CB_T));
     osal_memset(_hal_lightning_pkt_drv_cb, 0x0,
-                CLX_CFG_MAXIMUM_CHIPS_PER_SYSTEM*sizeof(HAL_LIGHTNING_PKT_DRV_CB_T));
+            CLX_CFG_MAXIMUM_CHIPS_PER_SYSTEM*sizeof(HAL_LIGHTNING_PKT_DRV_CB_T));
 
 #if defined(NETIF_EN_NETLINK)
     netif_nl_init();
 #endif
-
+    netif_init_done = 1;
     return (0);
 }
 
@@ -6596,5 +6668,6 @@ hal_lightning_pkt_exit(
 
     osal_deinit();
 
+    netif_init_done = 0;
     return (0);
 }

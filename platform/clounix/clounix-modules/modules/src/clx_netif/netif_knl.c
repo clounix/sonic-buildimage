@@ -97,6 +97,13 @@ typedef struct
 extern struct pci_dev                   *_ptr_ext_pci_dev;
 static NETIF_KNL_CB_T                   _netif_knl_cb;
 UI32_T                                  ext_dbg_flag = 0;
+UI32_T                                  vlan_push_flag = 1;
+UI32_T                                  frame_vid = 0;
+#if (defined(CONFIG_INTEL_IOMMU_DEFAULT_ON) || defined(CONFIG_INTEL_IOMMU_DEFAULT_ON_INTGPU_OFF))&& defined(CONFIG_INTEL_IOMMU)
+UI32_T                                  intel_iommu_flag = 1;
+#else
+UI32_T                                  intel_iommu_flag = 0;
+#endif
 
 #define NETIF_KNL_DEVICE_IS_LIGHTNING(__dev_id__)         (HAL_DEVICE_ID_CL8500 == (__dev_id__ & 0xFF00))
 #define NETIF_KNL_DEVICE_IS_DAWN(__dev_id__)      (HAL_DEVICE_ID_CL8300 == (__dev_id__ & 0xFF00))
@@ -299,6 +306,12 @@ module_exit(netif_knl_exit);
 module_param(ext_dbg_flag, uint, S_IRUGO|S_IWUSR);
 MODULE_PARM_DESC(ext_dbg_flag, "bit0:error, bit1:tx, bit2:rx, bit3:intf, bit4:profile, "   \
                                "bit5:common, bit6:netlink");
+module_param(vlan_push_flag, uint, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(vlan_push_flag, "0:flase 1:true");
+module_param(frame_vid, uint, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(frame_vid, "VLAN ID (VID) indicates the VLAN to which a frame belongs (default 0)");
+module_param(intel_iommu_flag, uint, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(intel_iommu_flag, "intel iommu on:1, intel iommu off:0");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Clounix");
 MODULE_DESCRIPTION(NETIF_KNL_MODULE_DESC);
