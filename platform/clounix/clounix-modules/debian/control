@@ -1,7 +1,7 @@
 Source: clounix-modules
 Section: main
 Priority: extra
-Maintainer: support <simon.ji@mediatek.com>
+Maintainer: support <lufq@clounix.com>
 Build-Depends: debhelper (>= 8.0.0), bzip2
 Standards-Version: 3.9.3
 
