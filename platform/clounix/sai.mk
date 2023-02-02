@@ -11,7 +11,12 @@ ifeq ($(SAI_DEB_URL),no)
 CLOUNIX_SAI = libsaiclx_$(SAI_HEADER_VERSION)_amd64.deb
 $(CLOUNIX_SAI)_SRC_PATH = $(PLATFORM_PATH)/clnx-sai
 $(CLOUNIX_SAI)_DEPENDS += $(LINUX_HEADERS) $(LINUX_HEADERS_COMMON)
+
+ifeq ($(INCLUDE_SDK),yes)
+$(CLOUNIX_SAI)_UNINSTALLS += $(CLOUNIX_SDK)
+else
 SONIC_DPKG_DEBS += $(CLOUNIX_SAI)
+endif
 
 CLOUNIX_SAI_DEV = libsaiclx-dev_$(SAI_HEADER_VERSION)_amd64.deb
 $(CLOUNIX_SAI_DEV)_DEPENDS += $(CLOUNIX_SAI)
@@ -21,9 +26,6 @@ $(CLOUNIX_WARM_VERIFIER)_DEPENDS += $(CLOUNIX_SAI)
 
 CLOUNIX_SAI_DBG = libsaiclx-dbg_$(SAI_HEADER_VERSION)_amd64.deb
 $(CLOUNIX_SAI_DBG)_DEPENDS += $(CLOUNIX_SAI)
-$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_SAI_DEV)))
-$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_WARM_VERIFIER)))
-$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_SAI_DBG)))	
 else
 CLOUNIX_SAI = libsaiclx_$(SAI_HEADER_VERSION)_amd64.deb
 $(CLOUNIX_SAI)_PATH = $(PLATFORM_PATH)/clx-sai
@@ -38,5 +40,11 @@ CLOUNIX_SAI_DBG = libsaiclx-dbg_$(SAI_HEADER_VERSION)_amd64.deb
 $(CLOUNIX_SAI_DBG)_URL = "https://github.com/clounix/sai_release/raw/main/sai_available/libsaiclx-dbg_$(SAI_HEADER_VERSION)_amd64.deb"
 #SONIC_COPY_DEBS += $(CLOUNIX_SAI) $(CLOUNIX_SAI_DEV)
 SONIC_ONLINE_DEBS+= $(CLOUNIX_SAI) $(CLOUNIX_SAI_DEV)
+endif
+
+ifneq ($(INCLUDE_SDK),yes)
+$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_SAI_DEV)))
+$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_WARM_VERIFIER)))
+$(eval $(call add_derived_package,$(CLOUNIX_SAI),$(CLOUNIX_SAI_DBG)))	
 endif
 

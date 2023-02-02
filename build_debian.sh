@@ -323,7 +323,10 @@ sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y in
     cron                    \
     haveged                 \
     jq                      \
-    auditd
+    auditd                  \
+    memtester               \
+    fio                     \
+    edac-utils
 
 # Change auditd log file path to fix auditd can't startup issue.
 sudo LANG=C chroot $FILESYSTEM_ROOT /bin/bash -c "sudo sed -i 's/^\s*log_file\s*=.*/log_file = \/var\/log\/audit.log/g' /etc/audit/auditd.conf"
@@ -447,6 +450,12 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'docke
 # Install scapy
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'scapy==2.4.4'
 
+# Install requests pexpect enum34 tabulate
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'requests==2.27.1'
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'pexpect==4.8.0'
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'enum34==1.1.10'
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip2 install 'tabulate==0.8.10'
+
 ## Note: keep pip installed for maintainance purpose
 
 # Install GCC, needed for building/installing some Python packages
@@ -566,8 +575,12 @@ fi
 # Collect host image version files before cleanup
 scripts/collect_host_image_version_files.sh $TARGET_PATH $FILESYSTEM_ROOT
 
+if [[ $INCLUDE_SDK == yes ]]; then
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libtool-bin automake autoconf python3-dev make wget git
+else
 # Remove GCC
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y remove gcc
+fi
 
 ## Clean up apt
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y autoremove

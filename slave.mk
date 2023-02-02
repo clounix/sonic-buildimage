@@ -233,6 +233,8 @@ export SONIC_ROUTING_STACK
 export FRR_USER_UID
 export FRR_USER_GID
 
+export INCLUDE_SDK
+
 ###############################################################################
 ## Dumping key config attributes associated to current building exercise
 ###############################################################################
@@ -287,6 +289,7 @@ $(info "PDDF_SUPPORT"                    : "$(PDDF_SUPPORT)")
 $(info "MULTIARCH_QEMU_ENVIRON"          : "$(MULTIARCH_QEMU_ENVIRON)")
 $(info "SONIC_VERSION_CONTROL_COMPONENTS": "$(SONIC_VERSION_CONTROL_COMPONENTS)")
 $(info "DEFAULT_CONTAINER_REGISTRY"      : "$(SONIC_DEFAULT_CONTAINER_REGISTRY)")
+$(info "INCLUDE_SDK"                     : "$(INCLUDE_SDK)")
 $(info )
 else
 $(info SONiC Build System for $(CONFIGURED_PLATFORM):$(CONFIGURED_ARCH))
@@ -1084,6 +1087,7 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_INSTALLERS)) : $(TARGET_PATH)/% : \
 	USERNAME="$(USERNAME)" \
 	PASSWORD="$(PASSWORD)" \
 	TARGET_MACHINE=$($*_MACHINE) \
+	TARGET_ENV=$($*_ENV) \
 	IMAGE_TYPE=$($*_IMAGE_TYPE) \
 	SONIC_ENABLE_IMAGE_SIGNATURE="$(SONIC_ENABLE_IMAGE_SIGNATURE)" \
 	SIGNING_KEY="$(SIGNING_KEY)" \

@@ -1,0 +1,6 @@
+{
+    "name": "tlv_eeprom_read_-test",
+    "description": "Check eeprom and mac test",
+    "type": "auto",
+    "tags": ["manufacture", "delivery", "development", "pa", "smoke"]
+}

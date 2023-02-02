@@ -97,6 +97,12 @@ binary-indep:
 		cp -r $(MOD_SRC_DIR)/${MODULE_DIRS}/bios_bin debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/; \
 	fi; \
 	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/;
+	
+	# pit
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-pit-sysdiag /usr/local; \
+	dh_installdirs -p$(PACKAGE_PRE_NAME)-pit-sysdiag /usr/bin; \
+	cp $(MOD_SRC_DIR)/pit-sysdiag/pit debian/$(PACKAGE_PRE_NAME)-pit-sysdiag/usr/local/ -rf; \
+	cp -r $(MOD_SRC_DIR)/pit-sysdiag/sysdiag debian/$(PACKAGE_PRE_NAME)-pit-sysdiag/usr/bin/;
 
 	# Resuming debhelper scripts
 	dh_testroot

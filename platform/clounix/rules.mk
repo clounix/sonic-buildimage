@@ -1,10 +1,12 @@
 include $(PLATFORM_PATH)/sai.mk
+include $(PLATFORM_PATH)/sdk.mk
 include $(PLATFORM_PATH)/clx-utils.mk
 include $(PLATFORM_PATH)/clounix-modules.mk
 include $(PLATFORM_PATH)/platform-modules-clounix.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix-rpc.mk
 include $(PLATFORM_PATH)/one-image.mk
+include $(PLATFORM_PATH)/pde-image.mk
 include $(PLATFORM_PATH)/libsaithrift-dev.mk
 include $(PLATFORM_PATH)/docker-ptf-clounix.mk
 include $(PLATFORM_PATH)/docker-saiserver-clounix.mk
