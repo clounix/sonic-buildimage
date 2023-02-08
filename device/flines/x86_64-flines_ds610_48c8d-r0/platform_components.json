@@ -1,0 +1,10 @@
+{
+    "chassis": {
+        "DS610-48C8D": {
+            "component": {
+                "FPGA": {},
+                "BIOS": {}
+            }
+        }
+    }
+}
