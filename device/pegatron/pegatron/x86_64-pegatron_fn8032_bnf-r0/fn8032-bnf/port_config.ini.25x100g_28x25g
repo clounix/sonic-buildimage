@@ -1,0 +1,54 @@
+# name              lanes                               alias           speed       index   mtu      fec
+Ethernet0           96,97,98,99                         Ethernet0       100000      0       9126     rs
+Ethernet8           104,105,106,107                     Ethernet8       100000      1       9126     rs
+Ethernet16          112,113,114,115                     Ethernet16      100000      2       9126     rs
+Ethernet24          120,121,122,123                     Ethernet24      100000      3       9126     rs
+Ethernet32          128,129,130,131                     Ethernet32      100000      4       9126     rs
+Ethernet40          136,137,138,139                     Ethernet40      100000      5       9126     rs
+Ethernet48          144,145,146,147                     Ethernet48      100000      6       9126     rs
+Ethernet56          152,153,154,155                     Ethernet56      100000      7       9126     rs
+Ethernet64          32,33,34,35                         Ethernet64      100000      8       9126     rs
+Ethernet72          40,41,42,43                         Ethernet72      100000      9       9126     rs
+Ethernet80          48,49,50,51                         Ethernet80      100000      10      9126     rs
+Ethernet88          56,57,58,59                         Ethernet88      100000      11      9126     rs
+Ethernet96          64,65,66,67                         Ethernet96      100000      12      9126     rs
+Ethernet104         72,73,74,75                         Ethernet104     100000      13      9126     rs
+Ethernet112         80,81,82,83                         Ethernet112     100000      14      9126     rs
+Ethernet120         88,89,90,91                         Ethernet120     100000      15      9126     rs
+Ethernet128         224,225,226,227                     Ethernet128     100000      16      9126     rs
+Ethernet136         232,233,234,235                     Ethernet136     100000      17      9126     rs
+Ethernet144         240,241,242,243                     Ethernet144     100000      18      9126     rs
+Ethernet152         248,249,250,251                     Ethernet152     100000      19      9126     rs
+Ethernet160         0,1,2,3                             Ethernet160     100000      20      9126     rs
+Ethernet168         8,9,10,11                           Ethernet168     100000      21      9126     rs
+Ethernet176         16,17,18,19                         Ethernet176     100000      22      9126     rs
+Ethernet184         24,25,26,27                         Ethernet184     100000      23      9126     rs
+Ethernet192         160,161,162,163                     Ethernet192     100000      24      9126     rs
+Ethernet200         168                                 Ethernet200      25000      25      9126     
+Ethernet201         169                                 Ethernet201      25000      25      9126     
+Ethernet202         170                                 Ethernet202      25000      25      9126     
+Ethernet203         171                                 Ethernet203      25000      25      9126     
+Ethernet208         176                                 Ethernet208      25000      26      9126       
+Ethernet209         177                                 Ethernet209      25000      26      9126       
+Ethernet210         178                                 Ethernet210      25000      26      9126       
+Ethernet211         179                                 Ethernet211      25000      26      9126       
+Ethernet216         184                                 Ethernet217      25000      27      9126       
+Ethernet217         185                                 Ethernet218      25000      27      9126       
+Ethernet218         186                                 Ethernet219      25000      27      9126       
+Ethernet219         187                                 Ethernet216      25000      27      9126       
+Ethernet224         192                                 Ethernet224      25000      28      9126       
+Ethernet225         193                                 Ethernet225      25000      28      9126       
+Ethernet226         194                                 Ethernet226      25000      28      9126       
+Ethernet227         195                                 Ethernet227      25000      28      9126       
+Ethernet232         200                                 Ethernet232      25000      29      9126       
+Ethernet233         201                                 Ethernet233      25000      29      9126       
+Ethernet234         202                                 Ethernet234      25000      29      9126       
+Ethernet235         203                                 Ethernet235      25000      29      9126       
+Ethernet240         208                                 Ethernet240      25000      30      9126       
+Ethernet241         209                                 Ethernet241      25000      30      9126       
+Ethernet242         210                                 Ethernet242      25000      30      9126       
+Ethernet243         211                                 Ethernet243      25000      30      9126       
+Ethernet248         216                                 Ethernet248      25000      31      9126     
+Ethernet249         217                                 Ethernet249      25000      31      9126     
+Ethernet250         218                                 Ethernet250      25000      31      9126     
+Ethernet251         219                                 Ethernet251      25000      31      9126     

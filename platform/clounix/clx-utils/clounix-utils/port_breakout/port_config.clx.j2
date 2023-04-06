@@ -1,0 +1,125 @@
+init start stage unit={{ port_attr[0].unit }} low-level
+
+{# port-map #}
+{%- for pm in port_map -%}
+init set port-map unit={{ pm.unit }} port={{ pm.clx_port }} eth-macro={{ pm.macro }} lane={{ pm.clx_lane }} max-speed={{pm.max_speed}}g active={{pm.active}}
+{% endfor -%}
+{# cpi port-map #}
+{%- for c_pm in cpi_port_map -%}
+{{ c_pm }}
+{% endfor %}
+
+init start stage unit={{ port_attr[0].unit }} task-rsrc
+init start stage unit={{ port_attr[0].unit }} module
+init start stage unit={{ port_attr[0].unit }} task
+
+{# lane-swap #}
+{%- for ls in lane_swap -%}
+phy set lane-swap unit={{ ls.unit }} portlist={{ ls.clx_port }} lane-cnt={{ ls.lane_cnt }} property=tx data=0x{{ls.data['tx'] | join('.')}}
+{% endfor %}
+{%- for ls in lane_swap -%}
+phy set lane-swap unit={{ ls.unit }} portlist={{ ls.clx_port }} lane-cnt={{ ls.lane_cnt }} property=rx data=0x{{ls.data['rx'] | join('.')}}
+{% endfor %}
+{# cpi lane-swap #}
+{%- for c_ls in cpi_lane_swap -%}
+{{ c_ls }}
+{% endfor %}
+
+{# polarity-rev #}
+{%- for pr in polarity_rev -%}
+phy set polarity-rev unit={{ pr.unit }} portlist={{ pr.clx_port }} lane-cnt={{ pr.lane_cnt }} property=tx data=0x{{pr.data['tx'] | join('.')}}
+{% endfor %}
+{%- for pr in polarity_rev -%}
+phy set polarity-rev unit={{ pr.unit }} portlist={{ pr.clx_port }} lane-cnt={{ pr.lane_cnt }} property=rx data=0x{{pr.data['rx'] | join('.')}}
+{% endfor %}
+{# cpi polarity-rev #}
+{%- for c_pr in cpi_polarity_rev -%}
+{{ c_pr }}
+{% endfor %}
+
+{# pre_emphasis #}
+{%- for pe in pre_emphasis -%}
+phy set pre-emphasis unit={{ pe.unit }} portlist={{ pe.clx_port }} lane-cnt={{ pe.lane_cnt }} property=cn2 data=0x{{pe.data['cn2'] | join('.')}}
+phy set pre-emphasis unit={{ pe.unit }} portlist={{ pe.clx_port }} lane-cnt={{ pe.lane_cnt }} property=cn1 data=0x{{pe.data['cn1'] | join('.')}}
+phy set pre-emphasis unit={{ pe.unit }} portlist={{ pe.clx_port }} lane-cnt={{ pe.lane_cnt }} property=c1 data=0x{{pe.data['c1'] | join('.')}}
+phy set pre-emphasis unit={{ pe.unit }} portlist={{ pe.clx_port }} lane-cnt={{ pe.lane_cnt }} property=c2 data=0x{{pe.data['c2'] | join('.')}}
+phy set pre-emphasis unit={{ pe.unit }} portlist={{ pe.clx_port }} lane-cnt={{ pe.lane_cnt }} property=c0 data=0x{{pe.data['c0'] | join('.')}}
+{% endfor %}
+{# cpi pre_emphasis #}
+{%- for c_pe in cpi_pre_emphasis -%}
+{{ c_pe }}
+{% endfor %}
+
+{# cpi speed #}
+{%- for c_speed in cpi_speed -%}
+{{ c_speed }}
+{% endfor %}
+{# cpi medium-type #}
+{%- for c_mt in cpi_medium_type -%}
+{{ c_mt }}
+{% endfor -%}
+{# cpi cpi_fec #}
+{%- for c_fec in cpi_fec -%}
+{{ c_fec }}
+{% endfor -%}
+{# cpi adver #}
+{%- for c_adver in cpi_adver -%}
+{{ c_adver }}
+{% endfor -%}
+{# cpi an #}
+{%- for c_an in cpi_an -%}
+{{ c_an }}
+{% endfor -%}
+{# cpi admin #}
+{%- for c_admin in cpi_admin -%}
+{{ c_admin }}
+{% endfor %}
+
+{# mdio #}
+{#
+{%- for m in port_mdio -%}
+phy set mdio unit={{ m.unit }} portlist={{ m.clx_port }}  devad={{ m.devad }} addr={{ m.addr }} data={{ m.value }}
+{% endfor %}
+#}
+{# port-speed #}
+{%- for ps in port_speed -%}
+port set property unit={{ ps.unit }} portlist={{ ps.clx_port }} speed={{ ps.speed }}g
+{% endfor %}
+
+{# port-medium-type #}
+{%- for pm in port_medium -%}
+port set property unit={{ pm.unit }} portlist={{ pm.clx_port }} medium-type={{pm.medium}}
+{% endfor %}
+
+{# port-admin #}
+{%- for pa in port_admin -%}
+port set property unit={{ pa.unit }} portlist={{ pa.clx_port }} admin={{pa.admin}}
+{% endfor %}
+
+
+{# port_fec #}
+{%- for fec in port_fec -%}
+port set property unit={{ fec.unit }} portlist={{ fec.clx_port }} fec={{fec.fec}}
+{% endfor %}
+
+{# disable all port an-lt #}
+{%- for an in port_an_lt -%}
+port set property unit={{ an.unit }} portlist={{ an.clx_port }} an-lt=disable
+{% endfor %}
+
+{# reset all port admin#}
+{%- for p_attr in port_attr -%}
+port reset portlist={{ p_attr.clx_port }} speed={{ p_attr.speed }}g medium-type={{p_attr.medium}} lane-cnt={{ p_attr.lane_cnt }} admin=disable
+{% endfor %}
+
+{# reset all port admin#}
+{%- for p_attr in port_attr -%}
+port reset portlist={{ p_attr.clx_port }} speed={{ p_attr.speed }}g medium-type={{p_attr.medium}} lane-cnt={{ p_attr.lane_cnt }} admin=enable
+{% endfor %}
+
+{# port_an_lt #}
+{%- for an in port_an_lt -%}
+port set property unit={{ an.unit }} portlist={{ an.clx_port }} an-lt={{an.an_lt}}
+{% endfor %}
+
+

@@ -1,0 +1,41 @@
+{
+  "i2c_topology_dict": [
+    {"bus": "i2c-3",   "driver": "clx_pca9548",       "address": "0x70"},
+    {"bus": "i2c-8",   "driver": "clx_hwmon_fan", "address": "0x60"},
+    {"bus": "i2c-8",   "driver": "tmp75c",        "address": "0x49"},
+    {"bus": "i2c-8",   "driver": "tmp75c",        "address": "0x48"},
+    {"bus": "i2c-8",  "driver": "24c256",          "address": "0x51"},
+    {"bus": "i2c-11",  "driver": "24c02",          "address": "0x52"},
+    {"bus": "i2c-11",  "driver": "24c02",          "address": "0x50"},
+    {"bus": "i2c-10",  "driver": "24c256",         "address": "0x51"},
+    {"bus": "i2c-11",  "driver": "gw1200d",        "address": "0x58"},
+    {"bus": "i2c-11",  "driver": "gw1200d",        "address": "0x5a"}
+  ],
+
+  "kernel_module_list": [
+    "i2c-zhaoxin",
+    "i2c_dev",
+    "i2c-mux",
+    "pmbus_core",
+    "i2c-mux-pca9548",
+    "at24 io_limit=32",
+    "s3ip_sysfs",
+    "clounix_sysfs_main",
+    "fpga_dev_driver",
+    "syseeprom_dev_driver",
+    "fan_dev_driver",
+    "cpld_dev_driver",
+    "sysled_dev_driver",
+    "transceiver_dev_driver",
+    "temp_sensor_dev_driver",
+    "watchdog_dev_driver",
+    "curr_sensor_dev_driver",
+    "lpc_syscpld_dev_driver",
+    "adm1275",
+    "mp2882",
+    "tps546b24a",
+    "tmp75",
+    "adm1166",
+    "cputemp_dev_driver"
+  ]
+}

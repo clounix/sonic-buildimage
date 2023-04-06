@@ -1,0 +1,14 @@
+[Unit]
+Description=common temp sensor monitor service
+Before=determine-reboot-cause.service
+After=clounix-common-platform-init.service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/clxProcess/temp_hw_monitor.py install
+ExecStop=/usr/local/bin/clxProcess/temp_hw_monitor.py uninstall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

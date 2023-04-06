@@ -1,0 +1,70 @@
+{
+  "s3ip_syfs_paths": [
+    {
+      "path": "/sys/switch/sensor",
+      "type" : "elem",
+      "value" : "/sys/s3ip/temp_sensor",
+      "description": "温度传感器信息"
+    },
+    {
+      "path": "/sys/switch/sensor",
+      "type" : "elem",
+      "value" : "/sys/s3ip/vol_sensor",
+      "description": "电压传感器信息"
+    },
+    {
+      "path": "/sys/switch/syseeprom",
+      "type" : "path",
+      "value" : "/sys/s3ip/syseeprom",
+      "description": "ONIE EEPROM"
+    },
+    {
+      "path": "/sys/switch/fan",
+      "type" : "path",
+      "value" : "/sys/s3ip/fan",
+      "description": "风扇信息"
+    },
+    {
+      "path": "/sys/switch/psu",
+      "type" : "path",
+      "value" : "/sys/s3ip/psu",
+      "description": "电源信息"
+    },
+    {
+      "path": "/sys/switch/transceiver",
+      "type" : "path",
+      "value" : "/sys/s3ip/transceiver",
+      "description": "光模块信息"
+    },
+    {
+      "path": "/sys/switch/sysled",
+      "type" : "path",
+      "value" : "/sys/s3ip/sysled",
+      "description": "指示灯信息"
+    },
+    {
+      "path": "/sys/switch/fpga",
+      "type" : "path",
+      "value" : "/sys/s3ip/fpga",
+      "description": "FPGA信息"
+    },
+    {
+      "path": "/sys/switch/cpld",
+      "type" : "path",
+      "value" : "/sys/s3ip/cpld",
+      "description": "CPLD信息"
+    },
+    {
+      "path": "/sys/switch/watchdog",
+      "type" : "path",
+      "value" : "/sys/s3ip/watchdog",
+      "description": "看门狗信息"
+    },
+    {
+      "path": "/sys/switch/sensor",
+      "type" : "elem",
+      "value" : "/sys/s3ip/curr_sensor",
+      "description": "电流传感器信息"
+    }
+   ]
+}

@@ -1,0 +1,10 @@
+{
+    "chassis": {
+        "CLX8000-48C8D": {
+            "component": {
+                "FPGA": {},
+                "BIOS": {}
+            }
+        }
+    }
+}

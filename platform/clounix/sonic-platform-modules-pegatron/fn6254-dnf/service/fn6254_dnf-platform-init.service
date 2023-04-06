@@ -1,0 +1,13 @@
+[Unit]
+Description=Pegastron fn6254-dnf Platform initialization service
+Before=network.target
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pegaProcess/main.py install
+ExecStop=/usr/local/bin/pegatron_fn6254_dnf_util.py uninstall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

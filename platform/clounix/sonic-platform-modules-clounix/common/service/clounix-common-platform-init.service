@@ -1,0 +1,13 @@
+[Unit]
+Description=Clounix common Platform initialization service
+Before=network.target determine-reboot-cause.service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/clxProcess/main.py install
+ExecStop=/usr/local/bin/clxProcess/main.py uninstall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

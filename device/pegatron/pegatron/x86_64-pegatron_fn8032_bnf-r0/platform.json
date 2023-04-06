@@ -1,0 +1,246 @@
+{
+    "chassis": {
+        "name": "fn8032-bnf",
+        "watchdog": {
+            "name":"watchdog0"
+        },
+        "components": [
+            {
+                "name": "CPLD-A",
+                "description":"Main board side CPLD A",
+                "firmware_version_path":"/sys/bus/i2c/devices/6-0074/cpld_sw_version"
+            },
+            {
+                "name": "CPLD-B",
+                "description":"Main board side CPLD B",
+                "firmware_version_path":"/sys/bus/i2c/devices/7-0075/cpld_sw_version"
+            },
+            {
+                "name": "CPLD-C",
+                "description":"Main board side CPLD C",
+                "firmware_version_path":"/sys/bus/i2c/devices/8-0076/cpld_sw_version"
+            },
+            {
+                "name": "CPLD-D",
+                "description":"NPU board side CPLD",
+                "firmware_version_path":"/sys/bus/i2c/devices/1-0018/cpld_sw_version"
+            },
+            {
+                "name": "MCU",
+                "description":"Main board side MCU",
+                "firmware_version_path":"/sys/bus/i2c/devices/4-0070/hwmon/hwmon4/mb_fw_version"
+            },
+            {
+                "name": "BIOS",
+                "description":"Performs initialization of hardware components during booting",
+                "firmware_version_path":"dmidecode -s bios-version"
+            }
+        ],
+        "fans": [],
+        "fan_drawers": [
+            {
+                "name": "Draw1",
+                "fans": [
+                    {
+                        "name": "FAN1"
+                    },
+                    {
+                        "name": "FAN2"
+                    },
+                    {
+                        "name": "FAN3"
+                    },
+                    {
+                        "name": "FAN4"
+                    },
+                    {
+                        "name": "FAN5"
+                    },
+                    {
+                        "name": "FAN6"
+                    }
+                ]
+            }
+        ],
+        "psus": [
+            {
+                "name": "PSU1",
+                "fans": [
+                    {
+                        "name": "PSU1-FAN1"
+                    }
+                ],
+                "thermals": [
+                    {
+                        "name": "PSU1 Ambient",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU1 SR Hotspot",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU1 PFC Hotspot",
+                        "position": "PSU"
+                    }
+                ]
+            },
+            {
+                "name": "PSU2",
+                "fans": [
+                    {
+                        "name": "PSU2-FAN1"
+                    }
+                ],
+                "thermals" :[
+                    {
+                        "name": "PSU2 Ambient",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU2 SR Hotspot",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU2 PFC Hotspot",
+                        "position": "PSU"
+                    }
+                ]
+            }
+        ],
+        "thermals": [
+            {
+                "name": "LM75BD / Ambient MAC side",
+                "position": "LM75BD"
+            },
+            {
+                "name": "LM75BD / Ambient MAC",
+                "position": "LM75BD"
+            },
+            {
+                "name": "LM75BD / Ambient FAN",
+                "position": "LM75BD"
+            },
+            {
+                "name": "LM75BD / Ambient NPU",
+                "position": "LM75BD"
+            },
+            {
+                "name": "CPU / Core 0",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 1",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 2",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 3",
+                "position": "CPU"
+            }
+        ],
+        "sfps": [
+            {
+                "name": "Ethernet0"
+            },
+            {
+                "name": "Ethernet8"
+            },
+            {
+                "name": "Ethernet16"
+            },
+            {
+                "name": "Ethernet24"
+            },
+            {
+                "name": "Ethernet32"
+            },
+            {
+                "name": "Ethernet40"
+            },
+            {
+                "name": "Ethernet48"
+            },
+            {
+                "name": "Ethernet56"
+            },
+            {
+                "name": "Ethernet64"
+            },
+            {
+                "name": "Ethernet72"
+            },
+            {
+                "name": "Ethernet80"
+            },
+            {
+                "name": "Ethernet88"
+            },
+            {
+                "name": "Ethernet96"
+            },
+            {
+                "name": "Etherne104"
+            },
+            {
+                "name": "Ethernet112"
+            },
+            {
+                "name": "Ethernet120"
+            },
+            {
+                "name": "Ethernet128"
+            },
+            {
+                "name": "Ethernet136"
+            },
+            {
+                "name": "Ethernet144"
+            },
+            {
+                "name": "Ethernet152"
+            },
+            {
+                "name": "Ethernet160"
+            },
+            {
+                "name": "Ethernet168"
+            },
+            {
+                "name": "Ethernet176"
+            },
+            {
+                "name": "Ethernet184"
+            },
+            {
+                "name": "Ethernet192"
+            },
+            {
+                "name": "Ethernet200"
+            },
+            {
+                "name": "Ethernet208"
+            },
+            {
+                "name": "Ethernet216"
+            },
+            {
+                "name": "Ethernet224"
+            },
+            {
+                "name": "Ethernet232"
+            },
+            {
+                "name": "Ethernet240"
+            },
+            {
+                "name": "Ethernet248"
+            }
+        ]
+    },
+    "interfaces" :{}
+    
+}

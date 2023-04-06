@@ -1,0 +1,27 @@
+Source: sonic-pegatron-platform-modules
+Section: main
+Priority: extra
+Maintainer: Pegatron <Peter5_Lin@pegatroncorp.com>
+Build-Depends: debhelper (>= 8.0.0), bzip2
+Standards-Version: 3.9.3
+
+Package: sonic-platform-pegatron-fn8032-bnf
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-pegatron-fn8656-bnf
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-pegatron-fn6254-dnf
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+
+Package: sonic-platform-pegatron-fn8030-bnf
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-pegatron-fn8031-bnf
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
