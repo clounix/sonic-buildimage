@@ -261,7 +261,7 @@ class Psu(PsuBase):
         if (attr_rv != None):
             voltage_high_threshold = float(attr_rv)
 
-        return voltage_high_threshold
+        return voltage_high_threshold/1000
 
     def get_voltage_low_threshold(self):
         """
@@ -277,7 +277,7 @@ class Psu(PsuBase):
         if (attr_rv != None):
             voltage_low_threshold = float(attr_rv)
 
-        return voltage_low_threshold
+        return voltage_low_threshold/1000
 
     def get_maximum_supplied_power(self):
         """
@@ -290,7 +290,7 @@ class Psu(PsuBase):
         max_power_out = 0.0
 
         attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'max_output_power')
-        if (attr_rv != None):
+        if attr_rv != None and attr_rv != 'NA':
             max_power_out = float(attr_rv)
 
         return max_power_out

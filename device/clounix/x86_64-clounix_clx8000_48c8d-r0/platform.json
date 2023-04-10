@@ -122,6 +122,22 @@
                 "position": "LM75BD"
             },
             {
+                "name": "mp2882 / 0x20 rail-1",
+                "position": "MP2882"
+            },
+            {
+                "name": "mp2882 / 0x20 rail-2",
+                "position": "MP2882"
+            },
+            {
+                "name": "mp2882 / 0x21 rail-1",
+                "position": "MP2882"
+            },
+            {
+                "name": "mp2882 / 0x21 rail-2",
+                "position": "MP2882"
+            },
+            {
                 "name": "CPU / Package",
                 "position": "CPU"
             },

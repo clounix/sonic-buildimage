@@ -20,7 +20,9 @@ extern void __iomem *clounix_fpga_base;
 
 #define FPGA_GLOBAL_CFG_BASE 0x100
 #define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0) 
+#define P12V_STBY_EN   1
 #define RESET_MUX_BIT  4
+
 
 //static DEFINE_SPINLOCK(fpga_msi_lock);
 
@@ -69,7 +71,37 @@ static irqreturn_t clounix_fpga_irq_hd(int irq, void *dev_id)
     return IRQ_HANDLED;
 }
 */
+static ssize_t get_sys_fpga_power_cycle(struct device *dev, struct device_attribute *da,
+             char *buf)
+{  
+    uint32_t data=0;
 
+    if(NULL != clounix_fpga_base){
+        data= readl(clounix_fpga_base + FPGA_RESET_CFG_BASE);
+    }
+    return sprintf(buf, "0x%x\n", (data >> P12V_STBY_EN) & 0x1);
+}
+static ssize_t set_sys_fpga_power_cycle(struct device *dev, struct device_attribute *da,
+             const char *buf, size_t count)
+{
+    uint32_t value = 0;
+    uint32_t data=0;
+
+    if (kstrtouint(buf, 16, &value))
+    {
+        return -EINVAL;
+    }
+    if(NULL != clounix_fpga_base){
+        data= readl(clounix_fpga_base + FPGA_RESET_CFG_BASE);
+        if(1 == value)
+            SET_BIT(data, P12V_STBY_EN);
+        else
+            CLEAR_BIT(data, P12V_STBY_EN);
+        writel(data, clounix_fpga_base + FPGA_RESET_CFG_BASE);
+    }
+    return count;
+}
+static struct device_attribute attr = __ATTR(power_cycle, S_IRUGO | S_IWUSR, get_sys_fpga_power_cycle, set_sys_fpga_power_cycle);
 int drv_xilinx_fpga_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
 {
     int err;
@@ -119,7 +151,10 @@ int drv_xilinx_fpga_probe(struct pci_dev *pdev, const struct pci_device_id *pci_
 
     register_reboot_notifier(&reboot_nb);
     register_restart_handler(&restart_nb);
-
+    err = sysfs_create_file(&pdev->dev.kobj, &attr.attr);
+    if (err) {
+	LOG_ERR(CLX_DRIVER_TYPES_FPGA,  "sysfs_create_file error status %d\r\n", err);
+    }
     return 0;
 
 //err_irq:
@@ -146,6 +181,7 @@ void drv_xilinx_fpga_remove(struct pci_dev *pdev)
     pci_clear_master(pdev);
     devm_release_mem_region(&pdev->dev, pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
     pci_disable_device(pdev);
+    sysfs_remove_file(&pdev->dev.kobj, &attr.attr);
 
     return;
 }

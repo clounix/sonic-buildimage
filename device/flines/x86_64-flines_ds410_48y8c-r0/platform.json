@@ -1,0 +1,309 @@
+{
+    "chassis": {
+        "name": "ds410-48y8c",
+        "watchdog": {
+            "name":"watchdog0"
+        },
+        "components": [
+            {
+                "name": "CPLD-1",
+                "description":"MB CPLD#1",
+                "firmware_version_path":"/sys/switch/cpld/cpld1/hw_version"
+            },
+            {
+                "name": "CPLD-2",
+                "description":"MB CPLD#2",
+                "firmware_version_path":"/sys/switch/cpld/cpld2/hw_version"
+            },
+            {
+                "name": "FPGA",
+                "description":"FPGA",
+                "firmware_version_path":"/sys/switch/fpga/fpga1/hw_version"
+            },
+            {
+                "name": "BIOS",
+                "description":"Performs initialization of hardware components during booting",
+                "firmware_version_path":"dmidecode -s bios-version"
+            }
+        ],
+        "fans": [],
+        "fan_drawers": [
+            {
+                "name": "Draw1",
+                "fans": [
+                    {
+                        "name": "FAN1"
+                    },
+                    {
+                        "name": "FAN2"
+                    },
+                    {
+                        "name": "FAN3"
+                    },
+                    {
+                        "name": "FAN4"
+                    },
+                    {
+                        "name": "FAN5"
+                    }
+                ]
+            }
+        ],
+        "psus": [
+            {
+                "name": "PSU1",
+                "fans": [
+                    {
+                        "name": "PSU1-FAN1"
+                    }
+                ],
+                "thermals": [
+                    {
+                        "name": "PSU1 Ambient",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU1 SR Hotspot",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU1 PFC Hotspot",
+                        "position": "PSU"
+                    }
+                ]
+            },
+            {
+                "name": "PSU2",
+                "fans": [
+                    {
+                        "name": "PSU2-FAN1"
+                    }
+                ],
+                "thermals" :[
+                    {
+                        "name": "PSU2 Ambient",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU2 SR Hotspot",
+                        "position": "PSU"
+                    },
+                    {
+                        "name": "PSU2 PFC Hotspot",
+                        "position": "PSU"
+                    }
+                ]
+            }
+        ],
+        "thermals": [
+            {
+                "name": "TMP75C / ASIC 0x48",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "TMP75C / temp 0x49",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "TMP75C / temp 0x4a",
+                "position": "fpga i2c temp"
+            },
+            {
+                "name": "LM75BD / FAN 0x4b",
+                "position": "LM75BD"
+            },
+            {
+                "name": "CPU / Package",
+                "position": "CPU"
+            },            
+            {
+                "name": "CPU / Core 0",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 1",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 2",
+                "position": "CPU"
+            },
+            {
+                "name": "CPU / Core 3",
+                "position": "CPU"
+            }
+
+        ],
+        "sfps": [
+            {
+                "name": "Ethernet0"
+            },
+            {
+                "name": "Ethernet1"
+            },
+            {
+                "name": "Ethernet2"
+            },
+            {
+                "name": "Ethernet3"
+            },
+            {
+                "name": "Ethernet4"
+            },
+            {
+                "name": "Ethernet5"
+            },
+            {
+                "name": "Ethernet6"
+            },
+            {
+                "name": "Ethernet7"
+            },
+            {
+                "name": "Ethernet8"
+            },
+            {
+                "name": "Ethernet9"
+            },
+            {
+                "name": "Ethernet10"
+            },
+            {
+                "name": "Ethernet11"
+            },
+            {
+                "name": "Ethernet12"
+            },
+            {
+                "name": "Ethernet13"
+            },
+            {
+                "name": "Ethernet14"
+            },
+            {
+                "name": "Ethernet15"
+            },
+            {
+                "name": "Ethernet16"
+            },
+            {
+                "name": "Ethernet17"
+            },
+            {
+                "name": "Ethernet18"
+            },
+            {
+                "name": "Ethernet19"
+            },
+            {
+                "name": "Ethernet20"
+            },
+            {
+                "name": "Ethernet21"
+            },
+            {
+                "name": "Ethernet22"
+            },
+            {
+                "name": "Ethernet23"
+            },
+            {
+                "name": "Ethernet24"
+            },
+            {
+                "name": "Etherne25"
+            },
+            {
+                "name": "Etherne26"
+            },
+            {
+                "name": "Etherne27"
+            },
+            {
+                "name": "Ethernet28"
+            },
+            {
+                "name": "Ethernet29"
+            },
+            {
+                "name": "Ethernet30"
+            },
+            {
+                "name": "Ethernet31"
+            },
+            {
+                "name": "Ethernet32"
+            },
+            {
+                "name": "Ethernet33"
+            },
+            {
+                "name": "Ethernet34"
+            },
+            {
+                "name": "Ethernet35"
+            },
+            {
+                "name": "Ethernet36"
+            },
+            {
+                "name": "Ethernet37"
+            },
+            {
+                "name": "Ethernet38"
+            },
+            {
+                "name": "Ethernet39"
+            },
+            {
+                "name": "Ethernet40"
+            },
+            {
+                "name": "Ethernet41"
+            },
+            {
+                "name": "Ethernet42"
+            },
+            {
+                "name": "Ethernet43"
+            },
+            {
+                "name": "Ethernet44"
+            },
+            {
+                "name": "Ethernet45"
+            },
+            {
+                "name": "Ethernet46"
+            },
+            {
+                "name": "Ethernet47"
+            },
+            {
+                "name": "Ethernet48"
+            },
+            {
+                "name": "Ethernet52"
+            },
+            {
+                "name": "Ethernet56"
+            },
+            {
+                "name": "Ethernet60"
+            },
+            {
+                "name": "Ethernet64"
+            },
+            {
+                "name": "Ethernet68"
+            },
+            {
+                "name": "Ethernet72"
+            },
+            {
+                "name": "Ethernet76"
+            }
+        ]
+    },
+    "interfaces": {}
+}

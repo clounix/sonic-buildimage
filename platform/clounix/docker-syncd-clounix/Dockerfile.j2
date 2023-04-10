@@ -31,6 +31,9 @@ RUN dpkg -i \
 debs/{{ deb }}{{' '}}
 {%- endfor %}
 
+COPY ["update_libc++", "update_libc++"]
+RUN  cp update_libc++/* /usr/lib/x86_64-linux-gnu/  
+
 ##RUN dpkg -i \
 ##{% for deb in docker_syncd_clounix_pydebs.split(' ') -%}
 ##debs/{{ deb }}{{' '}}

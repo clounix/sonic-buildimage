@@ -17,15 +17,21 @@
 /****************************************watchdog*********************************************/
 static ssize_t clx_get_watchdog_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG], buf, count);
 }
 
 static ssize_t clx_set_watchdog_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_WATCHDOG] = loglevel;
@@ -34,7 +40,9 @@ static ssize_t clx_set_watchdog_loglevel(const char *buf, size_t count)
 
 static ssize_t clx_get_watchdog_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "watchdog debug: \n"
+                        "echo 120 > /sys/switch/watchdog/timeout\n"
+                        "cat /sys/switch/watchdog/timeleft\n");
 }
 
 static ssize_t clx_set_watchdog_debug(const char *buf, size_t count)

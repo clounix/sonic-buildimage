@@ -127,7 +127,7 @@ class FwMgrUtil(object):
             print(str(e))
 
         #update
-        cmd = self.clx_update_tool + "./CRB_FPGA_UPGRADEab" + " -b 3 -r 0"
+        cmd = self.clx_update_tool + "./CRB_FPGA_UPGRADEab" + " -b 3"
         try:
             status, retstr = run_command(cmd)
             if status != 0:
@@ -177,7 +177,7 @@ class FwMgrUtil(object):
         return ret
 
     # 固件更新
-    def firmware_upgrade(self, fw_type, fw_path, fw_extr=None):
+    def firmware_upgrade(self, fw_type, fw_path, fw_extr=None, platform_path=None):
         """
         	@fw_type: firmware type, should be one of the strings:'bios', 'uboot', 'bmc', 'cpld', .etc.
         	@fw_path: target firmware file

@@ -2,9 +2,10 @@ from sonic_platform_base.sonic_thermal_control.thermal_manager_base import Therm
 from .thermal_actions import *
 from .thermal_conditions import *
 from .thermal_infos import *
+from .helper import APIHelper
 
 class ThermalManager(ThermalManagerBase):
-
+    FSC_ALGORITHM_CMD = ' supervisorctl {} fancontrol'
     @classmethod
     def start_thermal_control_algorithm(cls):
         """
@@ -40,4 +41,6 @@ class ThermalManager(ThermalManagerBase):
         Returns:
             bool: True if set success, False if fail.
         """
-        pass
+        cmd = 'start' if enable else 'stop'
+        print(cmd)
+        return APIHelper().run_command(cls.FSC_ALGORITHM_CMD.format(cmd))

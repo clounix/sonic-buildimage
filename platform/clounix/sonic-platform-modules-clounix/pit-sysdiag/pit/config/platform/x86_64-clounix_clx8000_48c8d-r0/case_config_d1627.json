@@ -201,7 +201,7 @@
        "P1V8":{
                 "high_voltage": 1810,
                 "low_voltage": 1738,
-                "normal_voltage": 1775
+                "normal_voltage": 1790
         },
        "P0V79":{
                 "high_voltage": 804,

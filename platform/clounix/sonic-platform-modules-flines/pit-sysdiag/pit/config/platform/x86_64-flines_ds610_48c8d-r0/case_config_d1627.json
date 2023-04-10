@@ -1,0 +1,273 @@
+{
+    "asic": "clounix",
+    "arch": "x86_64",
+    "cpu_info": {
+        "model_cmd": "cat /proc/cpuinfo",
+        "cores_cmd": "cat /proc/cpuinfo | grep \"cpu cores\" | wc -l",
+        "MHz_cmd": "cat /proc/cpuinfo | grep \"cpu MHz\" | awk '{print $4}'",
+        "pattern": "model name\\s*:(\\s*.*)",
+        "model_name": "Intel(R) Xeon(R) CPU D-1627 @ 2.90GHz",
+        "CPU(s)": "8",
+        "cpu_MHz": "2.90GHz"
+    },
+    "rtc_info":{
+        "delay_time": 5,
+        "max_time_diff": 1
+    },
+    "server_ip": "10.19.1.1",
+    "mac_address": {
+        "offset":{
+            "cpu_offset": 0
+        },
+        "check_list":["cpu"]
+    },
+    "memstress_info":{
+        "mem_test_count": "1",
+        "mem_run_size_percentage": "90%",
+        "memstress_test_time": 1
+    },
+    "software_system":{
+        "sysdiag_version":"1.1",
+        "timezone":"Etc/UTC",
+        "sonic_version":"SONiC.202012.clounix_uefi.0-dirty-20220815.162650"
+    },
+    "pcie":{
+        "X552":{
+            "width":"x1",
+            "speed":"2.5GT/s",
+            "num":4
+        },
+        "I210": {
+                "width":"x1",
+                "speed": "2.5GT/s",
+                "num":1
+        },
+        "1d9f:8579": {
+            "width":"x4",
+            "speed": "8GT/s",
+            "num":1
+        },
+        "Xilinx": {
+            "width":"x1",
+            "speed": "5GT/s",
+            "num":1
+        }
+    },
+    "ssdstress_info":{
+        "dev_path": "/stress.txt",
+        "rw_mode": "randread",
+        "io_size": "4k",
+        "num_jobs": "1",
+        "iop_pattern" : "IOPS=([0-9]+)",
+        "dev_pattern" : "root-overlay",
+        "ssd_run_size_percentage": "95%",
+        "iops_value_standard": "3000",
+        "ssd_test_count": 1,
+        "total_ssd_value": "32G"
+    },
+    "fan_info":{
+        "position" : "main board",
+        "count" :6,
+        "direction":"out",
+        "ratio_target": [20,80,40],
+        "speed_tolerance": 2100,
+        "speed_max":21000,
+        "speed_min":2100
+    },
+    "psu_info":{
+        "position" : "main board",
+        "count" :2,
+        "in_power_min":0, 
+        "in_power_max":1815000000,
+        "in_vol_min":198000,
+        "in_vol_max":242000,
+        "in_curr_min":0,
+        "in_curr_max":7500,
+
+        "out_power_min":0, 
+        "out_power_max":1260000000,
+        "out_vol_min":11400,
+        "out_vol_max":12600,
+        "out_curr_min":0,
+        "out_curr_max":100000
+    },
+    "usbstress_info":{
+        "stress_test_time": 1
+    },
+    "i2c":{
+        "FAN_CPLD" : {
+            "bus" : 6,
+            "address" : "0x60",
+            "register" : "0x11",
+            "flag" : "rw"
+        }
+    },
+    "dac_info":{
+        "dac_type":"QSFP",
+        "QSFP":{
+            "dac_port":["100G","400G"],
+            "total_portnum":56,
+            "100G":{
+                "port_num":[0,96,2],
+                "Identifier":["QSFP28 or later or Unknown","Unknown or unspecified","Unknown"],
+                "Vendor_Name":["GYL-100G-DSFP-1M","GYL-100G-DSFP-2M","LVADF101-SD-R"],
+                "Vendor_PN_len":[5,40],
+                "Vendor_SN_len":[0,40]
+            },
+            "400G":{
+                "port_num":[96,152,8],
+                "Identifier":["QSFP-DD Double Density 8X Pluggable Transceiver"],
+                "Vendor_Name":["L135DD004-SD-R","QSFP-DD-LB","QSFP-400G-CU2M","GYL-400G-CU1M"],
+                "Vendor_Part_Number_len":[5,30],
+                "Vendor_Serial_Number_len":[0,40]
+            }
+        },
+        "SFP":{
+            "100G":{},
+            "400G":{}
+        }
+
+    },
+
+    "firmware_version":["bios","fpga","cpld"],
+    "cpld_version":{
+        "FAN_CPLD": "0x03",
+        "CPLD2": "02",
+        "CPLD1": "02"
+    },
+    "bios_version":"5.14",
+    "sdk_version":"1.7.3",
+    "fpga_version":"04",
+
+    "fpga_firmware_type":["FPGA"],
+    "fpga_firmware_baseline":{
+        "FPGA":  {
+            "absolute_path":false,
+            "file_path": "mb_fpga_top.bin",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":""
+        }
+    },
+    "fpga_firmware_test":{
+        "FPGA":  {
+            "absolute_path":false,
+            "file_path": "mb_fpga_update.bin",
+            "version": "05",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":"",
+            "slave_version":""
+        }
+    },
+
+    "cpld_firmware_type":["CPLD-1","FAN-CPLD"],
+    "cpld_firmware_baseline":{
+        "CPLD-1":  {
+            "absolute_path":false,
+            "file_path": "main_cpld_dualboot.aje",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":""
+        },
+        "FAN-CPLD":  {
+            "absolute_path":false,
+            "file_path": "fan_cpld_dualboot.aje",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":""
+        }
+
+    },
+    "cpld_firmware_test":{
+        "CPLD-1":  {
+            "absolute_path":false,
+            "file_path": "main_cpld_update.aje",
+            "version": "03",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":""
+        },
+        "FAN-CPLD":  {
+            "absolute_path":false,
+            "file_path": "fan_cpld_update.aje",
+            "version": "04",
+            "slave_upgrade":false,
+            "same_with_master":false,
+            "slave_file_path":""
+        }
+    },
+    "voltage_margin_device":["P0V79", "P1V0", "P0V8", "P3V3"],
+    "svid_info":{
+       "P0V79":{
+                "high_voltage": 804,
+                "low_voltage": 773,
+                "normal_voltage": 789
+        },
+        "P1V0":{
+                "high_voltage": 1023,
+                "low_voltage": 984,
+                "normal_voltage": 1005
+        },
+        "P0V8":{
+                "high_voltage": 816,
+                "low_voltage": 787,
+                "normal_voltage": 802
+        },
+        "P3V3":{
+                "high_voltage": 3394,
+                "low_voltage": 3261,
+                "normal_voltage": 3328
+        }
+    },
+    "memory_free_size": 100,
+    "snake_info":{
+        "script_filename" : "/usr/share/sonic/device/x86_64-flines_ds610_48c8d-r0/ds610-48c8d/lightning_ds610-48c8d.dsh",
+        "led_cfg_filename" : "/usr/share/sonic/device/x86_64-flines_ds610_48c8d-r0/ds610-48c8d/lightning-ds610-48c8d.led",
+        "port_list" : "0,2,4,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,104,112,120,128,136,144,152",
+        "sdk_traffic_test_dsh" :[
+            "test_mac_loopback_1_sendPkt.dsh",
+            "test_mac_loopback_2_reduceRate.dsh",
+	    "test_mac_loopback_3_ctrl2cpu_100g_rx.dsh",
+	    "test_mac_loopback_4_ctrl2cpu_400g_rx.dsh",
+	    "test_mac_loopback_5_ctrl2cpu_100g_tx.dsh",
+	    "test_mac_loopback_6_ctrl2cpu_400g_tx.dsh",
+	    "test_mac_loopback_7_recover.dsh"
+        ],
+        "total_portnum" : 56,
+        "qsfp_portnum" : 48,
+        "test_loop_times" : 10
+    },
+    "sensor_info":{
+        "dcdc_sensor_type" : [
+            "P0V79_VDDK",
+            "P1V0_AVDD",
+            "P3V3_SFP",
+            "P0V8_AVDD"
+        ],
+        "dcdc_sensor_node_name" : {
+            "P0V79_VDDK" : ["curr1_input","in3_input","power1_input"],
+            "P1V0_AVDD"  : ["curr2_input","in4_input","power2_input"],
+            "P3V3_SFP"   : ["curr1_input","in3_input","power1_input"],
+            "P0V8_AVDD"  : ["curr2_input","in4_input","power2_input"]
+        },
+        "dcdc_sensor_node" : {
+            "P0V79_VDDK" : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon4/",
+            "P1V0_AVDD"  : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon4/",
+            "P3V3_SFP"   : "/sys/bus/i2c/devices/9-0021/hwmon/hwmon10/",
+            "P0V8_AVDD"  : "/sys/bus/i2c/devices/9-0021/hwmon/hwmon10/"
+        }
+    },
+    "cpi_port_info":{
+        "script_filename" : "/usr/share/sonic/device/x86_64-flines_ds610_48c8d-r0/ds610-48c8d/lightning_ds610-48c8d.dsh",
+        "led_cfg_filename" : "/usr/share/sonic/device/x86_64-flines_ds610_48c8d-r0/ds610-48c8d/lightning-ds610-48c8d.led",
+        "port_list" : "0,2,4,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,104,112,120,128,136,144,152",
+        "cpi_port" : {
+            "eth1":"257",
+            "eth2":"258"
+        },
+        "asic_send_pkt_num":1000,
+        "cpu_send_pkt_num":1,
+        "test_loop_times" : 1
+    }
+}

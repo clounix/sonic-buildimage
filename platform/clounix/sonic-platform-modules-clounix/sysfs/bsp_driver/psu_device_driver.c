@@ -17,15 +17,21 @@
 
 static ssize_t clx_get_psu_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_CPLD]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_PSU], buf, count);
 }
 
 static ssize_t clx_set_psu_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_PSU] = loglevel;
@@ -34,7 +40,10 @@ static ssize_t clx_set_psu_loglevel(const char *buf, size_t count)
 
 static ssize_t clx_get_psu_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "check PSU info: \n"
+                        "cat /sys/switch/psu/psu*/*\n"
+                        "check PSU temerature: \n"
+                        "cat /sys/switch/psu/psu1/temp*/*\n");
 }
 
 static ssize_t clx_set_psu_debug(const char *buf, size_t count)
@@ -529,6 +538,25 @@ static ssize_t clx_get_psu_max_output_power(unsigned int psu_index, char *buf, s
     PSU_DEV_VALID(psu_dev->get_psu_max_output_power);
     return psu_dev->get_psu_max_output_power(psu_dev, psu_index, buf, count);
 }
+
+static ssize_t clx_get_psu_max_output_vol(unsigned int psu_index, char *buf, size_t count)
+{
+    struct psu_fn_if *psu_dev = get_psu();
+
+    PSU_DEV_VALID(psu_dev);
+    PSU_DEV_VALID(psu_dev->get_psu_max_output_vol);
+    return psu_dev->get_psu_max_output_vol(psu_dev, psu_index, buf, count);
+}
+
+static ssize_t clx_get_psu_min_output_vol(unsigned int psu_index, char *buf, size_t count)
+{
+    struct psu_fn_if *psu_dev = get_psu();
+
+    PSU_DEV_VALID(psu_dev);
+    PSU_DEV_VALID(psu_dev->get_psu_min_output_vol);
+    return psu_dev->get_psu_min_output_vol(psu_dev, psu_index, buf, count);
+}
+
 /*
  * clx_get_psu_temp_alias - Used to identify the location of the temperature sensor of psu,
  * @psu_index: start with 1
@@ -759,6 +787,8 @@ static struct s3ip_sysfs_psu_drivers_s drivers = {
     .get_psu_alarm_threshold_curr = clx_get_psu_alarm_threshold_curr,
     .get_psu_alarm_threshold_vol = clx_get_psu_alarm_threshold_vol,
     .get_psu_max_output_power = clx_get_psu_max_output_power,
+    .get_psu_max_output_vol = clx_get_psu_max_output_vol,
+    .get_psu_min_output_vol = clx_get_psu_min_output_vol,
     .get_psu_temp_alias = clx_get_psu_temp_alias,
     .get_psu_temp_type = clx_get_psu_temp_type,
     .get_psu_temp_max = clx_get_psu_temp_max,

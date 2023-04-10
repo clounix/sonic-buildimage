@@ -113,9 +113,10 @@ class FANTC(TestCaseCommon):
             speed = self.get_motor_property(fanid+1,motorid,"speed")
             speed_max = self.get_motor_property(fanid+1,motorid,"speed_max")
             speed_min = self.get_motor_property(fanid+1,motorid,"speed_min")
+            speed_tolerance = self.fan_info_dict["speed_tolerance"]
             # running_state = self.read_sysfs(f'/sys/s3ip/fan/fan{n}/motor{i}/speed')
             if speed > speed_max or speed < speed_min:
-                self.fail_reason.append("test_fan_status fan{}.motor{} fail.".format(fanid+1,motorid))
+                self.fail_reason.append("test_fan_status fan{}.motor{} fail, speed:{},speed_max:{}, speed_min:{}".format(fanid+1,motorid,speed, speed_max, speed_min))
                 return E.EFAN6000
             # 2. test speed tolerance
             tolerance = self.fan_info_dict['speed_tolerance']
@@ -123,12 +124,16 @@ class FANTC(TestCaseCommon):
                 tolerance = self.get_motor_property(fanid+1,motorid,"speed_tolerance")
 
             ratio = self.read_sysfs('/sys/s3ip/fan/fan{n}/motor{m}/ratio'.format(n=fanid+1,m=motorid))
-            speed_target = ((speed_max-speed_min) * int(ratio)) / 100 + speed_min
+            #speed_target = ((speed_max-speed_min) * int(ratio)) / 100 + speed_min
+            speed_target = int(ratio) * 274+180
+            speed_delta = speed_target - speed
+            if (speed_delta > (-speed_tolerance)) and (speed_delta < speed_tolerance):
+                  self.logger.log_info("fan control test done, PASS", True)
+                  return E.OK
+            else:
+                  self.fail_reason.append("fan {} speed {}, speed_target {},speed_delta {}, out of speed tolerance {}, ratio {}%.".format(fanid+1,speed,speed_target,speed_delta, speed_tolerance, ratio))
+                  return E.EFAN6000
 
-            if abs(speed_target - speed) > tolerance :
-                self.fail_reason.append("fan {} speed {} test {} out of tolerance {}.".format(fanid+1,speed,speed_target,tolerance))
-                return E.EFAN6000
-            return E.OK
     def verify_fan_info(self, v):
         return True
 
@@ -237,7 +242,7 @@ class FANTC(TestCaseCommon):
         for n in range(self.fan_count):
             for ratio in self.fan_info_dict['ratio_target']:
                 self.write_sysfs('/sys/s3ip/fan/fan{n}/motor{m}/ratio'.format(n=n+1, m=0),ratio)
-                time.sleep(3)
+                time.sleep(6)
                 rt = self.speed_check(n,0)
                 if rt != E.OK:
                     ret = rt
@@ -292,13 +297,23 @@ class FANTC(TestCaseCommon):
 
     def start_fancontrol(self):
         self.start_pmon_daemon("fancontrol")
+        self.start_pmon_daemon("thermalctld")
 
     def stop_fancontrol(self):
         self.stop_pmon_daemon_service("fancontrol")
-    
+        self.stop_pmon_daemon_service("thermalctld")
+
+    def stop_pmon(self):
+        run_command("systemctl stop pmon.service")
+
+    def start_pmon(self):
+        run_command("systemctl start pmon.service")
+
     def previous_setting(self):
-        self.stop_fancontrol()
+        #self.stop_fancontrol()
+        self.stop_pmon()
 
     # restore fan auto mode
     def restore_default_setting(self):
-        self.start_fancontrol()
+        #self.start_fancontrol()
+        self.start_pmon()

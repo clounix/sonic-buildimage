@@ -18,15 +18,21 @@
 
 static ssize_t clx_get_transceiver_loglevel(char *buf, size_t count)
 {
-    return sprintf(buf, "0x%x\n", g_dev_loglevel[CLX_DRIVER_TYPES_XCVR]);
+    PRINT_LOGLEVEL(g_dev_loglevel[CLX_DRIVER_TYPES_XCVR], buf, count);
 }
 
 static ssize_t clx_set_transceiver_loglevel(const char *buf, size_t count)
 {
     int loglevel = 0;
+    unsigned int base = 16;
 
-    if (kstrtouint(buf, 16, &loglevel))
-    {
+    if (buf[1] == 'x') {
+        base = 16;
+    }
+    else {
+        base = 10;
+    }
+    if (kstrtouint(buf, base, &loglevel)) {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_XCVR] = loglevel;
@@ -35,7 +41,9 @@ static ssize_t clx_set_transceiver_loglevel(const char *buf, size_t count)
 
 static ssize_t clx_get_transceiver_debug(char *buf, size_t count)
 {
-    return -ENOSYS;
+    return sprintf(buf, "read transciever info: \n"
+                        "cat /sys/switch/transceiver/present\n"
+                        "hexdump -C /sys/switch/transceiver/eth1/eeprom\n");
 }
 
 static ssize_t clx_set_transceiver_debug(const char *buf, size_t count)

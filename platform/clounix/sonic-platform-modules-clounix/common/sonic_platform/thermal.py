@@ -61,7 +61,7 @@ class Thermal(ThermalBase):
         """
         high_threshold = 0.0
 
-        attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'temp_max')
+        attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'temp_max_hyst')
         if ((attr_rv != None) and (attr_rv != 'NA')):
             attr_rv = int(attr_rv, 10)
             high_threshold = float(attr_rv/1000)
@@ -86,7 +86,7 @@ class Thermal(ThermalBase):
             A boolean, True if threshold is set successfully, False if not
         """
         is_set = False
-        is_set = self.__api_helper.write_txt_file(self.__attr_path_prefix + 'temp_max',int(temperature*1000))
+        is_set = self.__api_helper.write_txt_file(self.__attr_path_prefix + 'temp_max_hyst', int(temperature*1000))
         return is_set
 
     def set_low_threshold(self, temperature):
@@ -109,7 +109,7 @@ class Thermal(ThermalBase):
         """
         high_threshold = 0.0
 
-        attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'temp_max_hyst')
+        attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'temp_max')
         if ((attr_rv != None) and (attr_rv != 'NA')):
             attr_rv = int(attr_rv, 10)
             high_threshold = float(attr_rv/1000)

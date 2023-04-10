@@ -19,7 +19,7 @@ PACKAGE_PRE_NAME := sonic-platform-pegatron
 KVERSION   ?= $(shell uname -r)
 KERNEL_SRC := /lib/modules/$(KVERSION)
 MOD_SRC_DIR:= $(shell pwd)
-MODULE_DIRS:= fn8656-bnf fn8032-bnf fn6254-dnf
+MODULE_DIRS:= fn8656-bnf fn8032-bnf
 MODULE_DIR := modules
 UTILS_DIR := utils
 SERVICE_DIR := service
@@ -71,32 +71,6 @@ build:
 			python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/$${mod}/utils; \
 			cd $(MOD_SRC_DIR); \
 			cd $(MOD_SRC_DIR); \
-		fi; \
-		if [ $$mod = "fn6254-dnf" ]; then \
-			rm -rf ./ixgbe-$(IXGBE_VERSION); \
-			wget -O ixgbe.tar.gz "https://downloadmirror.intel.com/30240/eng/ixgbe-5.9.4.tar.gz"; \
-			tar xzf ixgbe.tar.gz; \
-			rm ixgbe-$(IXGBE_VERSION)/src/Makefile ixgbe-$(IXGBE_VERSION)/src/common.mk ixgbe-$(IXGBE_VERSION)/src/Module.supported; \
-			git init ixgbe-$(IXGBE_VERSION)/src; \
-			git --git-dir=./ixgbe-$(IXGBE_VERSION)/src/.git --work-tree=ixgbe-$(IXGBE_VERSION)/src add --all; \
-			git --git-dir=./ixgbe-$(IXGBE_VERSION)/src/.git --work-tree=ixgbe-$(IXGBE_VERSION)/src commit -m "unmodified ixgbe source"; \
-			cp ./fn6254-dnf/modules/pegatron_fn6254_dnf_ixgbe/*.patch ./ixgbe-$(IXGBE_VERSION)/src/; \
-			git --git-dir=./ixgbe-$(IXGBE_VERSION)/src/.git --work-tree=ixgbe-$(IXGBE_VERSION)/src am 0001-Add-clounix-porting-driver.patch; \
-			cp ./ixgbe-$(IXGBE_VERSION)/src/* $(MOD_SRC_DIR)/fn6254-dnf/$(MODULE_DIR)/pegatron_fn6254_dnf_ixgbe/; \
-			make modules -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/$${mod}/modules; \
-		fi; \
-	done)
-
-	# Build afulnx_64 for SONiC
-	(for mod in $(MODULE_DIRS); do \
-		if [ $$CONFIGURED_ARCH = "amd64" ]; then \
-            if [ -e $(MOD_SRC_DIR)/$${mod}/$(BIOS_DIR) ]; then \
-			    cd $(MOD_SRC_DIR)/$${mod}/$(BIOS_DIR); \
-			    ./afulnx_64 /GENDRV KERNEL=$(KERNEL_SRC)/build .;\
-			    ./afulnx_64 /MAKEDRV KERNEL=$(KERNEL_SRC)/build .;\
-			    make KERNEL=$(KERNEL_SRC)/build;\
-			    cd $(MOD_SRC_DIR); \
-            fi; \
 		fi; \
 	done)
 
@@ -150,9 +124,6 @@ binary-indep:
 				cp -r $(MOD_SRC_DIR)/$${mod}/bios_bin debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
 				cp $(MOD_SRC_DIR)/$${mod}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
 		    fi; \
-		fi; \
-		if [ $$mod = "fn6254-dnf" ]; then \
-			cp $(MOD_SRC_DIR)/fn6254-dnf/$(MODULE_DIR)/pegatron_fn6254_dnf_ixgbe/pegatron_fn6254_dnf_ixgbe.ko debian/$(PACKAGE_PRE_NAME)-fn6254-dnf/$(KERNEL_SRC)/$(INSTALL_MOD_DIR); \
 		fi; \
 	done)
 

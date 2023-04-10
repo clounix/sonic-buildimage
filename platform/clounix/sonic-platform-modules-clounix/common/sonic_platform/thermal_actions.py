@@ -4,6 +4,7 @@ import sys
 from sonic_platform_base.sonic_thermal_control.thermal_action_base import ThermalPolicyActionBase
 from sonic_platform_base.sonic_thermal_control.thermal_json_object import thermal_json_object
 from sonic_py_common import logger
+from .thermal_infos import ChassisInfo
 #from sonic_platform.fault import Fault
 from .helper import APIHelper
 
@@ -11,9 +12,79 @@ SYSLOG_IDENTIFIER = 'thermalctld'
 helper_logger = logger.Logger(SYSLOG_IDENTIFIER)
 
 PLATFORM_CAUSE_DIR = "/host/reboot-cause/platform"
-#ADDITIONAL_FAULT_CAUSE_FILE = os.path.join(PLATFORM_CAUSE_DIR, "additional_fault_cause")
-INT_STATUS_FILE = '/sys/devices/pci0000:00/0000:00:1f.3/i2c-0/i2c-1/i2c-6/6-0074/int_status'
-ADDITIONAL_FAULT_CAUSE_FILE = "/usr/share/sonic/platform/api_files/reboot-cause/platform/additional_fault_cause"
+
+THERMAL_OVERLOAD_POSITION_FILE = "/usr/share/sonic/platform/api_files/reboot-cause/platform/thermal_overload_position"
+@thermal_json_object('thermal_control.control')
+class ControlThermalAlgoAction(ThermalPolicyActionBase):
+    """
+    Action to control the thermal control algorithm
+    """
+    # JSON field definition
+    JSON_FIELD_STATUS = 'status'
+
+    def __init__(self):
+        self.status = True
+
+    def load_from_json(self, json_obj):
+        """
+        Construct ControlThermalAlgoAction via JSON. JSON example:
+            {
+                "type": "thermal_control.control"
+                "status": "true"
+            }
+        :param json_obj: A JSON object representing a ControlThermalAlgoAction action.
+        :return:
+        """
+        if ControlThermalAlgoAction.JSON_FIELD_STATUS in json_obj:
+            status_str = json_obj[ControlThermalAlgoAction.JSON_FIELD_STATUS].lower(
+            )
+            if status_str == 'true':
+                self.status = True
+            elif status_str == 'false':
+                self.status = False
+            else:
+                raise ValueError('Invalid {} field value, please specify true of false'.
+                                 format(ControlThermalAlgoAction.JSON_FIELD_STATUS))
+        else:
+            raise ValueError('ControlThermalAlgoAction '
+                             'missing mandatory field {} in JSON policy file'.
+                             format(ControlThermalAlgoAction.JSON_FIELD_STATUS))
+
+    def execute(self, thermal_info_dict):
+        """
+        Disable thermal control algorithm
+        :param thermal_info_dict: A dictionary stores all thermal information.
+        :return:
+        """
+        if ChassisInfo.INFO_NAME in thermal_info_dict:
+            chassis_info_obj = thermal_info_dict[ChassisInfo.INFO_NAME]
+            chassis = chassis_info_obj.get_chassis()
+            thermal_manager = chassis.get_thermal_manager()
+            if self.status:
+                thermal_manager.start_thermal_control_algorithm()
+            else:
+                thermal_manager.stop_thermal_control_algorithm()
+
+@thermal_json_object("fan.all.set_speed")
+class SetFanSpeedAction(ThermalPolicyActionBase):
+    JSON_FIELD_SPEED = "speed"
+
+    def __init__(self):
+      self.speed = None
+
+    def load_from_json(self, json_obj):
+      if self.JSON_FIELD_SPEED in json_obj:
+         speed = float(json_obj[self.JSON_FIELD_SPEED])
+         if speed < 0 or speed > 100:
+            raise ValueError('SetFanSpeedAction invalid speed value {} in JSON policy file, valid value should be [0, 100]'.format(speed))
+         self.speed = speed
+      else:
+         raise ValueError("SetFanSpeedAction missing field in json file")
+    
+    def execute(self, thermal_info_dict):
+      for fan in thermal_info_dict['fan_info'].fans.values():
+         fan.set_speed(self.speed)
+
 
 @thermal_json_object('switch.power_cycling')
 class SwitchPolicyAction(ThermalPolicyActionBase):
@@ -32,21 +103,19 @@ class SwitchPolicyAction(ThermalPolicyActionBase):
         helper_logger.log_error("Error: thermal overload !!!!!!!!!!!!!!!!!!Please reboot Now!!")
         helper_logger.log_error("Error: thermal overload !!!!!!!!!!!!!!!!!!")
         helper_logger.log_error("recorded the fault cause begin...")
-        attr_rv = self.__api_helper.read_one_line_file(INT_STATUS_FILE)
-        attr_rv = int(attr_rv, 16)
-        REBOOT_FAN_FAULT = ''
-        REBOOT_PSU_FAULT = ''
-        if((attr_rv & 0x1) != 0):
-            REBOOT_FAN_FAULT = 'FAN'
-        if((attr_rv & 0x2) != 0):
-            REBOOT_PSU_FAULT = 'PSU'
-
-        #fault_status = Fault.get_fault_status()
-        # Write a new default reboot cause file for the next reboot check
-        if((attr_rv & 0x3) != 0):
-            REBOOT_FAULT_CAUSE = ' '.join([REBOOT_FAN_FAULT, REBOOT_PSU_FAULT])
-            with open(ADDITIONAL_FAULT_CAUSE_FILE, "w") as additional_fault_cause_file:
-                additional_fault_cause_file.write(REBOOT_FAULT_CAUSE)
+        print("Error: thermal overload !!!!!!!!!!!!!!!!!!Please reboot Now!!") 
+         #wait for all record actions done
+        thermal_overload_pos = 'cpu'
+        wait_ms =  30
+        while wait_ms > 0:
+            if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
+                thermal_overload_pos = self.__api_helper.read_one_line_file(THERMAL_OVERLOAD_POSITION_FILE)
+                if "critical threshold" in thermal_overload_pos:
+                    break
+            time.sleep(1/1000)
+            helper_logger.log_error("wait ############for recorded")
+            wait_ms = wait_ms - 1
         helper_logger.log_error("recorded the fault cause...done")
-        #to be update when all of the limit is breakdown.
-        #os.system('/sbin/reboot $@')
+        cmd = 'bash /usr/share/sonic/platform/thermal_overload_control.sh {}'.format(thermal_overload_pos)
+        APIHelper().run_command(cmd)
+

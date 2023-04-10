@@ -73,6 +73,7 @@ typedef struct
     CLX_ADDR_T          phy_addr;
     void                *ptr_virt_addr;
     CLX_ADDR_T          size;
+    CLX_ADDR_T          bus_addr;
 
 #if defined(CLX_EN_DMA_RESERVED)
     BOOL_T              available;
@@ -111,6 +112,7 @@ typedef struct
 #else
     CLX_ADDR_T              phy_addr;           /* information of system memory */
     CLX_ADDR_T              size;
+    CLX_ADDR_T              bus_addr;
 #endif
 } OSAL_MDC_IOCTL_DMA_DATA_T;
 

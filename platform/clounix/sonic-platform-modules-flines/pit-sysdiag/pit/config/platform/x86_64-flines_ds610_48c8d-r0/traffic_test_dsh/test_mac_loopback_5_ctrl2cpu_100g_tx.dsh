@@ -1,0 +1,4 @@
+netif create profile name=L2 priority=0 port=0 pattern=0x000000000003  mask=0xffffffffffff offset=0 dest=clx-sdk
+
+
+l2 add mac-table static mac=00:00:00:00:00:03 vid=1000 port=256

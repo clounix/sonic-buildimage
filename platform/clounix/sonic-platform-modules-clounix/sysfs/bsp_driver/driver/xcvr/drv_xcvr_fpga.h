@@ -53,6 +53,7 @@
 #define SFP_EEPROM_A0_ADDR  0xA0
 #define SFP_EEPROM_A2_ADDR  0xA2
 #define SFP_PAGE_SELECT_REG   0x7F
+#define SFP_IEDNTIFIER_REG 0x00
 #define ONE_ADDR_PAGEABLE_REG 0x02
 #define QSFP_NOT_PAGEABLE (1<<2)
 #define CMIS_NOT_PAGEABLE (1<<7)
@@ -100,13 +101,14 @@ struct sfp_platform_data {
     int          clk_div;
     unsigned int write_max;
     u8 dev_idx;
-    u8 platform_type;
+    u8 cpld_idx;
 };
 
 struct clounix_priv_data {
     struct mutex lock;
     void __iomem *mmio;
     struct sfp_platform_data chip[XCVR_PORT_MAX];
+    u8  platform_type;
 };
 
 inline static void fpga_reg_write(struct clounix_priv_data *priv, int reg, int val)
@@ -119,6 +121,7 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 }
 
 #define CPLD_BASE_ADDRESS 0x300
+/*platform CLX8000*/
 #define QSFP_CONFIG_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x30)
 #define QSFP_CONFIG_RESET_OFFSET         0
 #define QSFP_CONFIG_POWER_MODE_OFFSET    8
@@ -128,6 +131,14 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define QSFP_STATUS_IRQ_OFFSET           8
 #define QSFP_STATUS_POWER_FAULT_OFFSET   16 
 #define QSFP_START_PORT                  48
+/*platform CLX128000*/
+#define SFP_CONFIG_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x30)
+#define SFP_CONFIG_TX_DIS_OFFSET         0
+#define SFP_STATUS_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x34)
+#define SFP_STATUS_RXLOS_OFFSET       0
+#define SFP_STATUS_TXTAULT_OFFSET     2
+#define SFP_STATUS_PRESENT_OFFSET     4 
+#define SFP_START_PORT                  32
 
 #define FPGA_PORT_BASE      (0x1000) 
 #define FPGA_PORT_MGR0_CFG  (FPGA_PORT_BASE + 0x00)
@@ -154,17 +165,19 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define DSFP_IRQ_STATUS_ADDRESS_BASE  (CPLD_BASE_ADDRESS+0x18)
 #define DSFP_PRESENT_ADDRESS_BASE     (CPLD_BASE_ADDRESS+0x1c)
 
+#define XCVR_CPLD_GROUP_MAX 2
+
 #define GET_DSFP_RST_ADDRESS(idx, reg) \
-            reg = (DSFP_RESET_ADDRESS_BASE + (0x10 * (idx /30))); 
+            reg = (DSFP_RESET_ADDRESS_BASE + (0x10 * (idx))); 
 
 #define GET_DSFP_LOWPOWER_ADDRESS(idx, reg) \
-            reg = (DSFP_LOW_POWER_ADDRESS_BASE + (0x10 * (idx /30))); 
+            reg = (DSFP_LOW_POWER_ADDRESS_BASE + (0x10 * (idx))); 
 
 #define GET_DSFP_IRQ_STATUS_ADDRESS(idx, reg) \
-            reg = (DSFP_IRQ_STATUS_ADDRESS_BASE + (0x10 * (idx /30)));
+            reg = (DSFP_IRQ_STATUS_ADDRESS_BASE + (0x10 * (idx)));
 
 #define GET_DSFP_PRESENT_ADDRESS(idx, reg) \
-            reg = (DSFP_PRESENT_ADDRESS_BASE + (0x10 * (idx /30)));
+            reg = (DSFP_PRESENT_ADDRESS_BASE + (0x10 * (idx)));
 
 #define XCVRD_POWR_ON 1
 

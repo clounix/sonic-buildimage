@@ -34,6 +34,8 @@ struct psu_fn_if {
     ssize_t (*get_psu_alarm_threshold_curr)(void *driver, unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_alarm_threshold_vol)(void *driver, unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_max_output_power)(void *driver, unsigned int psu_index, char *buf, size_t count);
+    ssize_t (*get_psu_max_output_vol)(void *driver, unsigned int psu_index, char *buf, size_t count);
+    ssize_t (*get_psu_min_output_vol)(void *driver, unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_alias)(void *driver, unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_type)(void *driver, unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_max)(void *driver, unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);

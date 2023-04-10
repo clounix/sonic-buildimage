@@ -34,6 +34,8 @@ struct s3ip_sysfs_psu_drivers_s {
     ssize_t (*get_psu_alarm_threshold_curr)(unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_alarm_threshold_vol)(unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_max_output_power)(unsigned int psu_index, char *buf, size_t count);
+    ssize_t (*get_psu_max_output_vol)(unsigned int psu_index, char *buf, size_t count);
+    ssize_t (*get_psu_min_output_vol)(unsigned int psu_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_alias)(unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_type)(unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);
     ssize_t (*get_psu_temp_max)(unsigned int psu_index, unsigned int temp_index, char *buf, size_t count);

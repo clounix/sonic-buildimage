@@ -3,7 +3,7 @@ from sonic_platform_base.sonic_thermal_control.thermal_json_object import therma
 from .helper import APIHelper
 import time
 
-
+THERMAL_OVERLOAD_POSITION_FILE = "/usr/share/sonic/platform/api_files/reboot-cause/platform/thermal_overload_position"
 @thermal_json_object('fan_info')
 class FanInfo(ThermalPolicyInfoBase):
     """
@@ -18,17 +18,20 @@ class FanInfo(ThermalPolicyInfoBase):
         self._presence_fans = set()
         self._fault_fans = set()
         self._status_changed = False
+        self.fans = {}
 
-    def collect(self, chassis):
+    def _collect_fans(self, fans):
         """
         Collect absence and presence fans.
         :param chassis: The chassis object
         :return:
         """
         self._status_changed = False
-        for fan in chassis.get_all_fans():
+        for fan in fans:
             presence = fan.get_presence()
             status = fan.get_status()
+            name = fan.get_name()
+            self.fans[name] = fan
             if presence and fan not in self._presence_fans:
                 self._presence_fans.add(fan)
                 self._status_changed = True
@@ -47,6 +50,13 @@ class FanInfo(ThermalPolicyInfoBase):
             elif status and fan in self._fault_fans:
                 self._fault_fans.remove(fan)
                 self._status_changed = True
+                
+    def collect(self, chassis):
+      if chassis.get_num_fan_drawers():
+         for drawer in chassis.get_all_fan_drawers():
+            self._collect_fans(drawer.get_all_fans())
+      else:
+         self._collect_fans(chassis.get_all_fans())
 
     def get_absence_fans(self):
         """
@@ -75,7 +85,6 @@ class FanInfo(ThermalPolicyInfoBase):
         :return: True if status changed else False
         """
         return self._status_changed
-
 
 @thermal_json_object('thermal_info')
 class ThermalInfo(ThermalPolicyInfoBase):
@@ -107,7 +116,7 @@ class ThermalInfo(ThermalPolicyInfoBase):
 
             if high_threshold and temp > high_threshold:
                 self._over_high_threshold = True
-
+                
             if high_critical_threshold and temp > high_critical_threshold:
                 self._thermal_overload_position = thermal.name
                 self._over_high_critical_threshold = True
@@ -124,9 +133,8 @@ class ThermalInfo(ThermalPolicyInfoBase):
         Retrieves if the temperature is over high critical threshold
         :return: True if the temperature is over high critical threshold else False
         """
-        thermal_overload_position_path = '/usr/share/sonic/platform/api_files/reboot-cause/platform/thermal_overload_position'
         if self._over_high_critical_threshold:
-            APIHelper().write_txt_file(thermal_overload_position_path,
+            APIHelper().write_txt_file(THERMAL_OVERLOAD_POSITION_FILE,
                                        self._thermal_overload_position + ' temperature over critical threshold')
             time.sleep(1)
         return self._over_high_critical_threshold
@@ -163,3 +171,64 @@ class ChassisInfo(ThermalPolicyInfoBase):
         :return: A platform chassis object.
         """
         return self._chassis
+
+from swsscommon.swsscommon import SonicV2Connector
+@thermal_json_object('asic_info')
+class AsicInfo(ThermalPolicyInfoBase):
+    """
+    asic temprature information needed by thermal policy
+    """
+    
+    # asic information name
+    INFO_NAME = 'asic_info'
+    ASIC_TEMPERATURE_TABLE_NAME = 'ASIC_TEMPERATURE_INFO'
+    ASIC_HIGTH_CRITICAL_THRESHOLD_TEMP = 110
+    ASIC_HIGTH_THRESHOLD_TEMP = 100  
+    def __init__(self):
+        self.db = SonicV2Connector(host="127.0.0.1")
+        self.db.connect(self.db.STATE_DB)    
+   
+    def get_asic_temperature(self):
+   
+        metadata = self.db.get_all(self.db.STATE_DB, self.ASIC_TEMPERATURE_TABLE_NAME)
+        if metadata and metadata.get('maximum_temperature'):
+            return metadata['maximum_temperature']
+        else:
+            return '0'
+             
+    def collect(self, chassis):
+        self._over_high_critical_threshold = False
+        self._over_high_threshold = False
+        self._thermal_overload_position = 'asic'
+
+        asic_temp = int(self.get_asic_temperature())
+    
+        if asic_temp >= self.ASIC_HIGTH_THRESHOLD_TEMP:
+           self._over_high_threshold = True; 
+        if asic_temp >= self.ASIC_HIGTH_CRITICAL_THRESHOLD_TEMP:
+           self._over_high_critical_threshold = True
+
+    def is_over_threshold(self):
+        """
+        Retrieves if the temperature is over any threshold
+        :return: True if the temperature is over any threshold else False
+        """
+        return self._over_high_threshold or self._over_high_critical_threshold
+       
+    def is_over_high_threshold(self):
+        """
+        Retrieves if the temperature is over high threshold
+        :return: True if the temperature is over high threshold else False
+        """
+        return self._over_high_threshold
+
+    def is_over_high_critical_threshold(self):
+        """
+        Retrieves if the temperature is over high critical threshold
+        :return: True if the temperature is over high critical threshold else False
+        """
+        if self._over_high_critical_threshold:
+            APIHelper().write_txt_file(THERMAL_OVERLOAD_POSITION_FILE,
+                                       self._thermal_overload_position + ' temperature over critical threshold')
+            time.sleep(1)
+        return self._over_high_critical_threshold

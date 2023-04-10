@@ -78,7 +78,7 @@ class FIRMWAREVERSIONTC(TestCaseCommon):
                 firmware_version = json.dumps(firmware_version)
 
             if config_version not in firmware_version:
-                self.fail_reason.append("check firmware version is wrong!")
+                self.fail_reason.append("check firmware version is wrong! config_version:{}, firmware_version:{}".format(config_version, firmware_version))
                 ret = E.EFW17002
         if ret != E.OK:
             self.logger.log_err("FAIL!", also_print_console)

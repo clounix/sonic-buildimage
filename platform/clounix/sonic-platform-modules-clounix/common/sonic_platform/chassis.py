@@ -16,7 +16,6 @@ try:
     from sonic_platform.fan_drawer import FanDrawer
     from sonic_platform.psu import Psu
     from sonic_platform.sfp import Sfp
-    from sonic_platform.qsfp import QSfp
     from sonic_platform.thermal import Thermal
     from sonic_platform.component import Component
     from sonic_platform.watchdog import Watchdog
@@ -71,21 +70,17 @@ class Chassis(ChassisBase):
         for drawer_index in range(0, self.__num_of_fan_drawers):
             fan_drawer = FanDrawer(drawer_index,fandrawer_conf=chassis_conf['fan_drawers'])
             self._fan_drawer_list.append(fan_drawer)
-
-
+            
         # Initialize PSU
         for index in range(0, self.__num_of_psus):
             psu = Psu(index,psu_conf=chassis_conf['psus'])
             self._psu_list.append(psu)
-
+            
         # Initialize SFP
         for index in range(0, self.__num_of_sfps):
-            if index < self.__start_of_qsfp:
-                sfp = Sfp(index)
-            else:
-                sfp = QSfp(index,qsfp_conf=chassis_conf['sfps'])
+            sfp = Sfp(index,sfp_conf=chassis_conf['sfps'])
             self._sfp_list.append(sfp)
-
+            
         # Initialize CHASSIS THERMAL
         thermal_conf=self.__conf['thermals']
         for x in range(0, self.__num_of_thermals):
@@ -386,6 +381,10 @@ class Chassis(ChassisBase):
         res_dict['sfp'].clear()
         status, res_dict['sfp'] = self.get_transceiver_change_event(timeout)
         return status, res_dict
+    
+    def initizalize_system_led(self):
+        return True;
+
 
     def __initialize_cpld(self):
         cpld_num = self._get_attr_val('/sys/switch/cpld/num', 0)

@@ -92,17 +92,6 @@ binary-indep:
 		cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/share/sonic/device/$${platform_string}; \
 	    cp $(MOD_SRC_DIR)/${MODULE_DIRS}/fpga_utils/fpga debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/share/sonic/device/$${platform_string}/clx_fpga; \
 	done)
-	if [ $$CONFIGURED_ARCH = "amd64" ]; then \
-        if [ -e $(MOD_SRC_DIR)/$(MODULE_DIRS)/$(BIOS_DIR) ]; then \
-		    cd $(MOD_SRC_DIR)/$(MODULE_DIRS)/$(BIOS_DIR); \
-		    ./afulnx_64 /GENDRV KERNEL=$(KERNEL_SRC)/build .;\
-		    ./afulnx_64 /MAKEDRV KERNEL=$(KERNEL_SRC)/build .;\
-		    make KERNEL=$(KERNEL_SRC)/build;\
-		    cd $(MOD_SRC_DIR); \
-		    # Add bios upgrade tool to device(usr/local/bin), maurice 20201125 \
-		    cp -r $(MOD_SRC_DIR)/${MODULE_DIRS}/bios_bin debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/; \
-        fi; \
-	fi; \
 	cp $(MOD_SRC_DIR)/${MODULE_DIRS}/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-${MODULE_DIRS}/usr/local/bin/;
 
 	# pit

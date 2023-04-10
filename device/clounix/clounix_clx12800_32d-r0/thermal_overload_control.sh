@@ -16,7 +16,6 @@ fi
 SETREG_FILE=/sys/bus/pci/devices/0000:$DEVICE/power_cycle
 
 prog="$0"
-command="$1"
 echo $1
 echo $DEVICE
 if [[ $EUID -ne 0 ]]; then
@@ -32,22 +31,17 @@ usage() {
     echo
     echo "Commands:"
     echo
-    echo "  cpu:  To enabling CPU thermal overload handler"
+    echo "   To enabling  thermal overload handler"
     echo
-    echo "  asic : To enabling ASIC thermal overload handler"
     echo
 }
 power_cycle() {
     echo 0x77 > ${SETREG_FILE}
 }
 
-cpu_overload() {
-	logger "Enable CPU thermal overload control"
-    power_cycle
-}
 
-asic_overload() {
-    logger "Enable ASIC thermal overload control"
+temp_overload() {
+    logger "Enable $1 thermal overload control"
     power_cycle
 }
 
@@ -56,19 +50,12 @@ if [ $# -lt 1 ]; then
     exit -1
 fi
 
-case "$command" in
+case $1 in
 -h | --help)
     usage
     ;;
-cpu)
-	cpu_overload
-	;;
-asic)
-	asic_overload
-	;;
 *)
-	usage
-	exit -1
+	temp_overload $1
 	;;
 esac
 

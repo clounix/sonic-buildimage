@@ -212,10 +212,20 @@ static int clx_driver_clx8000_board(void)
     //temp info
     memcpy(bd->temp.name, temp_name, sizeof(temp_name));
     memcpy(bd->temp.sensor_map_index, clx8000_sensor_map_index, sizeof(clx8000_sensor_map_index));
+    bd->temp.total_sensor_node = CLX8000_TOTAL_TEMP_SENSOR_NODE;
+    bd->temp.real_max_sensor_num = CLX8000_REAL_MAX_TEMP_SENSOR_NUM;
     //cuff info
     memcpy(bd->curr.name, curr_name, sizeof(curr_name));
-    //sysled info
+    bd->curr.total_sensor_node = CLX8000_TOTAL_CURR_SENSOR_NODE;
+    bd->curr.real_max_sensor_num = CLX8000_REAL_MAX_CURR_SENSOR_NUM;
+    bd->curr.sensor_map = clx8000_curr_sensor_map;
+    bd->curr.index_range_map = clx8000_curr_index_range_map;
+    //vol info
     memcpy(bd->vol.name, vol_name, sizeof(vol_name));
+    bd->vol.total_sensor_node = CLX8000_TOTAL_VOL_SENSOR_NODE;
+    bd->vol.real_max_sensor_num = CLX8000_REAL_MAX_VOL_SENSOR_NUM;
+    bd->vol.sensor_map = clx8000_vol_sensor_map;
+    bd->vol.index_range_map = clx8000_vol_index_range_map;
     LOG_INFO(CLX_DRIVER_TYPES_PLT, "syseeprom_if_create_driver\n");
 
     return DRIVER_OK;
@@ -270,10 +280,21 @@ static int clx_driver_clx12800_board(void)
     //temp info
     memcpy(bd->temp.name, temp_name, sizeof(temp_name));
     memcpy(bd->temp.sensor_map_index, clx12800_sensor_map_index, sizeof(clx12800_sensor_map_index));
-    //sysled info
+    bd->temp.total_sensor_node = CLX12800_TOTAL_TEMP_SENSOR_NODE;
+    bd->temp.real_max_sensor_num = CLX12800_REAL_MAX_TEMP_SENSOR_NUM;
+
+    //curr info
     memcpy(bd->curr.name, curr_name, sizeof(curr_name));
-    //sysled info
+    bd->curr.total_sensor_node = CLX12800_TOTAL_CURR_SENSOR_NODE;
+    bd->curr.real_max_sensor_num = CLX12800_REAL_MAX_CURR_SENSOR_NUM;
+    bd->curr.sensor_map = clx12800_curr_sensor_map;
+    bd->curr.index_range_map = clx12800_curr_index_range_map;
+    //vol info
     memcpy(bd->vol.name, vol_name, sizeof(vol_name));
+    bd->vol.total_sensor_node = CLX12800_TOTAL_VOL_SENSOR_NODE;
+    bd->vol.real_max_sensor_num = CLX12800_REAL_MAX_VOL_SENSOR_NUM;
+    bd->vol.sensor_map = clx12800_vol_sensor_map;
+    bd->vol.index_range_map = clx12800_vol_index_range_map;
     //lpc info
     memcpy(bd->lpc.name, lpc_name, sizeof(lpc_name));
     LOG_INFO(CLX_DRIVER_TYPES_PLT, "syseeprom_if_create_driver\n");

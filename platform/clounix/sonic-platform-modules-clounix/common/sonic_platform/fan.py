@@ -210,7 +210,9 @@ class Fan(FanBase):
         Returns:
             A boolean, True if speed is set successfully, False if not
         """
-        raise NotImplementedError
+        if not self.__is_psu_fan and self.get_presence():            
+            return self.__api_helper.write_txt_file(self.__attr_path_prefix + 'motor0/ratio', int(speed))
+        return False
 
     def set_status_led(self, color):
         """

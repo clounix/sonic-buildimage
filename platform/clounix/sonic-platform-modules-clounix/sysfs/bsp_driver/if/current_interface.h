@@ -18,6 +18,10 @@ struct current_fn_if {
     int (*set_main_board_curr_crit)(void *driver, unsigned int curr_index, const char *buf, size_t count);
     ssize_t (*get_main_board_curr_average)(void *driver, unsigned int curr_index, char *buf, size_t count);
     ssize_t (*get_main_board_curr_value)(void *driver, unsigned int curr_index, char *buf, size_t count);
+    unsigned char total_sensor_node;
+    unsigned char real_max_sensor_num;
+    short (*sensor_map)[3];
+    unsigned char (*index_range_map)[2];
 };
 
 #define CURRENT_DEV_VALID(dev) \

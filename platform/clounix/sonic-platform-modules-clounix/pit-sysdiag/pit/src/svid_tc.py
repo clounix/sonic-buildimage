@@ -105,6 +105,7 @@ class SVIDTC(TestCaseCommon):
                 if t1:
                     switch_vol_test_readback = int(t1.group(1).strip())
         
+                self.logger.log_info("deivce:{},{}_volage read:{}".format(device, volset_level, switch_vol_test_readback), also_print_console)
                 if switch_vol_test_readback > self.svid_info_dict["{}".format(device)]["{}_voltage".format(
                             format(volset_level))] + 5 or switch_vol_test_readback < self.svid_info_dict["{}".format(device)]["{}_voltage".format(
                             format(volset_level))] - 5:
