@@ -23,6 +23,22 @@ override_dh_auto_install:
 	cp $(MODULE_SRC)/init.d/* debian/$(PACKAGE_NAME)/etc/init.d/
 	dh_installdirs -p$(PACKAGE_NAME) $(KERNEL_SRC)/extra/
 	cp $(MODULE_SRC)/build/module/*.ko debian/$(PACKAGE_NAME)/$(KERNEL_SRC)/$(INSTALL_MOD_DIR);
+	# Resuming debhelper scripts
+	dh_testroot
+	dh_install
+	dh_installchangelogs
+	dh_installdocs
+	dh_systemd_enable
+	dh_installinit
+	dh_systemd_start
+	dh_link
+	dh_fixperms
+	dh_compress
+	dh_strip
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
 
 override_dh_usrlocal:
 
