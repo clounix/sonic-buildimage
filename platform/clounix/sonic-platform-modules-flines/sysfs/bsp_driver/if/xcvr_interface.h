@@ -28,6 +28,9 @@ struct xcvr_fn_if {
     ssize_t (*read_eth_eeprom_data)(void * driver, unsigned int eth_index, char *buf, loff_t offset, size_t count);
     ssize_t (*write_eth_eeprom_data)(void * driver, unsigned int eth_index, char *buf, loff_t offset, size_t count);
     unsigned char port_max;
+    unsigned char sfp_max;
+    unsigned char dsfp_max;
+    unsigned char qsfp_max;
     unsigned char clk_div;
 };
 

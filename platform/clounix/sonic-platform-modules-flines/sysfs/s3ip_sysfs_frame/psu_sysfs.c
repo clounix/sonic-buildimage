@@ -892,9 +892,9 @@ static struct attribute_group psu_attr_group = {
 /*******************************psu temp[1-n] dir and attrs*******************************************/
 static struct switch_attribute psu_temp_alias_attr = __ATTR(temp_alias, S_IRUGO, psu_temp_alias_show, NULL);
 static struct switch_attribute psu_temp_type_attr = __ATTR(temp_type, S_IRUGO, psu_temp_type_show, NULL);
-static struct switch_attribute psu_temp_max_attr = __ATTR(temp_max, S_IRUGO | S_IWUSR, psu_temp_max_show, psu_temp_max_store);
-static struct switch_attribute psu_temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO | S_IWUSR, psu_temp_max_hyst_show, psu_temp_max_hyst_store);
-static struct switch_attribute psu_temp_min_attr = __ATTR(temp_min,  S_IRUGO | S_IWUSR, psu_temp_min_show, psu_temp_min_store);
+static struct switch_attribute psu_temp_max_attr = __ATTR(temp_max, S_IRUGO, psu_temp_max_show, NULL);
+static struct switch_attribute psu_temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO, psu_temp_max_hyst_show, NULL);
+static struct switch_attribute psu_temp_min_attr = __ATTR(temp_min,  S_IRUGO, psu_temp_min_show, NULL);
 static struct switch_attribute psu_temp_value_attr = __ATTR(temp_input, S_IRUGO, psu_temp_value_show, NULL);
 
 static struct attribute *psu_temp_attrs[] = {

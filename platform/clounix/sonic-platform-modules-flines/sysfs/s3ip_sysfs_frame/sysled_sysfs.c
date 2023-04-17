@@ -290,9 +290,9 @@ static ssize_t id_led_status_store(struct switch_obj *obj, struct switch_attribu
 static struct switch_attribute sysled_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR, sysled_debug_show, sysled_debug_store);
 static struct switch_attribute sysled_loglevel_attr = __ATTR(loglevel, S_IRUGO | S_IWUSR, sysled_loglevel_show, sysled_loglevel_store);
 static struct switch_attribute sys_led_attr = __ATTR(sys_led_status, S_IRUGO | S_IWUSR, sys_led_status_show, sys_led_status_store);
-static struct switch_attribute bmc_led_attr = __ATTR(bmc_led_status, S_IRUGO | S_IWUSR, bmc_led_status_show, bmc_led_status_store);
-static struct switch_attribute fan_led_attr = __ATTR(fan_led_status, S_IRUGO | S_IWUSR, sys_fan_led_status_show, sys_fan_led_status_store);
-static struct switch_attribute psu_led_attr = __ATTR(psu_led_status, S_IRUGO | S_IWUSR, sys_psu_led_status_show, sys_psu_led_status_store);
+static struct switch_attribute bmc_led_attr = __ATTR(bmc_led_status, S_IRUGO, bmc_led_status_show, NULL);
+static struct switch_attribute fan_led_attr = __ATTR(fan_led_status, S_IRUGO, sys_fan_led_status_show, NULL);
+static struct switch_attribute psu_led_attr = __ATTR(psu_led_status, S_IRUGO, sys_psu_led_status_show, NULL);
 static struct switch_attribute id_led_attr = __ATTR(id_led_status, S_IRUGO | S_IWUSR, id_led_status_show, id_led_status_store);
 
 static struct attribute *sysled_dir_attrs[] = {

@@ -197,6 +197,9 @@ static int flks_driver_ds610_board(void)
     // transceiver info
     memcpy(bd->xcvr.name, xcvr_name, sizeof(xcvr_name));
     bd->xcvr.port_max = PORT_MAX_DS610;
+    bd->xcvr.sfp_max = SFP_MAX_DS610;
+    bd->xcvr.dsfp_max = DSFP_MAX_DS610;
+    bd->xcvr.qsfp_max = QSFP_MAX_DS610;
     bd->xcvr.clk_div = PORT_CLK_DIV_DS610;
     // fan info
     memcpy(bd->fan.name, fan_name, sizeof(fan_name));
@@ -265,6 +268,9 @@ static int flks_driver_ds410_board(void)
     // transceiver info
     memcpy(bd->xcvr.name, xcvr_name, sizeof(xcvr_name));
     bd->xcvr.port_max = PORT_MAX_DS410;
+    bd->xcvr.sfp_max = SFP_MAX_DS410;
+    bd->xcvr.dsfp_max = DSFP_MAX_DS410;
+    bd->xcvr.qsfp_max = QSFP_MAX_DS410;
     bd->xcvr.clk_div = PORT_CLK_DIV_DS410;
     // fan info
     memcpy(bd->fan.name, fan_name, sizeof(fan_name));

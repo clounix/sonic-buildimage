@@ -491,7 +491,7 @@ static struct attribute_group sff_signal_attr_group = {
 };
 
 /*******************************transceiver dir and attrs*******************************************/
-static struct switch_attribute transceiver_power_on_attr = __ATTR(power_on, S_IRUGO | S_IWUSR, transceiver_power_on_show, transceiver_power_on_store);
+static struct switch_attribute transceiver_power_on_attr = __ATTR(power_on, S_IRUGO, transceiver_power_on_show, NULL);
 static struct switch_attribute transceiver_presence_attr = __ATTR(present, S_IRUGO, transceiver_presence_show, NULL);
 static struct switch_attribute transceiver_number_attr = __ATTR(num, S_IRUGO, transceiver_number_show, NULL);
 static struct switch_attribute transceiver_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR, transceiver_debug_show, transceiver_debug_store);

@@ -36,8 +36,11 @@ int xcvr_if_create_driver(void)
     //to be update, clx_driver_get_platform_bd is used for all module?
     bd = clx_driver_get_platform_bd();
     xcvr_driver->port_max = bd->xcvr.port_max;
+    xcvr_driver->sfp_max = bd->xcvr.sfp_max;
+    xcvr_driver->dsfp_max = bd->xcvr.dsfp_max;
+    xcvr_driver->qsfp_max = bd->xcvr.qsfp_max;
     xcvr_driver->clk_div = bd->xcvr.clk_div;
-	rc = xcvr_driver->dev_init(xcvr_driver);
+    rc = xcvr_driver->dev_init(xcvr_driver);
     return rc;
 }
 void xcvr_if_delete_driver(void) 

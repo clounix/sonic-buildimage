@@ -20,6 +20,10 @@
 extern void __iomem *clounix_fpga_base;
 extern int g_loglevel;
 
+//internal function declaration
+static ssize_t get_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, char *buf, size_t count);
+static ssize_t set_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, int status);
+
 struct drv_xcvr_fpga drv_xcvr;
 
 static uint8_t clx_fpga_sfp_translate_offset(struct clounix_priv_data *sfp,
@@ -1171,6 +1175,12 @@ static ssize_t drv_xcvr_get_eth_tx_fault_status(void *xcvr, unsigned int eth_ind
              return -ENOSYS;
     }
 }
+
+static ssize_t platforma_xcvr_get_eth_tx_disable_status(struct clounix_priv_data *sfp , unsigned int eth_index, char *buf, size_t count)
+{
+    return get_dsfp_reset(sfp, eth_index, buf, count);
+}
+
 static ssize_t platformb_xcvr_get_eth_tx_disable_status(struct clounix_priv_data *sfp , unsigned int eth_index, char *buf, size_t count)
 {
     size_t val = 0x1;
@@ -1201,12 +1211,19 @@ static ssize_t drv_xcvr_get_eth_tx_disable_status(void *xcvr, unsigned int eth_i
     switch(sfp->platform_type)
     {
     case XCVR_PLATFORM_TYPEA:
-        return -ENOSYS;
+        if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+            return platforma_xcvr_get_eth_tx_disable_status(sfp, eth_index, buf, count);
+        else
+            return -ENOSYS;
     case XCVR_PLATFORM_TYPEB:
         return platformb_xcvr_get_eth_tx_disable_status(sfp,eth_index,buf,count);
     default:
         return -ENOSYS;
     }
+}
+static int platforma_xcvr_set_eth_tx_disable_status(struct clounix_priv_data *sfp, unsigned int eth_index, int status)
+{
+    return set_dsfp_reset(sfp, eth_index, status);
 }
 static int platformb_xcvr_set_eth_tx_disable_status(struct clounix_priv_data *sfp, unsigned int eth_index, int status)
 {
@@ -1241,7 +1258,10 @@ static int drv_xcvr_set_eth_tx_disable_status(void *xcvr, unsigned int eth_index
     switch(sfp->platform_type)
     {
         case XCVR_PLATFORM_TYPEA:
-            return -ENOSYS;
+            if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+                return platforma_xcvr_set_eth_tx_disable_status(sfp, eth_index, status);
+            else
+                return -ENOSYS;
 
         case XCVR_PLATFORM_TYPEB:
             return platformb_xcvr_set_eth_tx_disable_status(sfp,eth_index,status);

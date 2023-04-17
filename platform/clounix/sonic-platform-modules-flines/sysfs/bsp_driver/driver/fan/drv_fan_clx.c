@@ -658,7 +658,7 @@ int drv_fan_clx_init(void **fan_driver)
     fan->fan_if.write_fan_eeprom_data = drv_write_fan_eeprom_data;
  
     *fan_driver = fan;
-    //set_fan_eeprom_wp(fan, syse2p_enable);
+    set_fan_eeprom_wp(fan, syse2p_enable);
     LOG_INFO(CLX_DRIVER_TYPES_FAN, "FAN driver initialization done.\r\n");
 
     return DRIVER_OK;
