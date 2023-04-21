@@ -120,7 +120,7 @@ ssize_t led_status_show(struct device *dev, struct device_attribute *attr, char 
     if (stat & pwok)
         led_status = led_green;
 
-    psu_stat_data = pmbus_read_word_data(client, 0, PMBUS_STATUS_WORD);
+    psu_stat_data = pmbus_read_word_data(client, 0, 0, PMBUS_STATUS_WORD);
     if ((psu_stat_data & stat_word_fail) != 0)
         led_status = led_blink_red;
 

@@ -135,6 +135,9 @@ enum pmbus_regs {
 	PMBUS_MFR_MAX_TEMP_2		= 0xC1,
 	PMBUS_MFR_MAX_TEMP_3		= 0xC2,
 
+    PMBUS_MFR_FWID          = 0xD1,
+    PMBUS_MFR_FWVERSION     = 0xD2,
+
 /*
  * Virtual registers.
  * Useful to support attributes which are not supported by standard PMBus

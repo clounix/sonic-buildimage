@@ -1,10 +1,10 @@
 [submodule "sonic-swss-common"]
 	path = src/sonic-swss-common
 	url = https://github.com/sonic-net/sonic-swss-common
-	branch = 202211
+	branch = 202211.clounix
 [submodule "sonic-linux-kernel"]
 	path = src/sonic-linux-kernel
-	url = https://github.com/sonic-net/sonic-linux-kernel
+	url = git@gitlab.clounix.com:software/sonic/sonic-linux-kernel.git
 	branch = 202211
 [submodule "sonic-sairedis"]
 	path = src/sonic-sairedis
