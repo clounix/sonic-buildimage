@@ -1,7 +1,7 @@
 # docker image for clounix syncd
 
 DOCKER_SYNCD_PLATFORM_CODE = clounix
-include $(PLATFORM_PATH)/../template/docker-syncd-base.mk
+include $(PLATFORM_PATH)/../template/docker-syncd-bullseye.mk
 
 $(DOCKER_SYNCD_BASE)_DEPENDS += $(SYNCD) $(CLOUNIX_SAI_DEV) $(CLOUNIX_WARM_VERIFIER)
 ifeq ($(INCLUDE_XEUS_CLING),yes)
