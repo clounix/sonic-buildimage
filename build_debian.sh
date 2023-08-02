@@ -576,6 +576,7 @@ fi
 scripts/collect_host_image_version_files.sh $TARGET_PATH $FILESYSTEM_ROOT
 
 if [[ $INCLUDE_SDK == yes ]]; then
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get update
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install libtool-bin automake autoconf python3-dev make wget git
 else
 # Remove GCC
