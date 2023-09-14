@@ -9,6 +9,7 @@
 #include <linux/workqueue.h>
 #include <linux/kobject.h>
 #include <linux/delay.h>
+#include <linux/types.h>
 
 enum LOG_LEVEL{
     ERR  = 0x1,

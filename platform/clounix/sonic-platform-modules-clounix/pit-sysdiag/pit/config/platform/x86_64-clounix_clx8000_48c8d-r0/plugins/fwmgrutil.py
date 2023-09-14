@@ -177,7 +177,7 @@ class FwMgrUtil(object):
         return ret
 
     # 固件更新
-    def firmware_upgrade(self, fw_type, fw_path, fw_extr=None):
+    def firmware_upgrade(self, fw_type, fw_path, fw_extr=None, platform_path=None):
         """
         	@fw_type: firmware type, should be one of the strings:'bios', 'uboot', 'bmc', 'cpld', .etc.
         	@fw_path: target firmware file
@@ -208,12 +208,12 @@ class FwMgrUtil(object):
         #     print(str(e))
         # return ret
 
-    def firmware_refresh(self, item, fw_path, fw_extra=None):
-        print("======firmware_refresh=====",item, fw_path, fw_extra)
+    def firmware_refresh(self, item, fw_path, power_cycle_cmd, fw_extra=None):
+        print("======firmware_refresh=====",item, fw_path, power_cycle_cmd, fw_extra)
         if item == "CPLD-1" or item == "CPLD-2":
             return True
         if item == "FPGA":
-            os.system("sleep 10; busybox devmem 0xf8000100 32 0x2 &")
+            os.system(power_cycle_cmd)
             return True
 
     # 获取FRU列表

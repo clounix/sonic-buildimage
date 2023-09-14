@@ -13,6 +13,7 @@
 #include <linux/reboot.h>
 
 #include "clounix/clounix_fpga.h"
+#include "clounix/io_signal_ctrl.h"
 #include "device_driver_common.h"
 #include "clx_driver.h"
 
@@ -71,10 +72,138 @@ static irqreturn_t clounix_fpga_irq_hd(int irq, void *dev_id)
     return IRQ_HANDLED;
 }
 */
+
+static int set_sys_led_status(int type, int num, int val)
+{
+    void __iomem *sysled_stat;
+    int bit = type - PSU_LED_G;
+    int data;
+
+    if (bit < 0)
+        return -EIO;
+
+    sysled_stat = clounix_fpga_base + sys_led_reg_offset;
+    data = readb(sysled_stat);
+
+    if (val > 0) {
+        data = data | (1 << bit);
+    } else {
+        data = data & (~(1 << bit));
+    }
+
+    writeb(data, sysled_stat);
+
+    return 1;
+}
+
+static int get_sys_led_status(int type, int num)
+{
+    void __iomem *psu_stat;
+    int bit = type - PSU_LED_G;
+    int data;
+
+    if (bit < 0)
+        return 0;
+
+    psu_stat = clounix_fpga_base + sys_led_reg_offset;
+    data = readb(psu_stat);
+
+    data = (data >> bit) & 0x1;
+
+    return data;
+}
+
+#define psu_stat_offset (0x608)
+static int get_sys_fpga_psu_status(int type, int num)
+{
+    void __iomem *psu_stat;
+    int data;
+    int index;
+
+    psu_stat = clounix_fpga_base + psu_stat_offset;
+    data = readb(psu_stat);
+
+    switch (type) {
+        case PSU_PRST:
+            if (num == 0)
+                index = 0;
+            else
+                index = 4;
+            break;
+
+        case PSU_ACOK:
+            if (num == 0)
+                index = 2;
+            else
+                index = 6;
+            break;
+
+        case PSU_PWOK:
+            if (num == 0)
+                index = 1;
+            else
+                index = 5;
+            break;
+    }
+
+    data = (data >> index) & 0x1;
+    return data;
+}
+
+static void init_io_sig(void)
+{
+    add_io_sig_desc(PSU_PRST, 0, get_sys_fpga_psu_status, NULL);
+    add_io_sig_desc(PSU_PRST, 1, get_sys_fpga_psu_status, NULL);
+
+    add_io_sig_desc(PSU_ACOK, 0, get_sys_fpga_psu_status, NULL);
+    add_io_sig_desc(PSU_ACOK, 1, get_sys_fpga_psu_status, NULL);
+
+    add_io_sig_desc(PSU_PWOK, 0, get_sys_fpga_psu_status, NULL);
+    add_io_sig_desc(PSU_PWOK, 1, get_sys_fpga_psu_status, NULL);
+
+    add_io_sig_desc(PSU_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(PSU_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    add_io_sig_desc(SYS_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(SYS_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    add_io_sig_desc(FAN_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(FAN_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    add_io_sig_desc(ID_LED_B, 0, get_sys_led_status, set_sys_led_status);
+
+    return;
+}
+
+static void rm_io_sig(void)
+{
+    del_io_sig_desc(PSU_PRST, 0);
+    del_io_sig_desc(PSU_PRST, 1);
+
+    del_io_sig_desc(PSU_ACOK, 0);
+    del_io_sig_desc(PSU_ACOK, 1);
+
+    del_io_sig_desc(PSU_PWOK, 0);
+    del_io_sig_desc(PSU_PWOK, 1);
+
+    del_io_sig_desc(PSU_LED_G, 0);
+    del_io_sig_desc(PSU_LED_R, 0);
+
+    del_io_sig_desc(SYS_LED_G, 0);
+    del_io_sig_desc(SYS_LED_R, 0);
+
+    del_io_sig_desc(FAN_LED_G, 0);
+    del_io_sig_desc(FAN_LED_R, 0);
+
+    del_io_sig_desc(ID_LED_B, 0);
+
+    return;
+}
+
 static ssize_t get_sys_fpga_power_cycle(struct device *dev, struct device_attribute *da,
              char *buf)
 {  
-    uint32_t data=0,value = 0;
+    uint32_t data=0;
 
     if(NULL != clounix_fpga_base){
         data= readl(clounix_fpga_base + FPGA_RESET_CFG_BASE);
@@ -153,8 +282,10 @@ int drv_xilinx_fpga_probe(struct pci_dev *pdev, const struct pci_device_id *pci_
     register_restart_handler(&restart_nb);
     err = sysfs_create_file(&pdev->dev.kobj, &attr.attr);
     if (err) {
-	LOG_ERR(CLX_DRIVER_TYPES_FPGA,  "sysfs_create_file error status %d\r\n", err);
+	    LOG_ERR(CLX_DRIVER_TYPES_FPGA,  "sysfs_create_file error status %d\r\n", err);
     }
+    init_io_sig();
+
     return 0;
 
 //err_irq:
@@ -172,6 +303,7 @@ err_request:
 
 void drv_xilinx_fpga_remove(struct pci_dev *pdev)
 {
+    rm_io_sig();
     unregister_reboot_notifier(&reboot_nb);
     unregister_restart_handler(&restart_nb);
 

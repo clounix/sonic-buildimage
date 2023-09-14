@@ -344,7 +344,7 @@ static ssize_t clx_fpga_sfp_eeprom_update_client(struct clounix_priv_data *sfp,
     ret =  clx_fpga_sfp_eeprom_read(sfp, eth_index,
             &page_check , SFP_PAGE_SELECT_REG, 1);
     if (ret < 0) {
-            LOG_ERR(CLX_DRIVER_TYPES_XCVR, "Read page register for page %d failed ret:%d!\n",page, ret);
+            LOG_ERR(CLX_DRIVER_TYPES_XCVR, "Read page register for eth%d page %d failed ret:%d!\n", eth_index, page, ret);
             return ret;
     }
     LOG_DBG(CLX_DRIVER_TYPES_XCVR, "read page register %d checked %d, ret:%d\n",page, page_check, ret);
@@ -435,6 +435,58 @@ static ssize_t clx_fpga_sfp_eeprom_write_client(struct clounix_priv_data *sfp,
     }
     return retval;
 }
+enum sfp_idntifier_index {
+    SFP_IDENTIFIER_UNKNOWN = 0x00,
+    SFP_IDENTIFIER_GBIC = 0x01,
+    SFP_IDENTIFIER_CONNECTOR = 0x02,
+    SFP_IDENTIFIER_SFP = 0x03,
+    SFP_IDENTIFIER_300_PIN_XBI = 0x04,
+    SFP_IDENTIFIER_XENPAK = 0x05,
+    SFP_IDENTIFIER_XFP = 0x06,
+    SFP_IDENTIFIER_XFF = 0x07,
+    SFP_IDENTIFIER_XFP_E = 0x08,
+    SFP_IDENTIFIER_XPAK = 0x09,
+    SFP_IDENTIFIER_X2 = 0x0a,
+    SFP_IDENTIFIER_DWDM = 0x0b,
+    SFP_IDENTIFIER_QSFP_INF8438 = 0x0c,
+    SFP_IDENTIFIER_QSFP_SFF8636 = 0x0d,
+    SFP_IDENTIFIER_CXP = 0x0d,
+    SFP_IDENTIFIER_MUTILANE_4X = 0x0f,
+    SFP_IDENTIFIER_MUTILANE_8X = 0x10,
+    SFP_IDENTIFIER_QSFP28_SFF8636 = 0x11,
+    SFP_IDENTIFIER_CXP2 = 0x12,
+    SFP_IDENTIFIER_CDFP = 0x13,
+    SFP_IDENTIFIER_MUTILANE_4X_FP = 0x14,
+    SFP_IDENTIFIER_MUTILANE_8X_FP = 0x15,
+    SFP_IDENTIFIER_CDFP3 = 0x16,
+    SFP_IDENTIFIER_mQSFP = 0x17,
+    SFP_IDENTIFIER_QSFP_DD = 0x18,
+    SFP_IDENTIFIER_QSFP_8X = 0x19,
+    SFP_IDENTIFIER_SFP_DD = 0x1a,
+    SFP_IDENTIFIER_DSFP = 0x1b,
+    SFP_IDENTIFIER_MINILINK_4X = 0x1c,
+    SFP_IDENTIFIER_MINILINK_8X = 0x1d,
+    SFP_IDENTIFIER_CMIS = 0x1e,
+    SFP_IDENTIFIER_MAX = 0xff
+};
+
+static int clx_fpga_sfp_update_types(struct clounix_priv_data *sfp, int eth_index)
+{
+    u8 regval = 0;
+    int status = -1;
+
+    status = clx_fpga_sfp_eeprom_read(sfp, eth_index, &regval,
+                SFP_IEDNTIFIER_REG, 1);
+    if (status < 0)
+        return status;  /* error out (no module?) */
+
+    if ((regval == SFP_IDENTIFIER_QSFP28_SFF8636) 
+        || (regval == SFP_IDENTIFIER_QSFP_SFF8636)) {
+        sfp->chip[eth_index].dev_class = ONE_ADDR;
+    }
+
+    return 0;
+}
 
 /*
  * Figure out if this access is within the range of supported pages.
@@ -512,6 +564,9 @@ static ssize_t clx_fpga_sfp_page_legal(struct clounix_priv_data *sfp,
                 ONE_ADDR_PAGEABLE_REG, 1);
         if (status < 0)
             return status;  /* error out (no module?) */
+
+        if (clx_fpga_sfp_update_types(sfp, eth_index) < 0)
+            return (-1);  /* error out (no module?) */
 
         if (sfp->chip[eth_index].dev_class == ONE_ADDR) {
             not_pageable = QSFP_NOT_PAGEABLE;
@@ -1090,7 +1145,7 @@ static int get_sfp_porttype(unsigned int eth_index,u8 platform_type)
         if(eth_index >= SFP_START_PORT)
             return PORT_SFP;
         else
-            return PORT_DSFP; 
+            return PORT_DSFP;
     }
     return DRIVER_ERR;
 }
@@ -1449,7 +1504,7 @@ static ssize_t drv_xcvr_read_eth_eeprom_data(void *xcvr, unsigned int eth_index,
 {
     struct clounix_priv_data *sfp = &(((struct drv_xcvr_fpga *)xcvr)->dev);
 
-   return clx_fpga_sfp_read(sfp, eth_index, buf, offset, count);
+    return clx_fpga_sfp_read(sfp, eth_index, buf, offset, count);
 }
 
 /*
@@ -1494,7 +1549,7 @@ static int drv_xcvr_dev_init(void *xcvr)
     mutex_init(&(driver->dev.lock));
     driver->xcvr_base = clounix_fpga_base + XCVR_BASE_ADDRESS;
     driver->dev.mmio = driver->xcvr_base;
-    LOG_ERR(CLX_DRIVER_TYPES_XCVR, "clx_driver_xcvr_dev_init:%p :base:%p.\r\n", driver->dev.mmio, driver->xcvr_base);
+    LOG_INFO(CLX_DRIVER_TYPES_XCVR, "clx_driver_xcvr_dev_init:%p :base:%p.\r\n", driver->dev.mmio, driver->xcvr_base);
     drv_xcvr_fpga_init_port(&driver->dev);
     platform_type = drv_xcvr_get_platform_idx(driver->xcvr_if.port_max);
     if (platform_type == DRIVER_ERR) {

@@ -11,6 +11,8 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/pmbus.h>
+
+#include "clounix/pmbus_dev_common.h"
 #include "pmbus.h"
 
 /* Vendor specific registers. */
@@ -37,42 +39,12 @@ struct mp2882_data {
     int curr_sense_gain;
 };
 
-/*
-struct range not_allow_range[] = {
-    {0x2, 0x2},
-    {0x4, 0xf},
-    {0x11, 0x12},
-    {0x14, 0x15},
-    {0x17, 0x20},
-    {0x29, 0x2a},
-    {0x2c, 0x32},
-    {0x34, 0x45},
-    {0x48, 0x49},
-    {0x4b, 0x4e},
-    {0x50, 0x50},
-    {0x52, 0x54},
-    {0x56, 0x60},
-    {0x62, 0x77},
-    {0x7f, 0x82},
-    {0x87, 0x87},
-    {0x89, 0x8a},
-    {0x8e, 0x90},
-    {0x92, 0x95},
-    {0x97, 0x97},
-    {0x9e, 0x9e},
-    {0xcf, 0xcf},
-    {0x0, 0x0},
-};
-*/
 #define to_mp2882_data(x)  container_of(x, struct mp2882_data, info)
-
-static int mp2882_read_byte_data(struct i2c_client *client, int page, int reg)
-{
-    return -ENODATA;
-}
 
 #define mfr_vout_loop_ctrl_r1 0xb2
 #define mfr_vr_cfg1 0xb7
+#define mfr_slope_dcm_set 0xc1
+#define mfr_trim_sel 0xc2
 static unsigned short process_vout(struct i2c_client *client, int page, int reg)
 {
     unsigned short mfr_vout_cfg;
@@ -117,30 +89,107 @@ static unsigned short process_power(struct i2c_client *client, int page, int reg
 
 static unsigned int process_iout(struct i2c_client *client, int page, int reg)
 {
-    unsigned int data;
-    unsigned int exp;
+    unsigned short data;
 
     data = pmbus_read_word_data(client, page, reg);
-    exp = data >> 11;
-    data = data & 0x7ff;
-
-    data = data*10;
-
-    if (exp == 0x1f)
-        data = data / 2;
-    else if (exp == 0x1e)
-        data = data / 4;
-    else
-        data = 0;
+    data &= 0x3ff;
 
     return data;
+}
+
+static unsigned int process_iout_limit(struct i2c_client *client, int page, int reg)
+{
+    unsigned int data;
+    unsigned int ocp_tdc_spike;
+    struct pmbus_data *pdata;
+    static unsigned int kcs[] = {50, 85, 90, 97, 100};
+    static unsigned int trim_sel[][3] = {
+        {0, 10000, 4},
+        {1, 10000, 4},
+        {4, 5000, 4},
+        {5, 10000, 3},
+        {6, 40000, 4},
+        {7, 10000, 3},
+        {8, 40000, 4},
+        {9, 40000, 3},
+        {10, 5000, 4},
+        {11, 25000, 4},
+        {13, 400, 4},
+        {14, 400, 2},
+        {15, 40000, 3},
+        {0, 0, 0},
+    };
+    int i;
+
+    data = pmbus_read_word_data(client, page, mfr_slope_dcm_set);
+    data = data >> 10;
+    data &= 0x7;
+    if (data < sizeof(kcs)/sizeof(unsigned int)) {
+        ocp_tdc_spike = pmbus_read_word_data(client, page, PMBUS_IOUT_OC_FAULT_LIMIT);
+        if (reg == PMBUS_IOUT_OC_WARN_LIMIT) {
+            ocp_tdc_spike = ocp_tdc_spike >> 8;
+        }
+        ocp_tdc_spike &= 0xff;
+        ocp_tdc_spike *= kcs[data];
+
+        data = pmbus_read_word_data(client, 1, mfr_trim_sel);
+        if (page == 1)
+            data = data >> 8;
+        data &= 0xf;
+        for (i=0; trim_sel[i][1] != 0; i++) {
+            if (trim_sel[i][0] == data) {
+                ocp_tdc_spike = ocp_tdc_spike * trim_sel[i][1];
+                ocp_tdc_spike = ocp_tdc_spike >> trim_sel[i][2];
+                ocp_tdc_spike /= 62500;
+                pdata = i2c_get_clientdata(client);
+                ocp_tdc_spike *= pdata->info->m[PSC_CURRENT_OUT];
+                return ocp_tdc_spike;
+            }
+        }
+    }
+
+    return -ENODATA;
+}
+
+static unsigned int process_temp_warn(struct i2c_client *client, int page, int reg)
+{
+    unsigned int data;
+
+    data = pmbus_read_word_data(client, page, reg);
+
+    data &= 0xff;
+
+    return data;
+}
+
+static unsigned int process_temp_warn_write(struct i2c_client *client, int page, int reg, unsigned short word)
+{
+    unsigned short reg_val;
+
+    if (word > 255)
+        return -ENOMEM;
+
+    reg_val = pmbus_read_word_data(client, page, reg);
+    reg_val &= 0xff00;
+    reg_val |=  word;
+
+    return pmbus_write_word_data(client, page, reg, reg_val);
 }
 
 static int mp2882_read_word_data(struct i2c_client *client, int page, int reg)
 {
     switch (reg) {
+        case PMBUS_IOUT_UC_FAULT_LIMIT:
+            break;
         case PMBUS_READ_IOUT:
             return process_iout(client, page, reg);
+        case PMBUS_IOUT_OC_WARN_LIMIT:
+        case PMBUS_IOUT_OC_FAULT_LIMIT:
+            return process_iout_limit(client, page, reg);
+
+        case PMBUS_OT_WARN_LIMIT: // _max
+        case PMBUS_OT_FAULT_LIMIT: // _crit
+            return process_temp_warn(client, page, reg);
 
         case PMBUS_READ_VOUT:
             return process_vout(client, page, reg);
@@ -154,279 +203,24 @@ static int mp2882_read_word_data(struct i2c_client *client, int page, int reg)
     return -ENODATA;
 }
 
-#if 0
-static int
-mp2882_current_sense_gain_and_resolution_get(struct i2c_client *client, struct mp2882_data *data)
+static int mp2882_write_word_data(struct i2c_client *client, int page, int reg, unsigned short word)
 {
-    int ret;
-
-    /*
-     * Obtain DrMOS current sense gain of power stage from the register
-     * , bits 0-2. The value is selected as below:
-     * 00b - 5µA/A, 01b - 8.5µA/A, 10b - 9.7µA/A, 11b - 10µA/A. Other
-     * values are reserved.
-     */
-    ret = i2c_smbus_read_word_data(client, MP2888_MFR_SYS_CONFIG);
-    if (ret < 0)
-        return ret;
-
-    switch (ret & MP2888_DRMOS_KCS) {
-    case 0:
-        data->curr_sense_gain = 85;
-        break;
-    case 1:
-        data->curr_sense_gain = 97;
-        break;
-    case 2:
-        data->curr_sense_gain = 100;
-        break;
-    case 3:
-        data->curr_sense_gain = 50;
-        break;
-    default:
-        return -EINVAL;
-    }
-
-    /*
-     * Obtain resolution selector for total and phase current report and protection.
-     * 0: original resolution; 1: half resolution (in such case phase current value should
-     * be doubled.
-     */
-    data->total_curr_resolution = (ret & MP2888_TOTAL_CURRENT_RESOLUTION) >> 3;
-    data->phase_curr_resolution = (ret & MP2888_PHASE_CURRENT_RESOLUTION) >> 4;
-
-    return 0;
-}
-
-static int
-mp2882_read_phase(struct i2c_client *client, struct mp2882_data *data, int page, int phase, u8 reg)
-{
-    int ret;
-
-    ret = pmbus_read_word_data(client, page, phase, reg);
-    if (ret < 0)
-        return ret;
-
-    if (!((phase + 1) % 2))
-        ret >>= 8;
-    ret &= 0xff;
-
-    /*
-     * Output value is calculated as: (READ_CSx / 80 – 1.23) / (Kcs * Rcs)
-     * where:
-     * - Kcs is the DrMOS current sense gain of power stage, which is obtained from the
-     *   register MP2888_MFR_VR_CONFIG1, bits 13-12 with the following selection of DrMOS
-     *   (data->curr_sense_gain):
-     *   00b - 5µA/A, 01b - 8.5µA/A, 10b - 9.7µA/A, 11b - 10µA/A.
-     * - Rcs is the internal phase current sense resistor. This parameter depends on hardware
-     *   assembly. By default it is set to 1kΩ. In case of different assembly, user should
-     *   scale this parameter by dividing it by Rcs.
-     * If phase current resolution bit is set to 1, READ_CSx value should be doubled.
-     * Note, that current phase sensing, providing by the device is not accurate. This is
-     * because sampling of current occurrence of bit weight has a big deviation, especially for
-     * light load.
-     */
-    ret = DIV_ROUND_CLOSEST(ret * 100 - 9800, data->curr_sense_gain);
-    ret = (data->phase_curr_resolution) ? ret * 2 : ret;
-    /* Scale according to total current resolution. */
-    ret = (data->total_curr_resolution) ? ret * 8 : ret * 4;
-    return ret;
-}
-
-static int
-mp2882_read_phases(struct i2c_client *client, struct mp2882_data *data, int page, int phase)
-{
-    int ret;
-
-    switch (phase) {
-    case 0 ... 1:
-        ret = mp2882_read_phase(client, data, page, phase, MP2888_MFR_READ_CS1_2);
-        break;
-    case 2 ... 3:
-        ret = mp2882_read_phase(client, data, page, phase, MP2888_MFR_READ_CS3_4);
-        break;
-    case 4 ... 5:
-        ret = mp2882_read_phase(client, data, page, phase, MP2888_MFR_READ_CS5_6);
-        break;
-    case 6 ... 7:
-        ret = mp2882_read_phase(client, data, page, phase, MP2888_MFR_READ_CS7_8);
-        break;
-    case 8 ... 9:
-        ret = mp2882_read_phase(client, data, page, phase, MP2888_MFR_READ_CS9_10);
-        break;
-    default:
-        return -ENODATA;
-    }
-    return ret;
-}
-
-static int mp2882_read_word_data_mp2888(struct i2c_client *client, int page, int phase, int reg)
-{
-    const struct pmbus_driver_info *info = pmbus_get_driver_info(client);
-    struct mp2882_data *data = to_mp2882_data(info);
-    int ret;
-
     switch (reg) {
-    case PMBUS_READ_VIN:
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret <= 0)
-            return ret;
+        case PMBUS_IOUT_UC_FAULT_LIMIT:
+        case PMBUS_IOUT_OC_WARN_LIMIT:
+        case PMBUS_IOUT_OC_FAULT_LIMIT:
+            break;
 
-        /*
-         * READ_VIN requires fixup to scale it to linear11 format. Register data format
-         * provides 10 bits for mantissa and 6 bits for exponent. Bits 15:10 are set with
-         * the fixed value 111011b.
-         */
-        ret = (ret & GENMASK(9, 0)) | ((ret & GENMASK(31, 10)) << 1);
-        break;
-    case PMBUS_OT_WARN_LIMIT:
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret < 0)
-            return ret;
-        /*
-         * Chip reports limits in degrees C, but the actual temperature in 10th of
-         * degrees C - scaling is needed to match both.
-         */
-        ret *= MP2888_TEMP_UNIT;
-        break;
-    case PMBUS_READ_IOUT:
-        if (phase != 0xff)
-            return mp2882_read_phases(client, data, page, phase);
+        case PMBUS_OT_WARN_LIMIT: // _max
+        case PMBUS_OT_FAULT_LIMIT: //_crit
+            return process_temp_warn_write(client, page, reg, word);
 
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret < 0)
-            return ret;
-        /*
-         * READ_IOUT register has unused bits 15:12 with fixed value 1110b. Clear these
-         * bits and scale with total current resolution. Data is provided in direct format.
-         */
-        ret &= GENMASK(11, 0);
-        ret = data->total_curr_resolution ? ret * 2 : ret;
-        break;
-    case PMBUS_IOUT_OC_WARN_LIMIT:
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret < 0)
-            return ret;
-        ret &= GENMASK(9, 0);
-        /*
-         * Chip reports limits with resolution 1A or 2A, if total current resolution bit is
-         * set 1. Actual current is reported with 0.25A or respectively 0.5A resolution.
-         * Scaling is needed to match both.
-         */
-        ret = data->total_curr_resolution ? ret * 8 : ret * 4;
-        break;
-    case PMBUS_READ_POUT:
-    case PMBUS_READ_PIN:
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret < 0)
-            return ret;
-        ret = data->total_curr_resolution ? ret * 2 : ret;
-        break;
-    case PMBUS_POUT_OP_WARN_LIMIT:
-        ret = pmbus_read_word_data(client, page, phase, reg);
-        if (ret < 0)
-            return ret;
-        /*
-         * Chip reports limits with resolution 1W or 2W, if total current resolution bit is
-         * set 1. Actual power is reported with 0.5W or 1W respectively resolution. Scaling
-         * is needed to match both.
-         */
-        ret = data->total_curr_resolution ? ret * 4 : ret * 2;
-        break;
-    /*
-     * The below registers are not implemented by device or implemented not according to the
-     * spec. Skip all of them to avoid exposing non-relevant inputs to sysfs.
-     */
-    case PMBUS_OT_FAULT_LIMIT:
-    case PMBUS_UT_WARN_LIMIT:
-    case PMBUS_UT_FAULT_LIMIT:
-    case PMBUS_VIN_UV_FAULT_LIMIT:
-    case PMBUS_VOUT_UV_WARN_LIMIT:
-    case PMBUS_VOUT_OV_WARN_LIMIT:
-    case PMBUS_VOUT_UV_FAULT_LIMIT:
-    case PMBUS_VOUT_OV_FAULT_LIMIT:
-    case PMBUS_VIN_OV_WARN_LIMIT:
-    case PMBUS_IOUT_OC_LV_FAULT_LIMIT:
-    case PMBUS_IOUT_OC_FAULT_LIMIT:
-    case PMBUS_POUT_MAX:
-    case PMBUS_IOUT_UC_FAULT_LIMIT:
-    case PMBUS_POUT_OP_FAULT_LIMIT:
-    case PMBUS_PIN_OP_WARN_LIMIT:
-    case PMBUS_MFR_VIN_MIN:
-    case PMBUS_MFR_VOUT_MIN:
-    case PMBUS_MFR_VIN_MAX:
-    case PMBUS_MFR_VOUT_MAX:
-    case PMBUS_MFR_IIN_MAX:
-    case PMBUS_MFR_IOUT_MAX:
-    case PMBUS_MFR_PIN_MAX:
-    case PMBUS_MFR_POUT_MAX:
-    case PMBUS_MFR_MAX_TEMP_1:
-        return -ENXIO;
-    default:
-        return -ENODATA;
+        default:
+            break;
     }
 
-    return ret;
+    return -EPERM;
 }
-
-static int mp2882_write_word_data(struct i2c_client *client, int page, int reg, u16 word)
-{
-    const struct pmbus_driver_info *info = pmbus_get_driver_info(client);
-    struct mp2882_data *data = to_mp2882_data(info);
-
-    switch (reg) {
-    case PMBUS_OT_WARN_LIMIT:
-        word = DIV_ROUND_CLOSEST(word, MP2888_TEMP_UNIT);
-        /* Drop unused bits 15:8. */
-        word = clamp_val(word, 0, GENMASK(7, 0));
-        break;
-    case PMBUS_IOUT_OC_WARN_LIMIT:
-        /* Fix limit according to total curent resolution. */
-        word = data->total_curr_resolution ? DIV_ROUND_CLOSEST(word, 8) :
-               DIV_ROUND_CLOSEST(word, 4);
-        /* Drop unused bits 15:10. */
-        word = clamp_val(word, 0, GENMASK(9, 0));
-        break;
-    case PMBUS_POUT_OP_WARN_LIMIT:
-        /* Fix limit according to total curent resolution. */
-        word = data->total_curr_resolution ? DIV_ROUND_CLOSEST(word, 4) :
-               DIV_ROUND_CLOSEST(word, 2);
-        /* Drop unused bits 15:10. */
-        word = clamp_val(word, 0, GENMASK(9, 0));
-        break;
-    default:
-        return -ENODATA;
-    }
-    return pmbus_write_word_data(client, page, reg, word);
-}
-
-static int
-mp2882_identify_multiphase(struct i2c_client *client, struct mp2882_data *data,
-               struct pmbus_driver_info *info)
-{
-    int ret;
-
-    ret = i2c_smbus_write_byte_data(client, PMBUS_PAGE, 0);
-    if (ret < 0)
-        return ret;
-
-    /* Identify multiphase number - could be from 1 to 10. */
-    ret = i2c_smbus_read_word_data(client, MP2888_MFR_VR_CONFIG1);
-    if (ret <= 0)
-        return ret;
-
-    info->phases[0] = ret & GENMASK(3, 0);
-
-    /*
-     * The device provides a total of 10 PWM pins, and can be configured to different phase
-     * count applications for rail.
-     */
-    if (info->phases[0] > MP2888_MAX_PHASE)
-        return -EINVAL;
-
-    return 0;
-}
-#endif
 
 static struct pmbus_platform_data mp2882_pdata = {0};
 static struct pmbus_driver_info mp2882_info = {0};
@@ -435,12 +229,15 @@ extern int vol_sensor_add(struct i2c_client *client);
 extern void vol_sensor_del(struct i2c_client *client);
 extern int curr_sensor_add(struct i2c_client *client);
 extern void curr_sensor_del(struct i2c_client *client);
+extern int hwmon_sensor_add(struct device *dev);
+extern void hwmon_sensor_del(struct device *dev);
 
 static int mp2882_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
     struct pmbus_driver_info *info;
     struct mp2882_data *data;
     unsigned short cfg_data;
+    struct pmbus_data *pdata;
 
     data = devm_kzalloc(&client->dev, sizeof(struct mp2882_data), GFP_KERNEL);
     if (!data)
@@ -458,17 +255,21 @@ static int mp2882_probe(struct i2c_client *client, const struct i2c_device_id *i
     info->format[PSC_VOLTAGE_IN] = linear;
     info->format[PSC_VOLTAGE_OUT] = linear;
     info->format[PSC_TEMPERATURE] = direct,
-    info->format[PSC_CURRENT_OUT] = linear,
+    info->format[PSC_CURRENT_OUT] = direct,
     info->format[PSC_POWER] = linear,
+
+    info->m[PSC_TEMPERATURE] = 1;
+    info->b[PSC_TEMPERATURE] = 0;
+    info->R[PSC_TEMPERATURE] = 0;
+
+    info->m[PSC_CURRENT_OUT] = 4;
+    info->b[PSC_CURRENT_OUT] = 0;
+    info->R[PSC_CURRENT_OUT] = 0;
 
     i2c_smbus_write_byte_data(client, PMBUS_PAGE, 0x0);
     cfg_data = i2c_smbus_read_word_data(client, mfr_vr_cfg1);
     cfg_data = cfg_data | (0x3 << 6);
     i2c_smbus_write_word_data(client, mfr_vr_cfg1, cfg_data);
-
-    info->R[PSC_TEMPERATURE] = 0;
-    info->m[PSC_TEMPERATURE] = 1;
-    info->b[PSC_TEMPERATURE] = 0;
 
     info->func[0] = PMBUS_HAVE_VIN | PMBUS_HAVE_VOUT | PMBUS_HAVE_IOUT | PMBUS_HAVE_POUT | PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_VOUT |
                     PMBUS_HAVE_STATUS_IOUT | PMBUS_HAVE_STATUS_INPUT | PMBUS_HAVE_STATUS_TEMP;
@@ -476,10 +277,12 @@ static int mp2882_probe(struct i2c_client *client, const struct i2c_device_id *i
     info->func[1] = PMBUS_HAVE_VIN | PMBUS_HAVE_VOUT | PMBUS_HAVE_IOUT | PMBUS_HAVE_POUT | PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_VOUT |
                     PMBUS_HAVE_STATUS_IOUT | PMBUS_HAVE_STATUS_INPUT | PMBUS_HAVE_STATUS_TEMP;
 
-    info->read_byte_data  = mp2882_read_byte_data;
     info->read_word_data  = mp2882_read_word_data;
+    info->write_word_data  = mp2882_write_word_data;
 
     if (pmbus_do_probe(client, id, info) == 0) {
+        pdata = i2c_get_clientdata(client);
+        hwmon_sensor_add(pdata->hwmon_dev);
         vol_sensor_add(client);
         curr_sensor_add(client);
         return 0;
@@ -490,6 +293,10 @@ static int mp2882_probe(struct i2c_client *client, const struct i2c_device_id *i
 
 int mp2882_remove(struct i2c_client *client)
 {
+    struct pmbus_data *pdata;
+
+    pdata = i2c_get_clientdata(client);
+    hwmon_sensor_del(pdata->hwmon_dev);
     vol_sensor_del(client);
     curr_sensor_del(client);
     pmbus_do_remove(client);

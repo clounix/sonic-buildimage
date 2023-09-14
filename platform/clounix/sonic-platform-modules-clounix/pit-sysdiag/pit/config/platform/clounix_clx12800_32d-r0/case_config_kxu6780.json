@@ -45,7 +45,7 @@
         "num_jobs": "1",
         "iop_pattern" : "IOPS=([0-9]+)",
         "dev_pattern" : "root-overlay",
-        "ssd_run_size_percentage": "95%",
+        "ssd_run_size_percentage": "10%",
         "iops_value_standard": "3000",
         "ssd_test_count": 1,
         "total_ssd_value": "32G"
@@ -174,6 +174,7 @@
             "slave_file_path":""
         }
     },
+    "power_cycle_cmd":"sleep 10; echo 0x77 > /sys/devices/pci0000:00/0000:00:11.0/power_cycle",
     "voltage_margin_device":["P1V8", "P0V79", "P1V0", "P0V8", "P3V3_0", "P3V3_1"],
     "svid_info":{
        "P1V8":{
@@ -219,8 +220,9 @@
             "test_mac_loopback_4_ctrl2cpu_tx.dsh",
             "test_mac_loopback_5_recover.dsh"
         ],
-        "total_portnum" : 56,
-        "qsfp_portnum" : 48,
+        "total_portnum" : 32,
+        "qsfp_portnum" : 32,
+        "port_step" : 8,
         "test_loop_times" : 10
     },
     "sensor_info":{
@@ -241,12 +243,12 @@
             "P0V8"  : ["curr2_input","in4_input","power2_input"]
         },
         "dcdc_sensor_node" : {
-            "P3V3_0"   : "/sys/bus/i2c/devices/4-0021/hwmon/hwmon19/",
-            "P3V3_1"   : "/sys/bus/i2c/devices/4-0022/hwmon/hwmon20/",
-            "P1V8"  : "/sys/bus/i2c/devices/4-0022/hwmon/hwmon20/",
-            "P0V79" : "/sys/bus/i2c/devices/4-0020/hwmon/hwmon18/",
-            "P1V0"  : "/sys/bus/i2c/devices/4-0020/hwmon/hwmon18/",
-            "P0V8"  : "/sys/bus/i2c/devices/4-0021/hwmon/hwmon19/"
+            "P3V3_0"   : "/sys/bus/i2c/devices/4-0021/hwmon/hwmon7/",
+            "P3V3_1"   : "/sys/bus/i2c/devices/4-0022/hwmon/hwmon8/",
+            "P1V8"  : "/sys/bus/i2c/devices/4-0022/hwmon/hwmon8/",
+            "P0V79" : "/sys/bus/i2c/devices/4-0020/hwmon/hwmon6/",
+            "P1V0"  : "/sys/bus/i2c/devices/4-0020/hwmon/hwmon6/",
+            "P0V8"  : "/sys/bus/i2c/devices/4-0021/hwmon/hwmon7/"
         }
     },
     "cpi_port_info":{

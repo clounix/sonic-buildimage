@@ -73,19 +73,64 @@ inline int get_sensor_index(struct i2c_client *client, struct sensor_descript *s
    return -ENODATA;
 }
 
+inline int find_hwmon_attr_node(struct device *dev, unsigned char *node_name)
+{
+    struct hwmon_device *hwdev;
+    struct attribute *a;
+    const struct attribute_group *group;
+    int i;
+
+    if (dev == NULL)
+        return -1;
+
+    hwdev = to_hwmon_device(dev);
+    if (hwdev == NULL)
+        return -1;
+
+    if (hwdev->group.attrs == NULL) {
+        group = dev->groups[0];
+    } else {
+        group = &(hwdev->group);
+    }
+
+    if (group == NULL) {
+        return -1;
+    }
+    for (i=0; group->attrs[i] != NULL; i++) {
+        a = group->attrs[i];
+        if (strcmp(a->name, node_name) == 0)
+            return 0;
+    }
+
+    return -1;
+}
+
 inline int get_hwmon_attr_by_name(struct device *dev, unsigned char *node_name, char *buf)
 {
     struct hwmon_device *hwdev;
     struct device_attribute *dev_attr;
     struct attribute *a;
+    const struct attribute_group *group;
     int i;
     
     if (dev == NULL)
         return -1;
 
     hwdev = to_hwmon_device(dev);
-    for (i=0; hwdev->group.attrs[i] != NULL; i++) {
-        a = hwdev->group.attrs[i];
+    if (hwdev == NULL)
+        return -1;
+
+    if (hwdev->group.attrs == NULL) {
+        group = dev->groups[0];
+    } else {
+        group = &(hwdev->group);
+    }
+
+    if (group == NULL) {
+        return -1;
+    }
+    for (i=0; group->attrs[i] != NULL; i++) {
+        a = group->attrs[i];
         if (strcmp(a->name, node_name) == 0) {
             dev_attr = to_dev_attr(a);
             return dev_attr->show(dev, dev_attr, buf);
@@ -100,14 +145,27 @@ inline int set_hwmon_attr_by_name(struct device *dev, unsigned char *node_name, 
     struct hwmon_device *hwdev;
     struct device_attribute *dev_attr;
     struct attribute *a;
+    const struct attribute_group *group;
     int i;
 
     if (dev == NULL)
         return -1;
 
     hwdev = to_hwmon_device(dev);
-    for (i=0; hwdev->group.attrs[i] != NULL; i++) {
-        a = hwdev->group.attrs[i];
+    if (hwdev == NULL)
+        return -1;
+
+    if (hwdev->group.attrs == NULL) {
+        group = dev->groups[0];
+    } else {
+        group = &(hwdev->group);
+    }
+
+    if (group == NULL) {
+        return -1;
+    }
+    for (i=0; group->attrs[i] != NULL; i++) {
+        a = group->attrs[i];
         if (strcmp(a->name, node_name) == 0) {
             dev_attr = to_dev_attr(a);
             return dev_attr->store(dev, dev_attr, buf, count);

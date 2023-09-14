@@ -144,6 +144,7 @@ class SensorUtil(object):
                 sensor_p1v8_dcdc_voltage["Unit"] = "mV"
                 sensor_p1v8_dcdc_voltage["Description"] = "P1V8_AVDD Voltage"
                 print("%s: Current %s(mA), Voltage %s(mV), Power %s(W)" %(key, values[0], values[1], "N/A"))
+                continue
                 
             if key == "P0V8_AVDD":
                 sensor_p0v8_dcdc_voltage["Value"] = int(values[1])/1000
@@ -151,7 +152,6 @@ class SensorUtil(object):
                 sensor_p0v8_dcdc_voltage["HighThd"] = "1375"
                 sensor_p0v8_dcdc_voltage["Unit"] = "mV"
                 sensor_p0v8_dcdc_voltage["Description"] = "P0V8_AVDD Voltage"
-                print("%s: Current %s(mA), Voltage %s(mV), Power %s(W)" %(key, values[0], int(values[1])/500, int(values[2])/1000000))
                        
             if key == "P1V0_AVDD":
                 sensor_p1v0_dcdc_voltage["Value"] = int(values[1])/1000
@@ -195,10 +195,10 @@ class SensorUtil(object):
         status,output = run_command(cmd)
         print("FAN_0x49 output: {}".format(output))
 
-        cmd = 'redis-cli -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x48" "temperature"'
+        cmd = 'redis-cli -p 6382 -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x48" "temperature"'
         status,output = run_command(cmd)
         print("Redis FAN_0x48 output: {}".format(output))
-        cmd = 'redis-cli -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x49" "temperature"'
+        cmd = 'redis-cli -p 6382 -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x49" "temperature"'
         status,output = run_command(cmd)
         print("Redis FAN_0x49 output: {}".format(output))
 
@@ -283,4 +283,4 @@ class SensorUtil(object):
         value = self.get_dcdc_value()
         sensor_all["DCDC_POWER"] = self.format_sensor_value(value)
   
-        return sensor_all   
+        return sensor_all

@@ -604,6 +604,42 @@ static ssize_t psu_max_output_power_show(struct switch_obj *obj, struct switch_a
     return ret;
 }
 
+static ssize_t psu_max_output_vol_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
+{
+    unsigned int psu_index;
+    int ret;
+
+    check_p(g_psu_drv);
+    check_p(g_psu_drv->get_psu_max_output_vol);
+
+    psu_index = obj->index;
+    PSU_DBG("psu index: %u\n", psu_index);
+    ret = g_psu_drv->get_psu_max_output_vol(psu_index, buf, PAGE_SIZE);
+    if (ret < 0) {
+        PSU_ERR("get psu%u max output vol failed, ret: %d\n", psu_index, ret);
+        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
+    }
+    return ret;
+}
+
+static ssize_t psu_min_output_vol_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
+{
+    unsigned int psu_index;
+    int ret;
+
+    check_p(g_psu_drv);
+    check_p(g_psu_drv->get_psu_min_output_vol);
+
+    psu_index = obj->index;
+    PSU_DBG("psu index: %u\n", psu_index);
+    ret = g_psu_drv->get_psu_min_output_vol(psu_index, buf, PAGE_SIZE);
+    if (ret < 0) {
+        PSU_ERR("get psu%u min output vol failed, ret: %d\n", psu_index, ret);
+        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
+    }
+    return ret;
+}
+
 static ssize_t psu_temp_value_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
 {
     unsigned int psu_index, temp_index;
@@ -854,6 +890,8 @@ static struct switch_attribute psu_alarm_attr = __ATTR(alarm, S_IRUGO, psu_alarm
 static struct switch_attribute psu_alarm_threshold_curr_attr = __ATTR(alarm_threshold_curr, S_IRUGO, psu_alarm_threshold_curr_show, NULL);
 static struct switch_attribute psu_alarm_threshold_vol_attr = __ATTR(alarm_threshold_vol, S_IRUGO, psu_alarm_threshold_vol_show, NULL);
 static struct switch_attribute psu_max_output_power_attr = __ATTR(max_output_power, S_IRUGO, psu_max_output_power_show, NULL);
+static struct switch_attribute psu_max_output_vol_attr = __ATTR(max_output_vol, S_IRUGO, psu_max_output_vol_show, NULL);
+static struct switch_attribute psu_min_output_vol_attr = __ATTR(min_output_vol, S_IRUGO, psu_min_output_vol_show, NULL);
 
 static struct attribute *psu_attrs[] = {
     &psu_model_name_attr.attr,
@@ -882,6 +920,8 @@ static struct attribute *psu_attrs[] = {
     &psu_alarm_threshold_curr_attr.attr,
     &psu_alarm_threshold_vol_attr.attr,
     &psu_max_output_power_attr.attr,
+    &psu_max_output_vol_attr.attr,
+    &psu_min_output_vol_attr.attr,
     NULL,
 };
 

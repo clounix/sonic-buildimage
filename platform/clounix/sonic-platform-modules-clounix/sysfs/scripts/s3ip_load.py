@@ -34,8 +34,9 @@ if __name__ == '__main__':
                 command = "echo " + op + "\"" + s3ip_sysfs_path['value'] + "\"" + " " + s3ip_sysfs_path['path'] + " > " + "/sys/switch/clounix_cmd"
                 os.system(command)
             elif s3ip_sysfs_path['type'] == "path" :
-                command = "echo " + op + s3ip_sysfs_path['value'] + " " + s3ip_sysfs_path['path'] + " > " + "/sys/switch/clounix_cmd"
-                os.system(command)
+                if op != "del ":
+                    command = "echo " + op + s3ip_sysfs_path['value'] + " " + s3ip_sysfs_path['path'] + " > " + "/sys/switch/clounix_cmd"
+                    os.system(command)
             elif s3ip_sysfs_path['type'] == "elem" :
                 #create for all of the elem
                 if not os.path.exists(s3ip_sysfs_path['value']):

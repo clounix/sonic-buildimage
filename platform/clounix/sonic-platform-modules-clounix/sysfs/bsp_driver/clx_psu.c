@@ -19,6 +19,7 @@
 #include "pmbus.h"
 
 #include "clounix/clounix_fpga.h"
+#include "clounix/io_signal_ctrl.h"
 
 extern struct pmbus_driver_info clx_psu_list[2];
 
@@ -58,39 +59,45 @@ ssize_t mfr_info_show(struct device *dev, struct device_attribute *attr, char *b
 #define led_amber (1)
 #define led_off (2)
 #define led_blink_green (3)
-#define stat_word_fail (0x7fec)
+#define stat_word_fail (0xecff)
 
 extern void __iomem *clounix_fpga_base;
 ssize_t psu_stat_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
     struct fpga_device_attribute *fpga_dev = container_of(attr, struct fpga_device_attribute, dev_attr);
-    void __iomem *psu_stat;
     unsigned int index = fpga_dev->index;
-    unsigned int data;
+    int io_data;
+    int type;
 
-    if (clounix_fpga_base == NULL) {
-        return -ENXIO;
+    switch (index) {
+        case 0:
+        case 1:
+            type = PSU_PRST;
+            index -= 0;
+            break;
+
+        case 2:
+        case 3:
+            type = PSU_ACOK;
+            index -= 2;
+            break;
+
+        case 4:
+        case 5:
+            type = PSU_PWOK;
+            index -= 4;
+            break;
     }
-    psu_stat = clounix_fpga_base + psu_stat_offset;
 
-    index = 1 << index;
-    data = readb(psu_stat);
-    if (fpga_dev->index > 3)
-        data = (data & 0x10) ? data : 0;
-    else
-        data = (data & 0x1) ? data : 0;
-
-    data = ((data & index) != 0) ? 1 : 0;
-
-    return sprintf(buf, "%d\n", data);
+    io_data = read_io_sig_desc(type, index);
+    return (io_data > 0) ? sprintf(buf, "%d\n", io_data) : sprintf(buf, "%d\n", 0);
 }
 
 ssize_t led_status_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
     struct i2c_client *client = to_i2c_client(dev->parent);
-    void __iomem *psu_stat;
     unsigned short psu_stat_data;
-    unsigned short stat;
+    unsigned short witch_psu;
     unsigned int led_status = led_off;
     char *led_status_list[] = {
         "green",
@@ -98,27 +105,24 @@ ssize_t led_status_show(struct device *dev, struct device_attribute *attr, char 
         "off",
         "blink_green",
     };
-
-    if (clounix_fpga_base == NULL) {
-        return -ENXIO;
-    }
-    psu_stat = clounix_fpga_base + psu_stat_offset;
-    stat = readw(psu_stat);
+    int io_data;
 
     if (client->addr == psu_1_addr)
-        stat = stat & 0x7;
+        witch_psu = 0;
     else if (client->addr == psu_2_addr)
-        stat = (stat >> 4) & 0x7;
+        witch_psu = 1;
     else
-        return 0;
+        return -EIO;
 
-    if (stat & acok)
+    io_data = read_io_sig_desc(PSU_ACOK, witch_psu);
+    if (io_data == 1)
         led_status = led_green;
     else
         led_status = led_off;
 
-    if (stat & pwok)
-        led_status = led_blink_green;
+    io_data = read_io_sig_desc(PSU_PWOK, witch_psu);
+    if (led_status == led_green && io_data == 1)
+        led_status = led_green;
 
     psu_stat_data = pmbus_read_word_data(client, 0, PMBUS_STATUS_WORD);
     if ((psu_stat_data & stat_word_fail) != 0)
@@ -127,13 +131,14 @@ ssize_t led_status_show(struct device *dev, struct device_attribute *attr, char 
     return sprintf(buf, "%s\n", led_status_list[led_status]);
 }
 
-FPGA_DEVICE_ATTR(psu_1_acok, S_IRUSR, psu_stat_show, NULL, 2);
-FPGA_DEVICE_ATTR(psu_1_pwok, S_IRUSR, psu_stat_show, NULL, 1);
 FPGA_DEVICE_ATTR(psu_1_prst, S_IRUSR, psu_stat_show, NULL, 0);
+FPGA_DEVICE_ATTR(psu_2_prst, S_IRUSR, psu_stat_show, NULL, 1);
 
-FPGA_DEVICE_ATTR(psu_2_acok, S_IRUSR, psu_stat_show, NULL, 6);
+FPGA_DEVICE_ATTR(psu_1_acok, S_IRUSR, psu_stat_show, NULL, 2);
+FPGA_DEVICE_ATTR(psu_2_acok, S_IRUSR, psu_stat_show, NULL, 3);
+
+FPGA_DEVICE_ATTR(psu_1_pwok, S_IRUSR, psu_stat_show, NULL, 4);
 FPGA_DEVICE_ATTR(psu_2_pwok, S_IRUSR, psu_stat_show, NULL, 5);
-FPGA_DEVICE_ATTR(psu_2_prst, S_IRUSR, psu_stat_show, NULL, 4);
 
 SENSOR_DEVICE_ATTR(led_status, S_IRUGO, led_status_show, NULL, 0);
 SENSOR_DEVICE_ATTR(mfr_id, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_ID);

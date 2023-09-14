@@ -2,6 +2,8 @@
     "test_cases":[
         "tlv_eeprom_read_tc",
         "tlv_eeprom_write_tc",
+        "replaceable_eeprom_read_tc",
+        "replaceable_eeprom_write_tc",
         "rtc_tc",
         "mgmt_tc",
         "mac_address_tc",
@@ -20,10 +22,12 @@
         "fpga_firmware_program_tc",
         "cpld_firmware_program_tc",
         "fan_tc",
+        "watchdog_tc",
         "psu_tc",
         "cpu_tc",
         "snake_tc",
         "cpi_port_tc",
-	"dac_pin_tc"
+	"dac_pin_tc",
+	"svid_tc"
     ]
 }

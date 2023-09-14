@@ -12,15 +12,19 @@ extern int32_t clx_i2c_write(int bus, int addr, int offset, uint8_t *buf, uint32
 extern void __iomem *clounix_fpga_base;
 
 //internal function declaration
-struct fan_driver_clx8000 driver_fan_clx8000;
+struct fan_driver_clx driver_fan_clx;
 
 static u8 led_state_user_to_dev[] = { DEV_FAN_LED_DARK, DEV_FAN_LED_GREEN, DEV_FAN_LED_YELLOW, DEV_FAN_LED_RED,
 USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT };
 static u8 led_state_dev_to_user[] = { USER_FAN_LED_DARK, USER_FAN_LED_GREEN, USER_FAN_LED_RED, USER_FAN_LED_YELLOW };
 
+#define MAX_SPEED (28200)
+#define MIN_SPEED (2820)
+#define DEF_TOLERANCE (20)
+
 static int set_fan_eeprom_wp(void *fan, uint8_t enable)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 reg = FAN_EEPROM_WRITE_EN_OFFSET;
 
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg, enable);
@@ -31,7 +35,7 @@ static int set_fan_eeprom_wp(void *fan, uint8_t enable)
 
 static ssize_t get_fan_eeprom_wp(void *fan,  char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 reg = FAN_EEPROM_WRITE_EN_OFFSET;
     uint8_t enable;
 
@@ -42,13 +46,13 @@ static ssize_t get_fan_eeprom_wp(void *fan,  char *buf, size_t count)
 }
 static int drv_get_fan_number(void *fan)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     return dev->fan_if.fan_num;
 }
 
 static int drv_get_fan_motor_number(void *fan, unsigned int fan_index)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     return dev->fan_if.motor_per_fan;
 }
 
@@ -114,14 +118,14 @@ static ssize_t drv_get_fan_part_number(void *fan, unsigned int fan_index, char *
  */
 static ssize_t drv_get_fan_hardware_version(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data = 0;
     u8 reg = FAN_CPLD_VERSION_OFFSET;
 
     clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg, &data, 1);
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "fan hw version:addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg, data);
 
-    return sprintf(buf, "%02x\n", data);
+    return sprintf(buf, "%d\n", data);
 }
 
 /*
@@ -141,7 +145,7 @@ static ssize_t drv_get_fan_hardware_version(void *fan, unsigned int fan_index, c
  */
 static ssize_t drv_get_fan_status(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data = 0;
     u8 present = 0;
     u8 reg = FAN_PRESENT_OFFSET;
@@ -150,10 +154,10 @@ static ssize_t drv_get_fan_status(void *fan, unsigned int fan_index, char *buf, 
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg, data);
     GET_BIT(data, fan_index, present);
 
-    return sprintf(buf, "0x%02x\n", !present);
+    return sprintf(buf, "%d\n", !present);
 }
 
-static u8 fan_led_get(struct fan_driver_clx8000 *dev, unsigned char fan_index)
+static u8 fan_led_get(struct fan_driver_clx *dev, unsigned char fan_index)
 {
     u8 data1 = 0, data2 = 0;
     u8 reg1 = FAN_LED1_CONTROL_OFFSET, reg2 = FAN_LED2_CONTROL_OFFSET;
@@ -170,7 +174,7 @@ static u8 fan_led_get(struct fan_driver_clx8000 *dev, unsigned char fan_index)
     return led_state_dev_to_user[dev_led_state];
 }
 
-static u8 fan_led_set(struct fan_driver_clx8000 *dev, unsigned char fan_index, unsigned char user_led_state)
+static u8 fan_led_set(struct fan_driver_clx *dev, unsigned char fan_index, unsigned char user_led_state)
 {
     u8 data = 0;
     u8 reg[FAN_LED_REG_MAX] = {FAN_LED1_CONTROL_OFFSET, FAN_LED2_CONTROL_OFFSET};
@@ -213,7 +217,7 @@ static u8 fan_led_set(struct fan_driver_clx8000 *dev, unsigned char fan_index, u
  */
 static ssize_t drv_get_fan_led_status(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     return sprintf(buf, "%d\n", fan_led_get(dev, fan_index));
 }
 
@@ -236,7 +240,7 @@ static ssize_t drv_get_fan_led_status(void *fan, unsigned int fan_index, char *b
  */
 static int drv_set_fan_led_status(void *fan, unsigned int fan_index, int status)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;    
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     return fan_led_set(dev, fan_index, status);
 }
 
@@ -256,7 +260,7 @@ static int drv_set_fan_led_status(void *fan, unsigned int fan_index, int status)
  */
 static ssize_t drv_get_fan_direction(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data = 0;
     u8 val = 0;
     u8 reg = FAN_AIR_DIRECTION_OFFSET;
@@ -283,7 +287,7 @@ static ssize_t drv_get_fan_direction(void *fan, unsigned int fan_index, char *bu
 static ssize_t drv_get_fan_motor_speed(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data1 = 0, data2=0;
     u8 reg1 ,reg2;
 
@@ -321,7 +325,7 @@ static ssize_t drv_get_fan_motor_speed_tolerance(void *fan, unsigned int fan_ind
                    char *buf, size_t count)
 {
     /* to be update: is it not supported from hardware */
-    return sprintf(buf, "2820");
+    return sprintf(buf, "%d\n", DEF_TOLERANCE);
 }
 
 /*
@@ -339,14 +343,14 @@ static ssize_t drv_get_fan_motor_speed_tolerance(void *fan, unsigned int fan_ind
 static ssize_t drv_get_fan_motor_speed_target(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data = 0;
     u8 reg = FAN_PWM_CONTROL_OFFSET;
 
     clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg, &data, 1);
     LOG_DBG(CLX_DRIVER_TYPES_FAN,  "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg, data);
 
-    return sprintf(buf, "%d\n", data*120);
+    return sprintf(buf, "%d\n", data*(MAX_SPEED/100));
 }
 
 /*
@@ -364,7 +368,7 @@ static ssize_t drv_get_fan_motor_speed_target(void *fan, unsigned int fan_index,
 static ssize_t drv_get_fan_motor_speed_max(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    return sprintf(buf, "28200");
+    return sprintf(buf, "%d\n", MAX_SPEED);
 }
 
 /*
@@ -382,7 +386,7 @@ static ssize_t drv_get_fan_motor_speed_max(void *fan, unsigned int fan_index, un
 static ssize_t drv_get_fan_motor_speed_min(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    return sprintf(buf, "2820");
+    return sprintf(buf, "%d\n", MIN_SPEED);
 }
 
 /*
@@ -400,7 +404,7 @@ static ssize_t drv_get_fan_motor_speed_min(void *fan, unsigned int fan_index, un
 static ssize_t drv_get_fan_motor_ratio(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 data = 0;
     u8 reg = FAN_PWM_CONTROL_OFFSET;
 
@@ -422,7 +426,7 @@ static ssize_t drv_get_fan_motor_ratio(void *fan, unsigned int fan_index, unsign
 static int drv_set_fan_motor_ratio(void *fan, unsigned int fan_index, unsigned int motor_index,
                    int ratio)
 {
-    struct fan_driver_clx8000 *dev = (struct fan_driver_clx8000 *)fan;
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
     u8 val = 0;
     u8 reg = FAN_PWM_CONTROL_OFFSET;
 
@@ -436,7 +440,7 @@ static int drv_set_fan_motor_ratio(void *fan, unsigned int fan_index, unsigned i
     return DRIVER_OK;
 }
 
-static int drv_fan_clx_dev_init(struct fan_driver_clx8000 *fan)
+static int drv_fan_clx_dev_init(struct fan_driver_clx *fan)
 {
     if (clounix_fpga_base == NULL) {
         LOG_ERR(CLX_DRIVER_TYPES_FAN, "fpga resource is not available.\r\n");
@@ -449,7 +453,7 @@ static int drv_fan_clx_dev_init(struct fan_driver_clx8000 *fan)
 
 int drv_fan_clx_init(void **fan_driver)
 {
-    struct fan_driver_clx8000 *fan = &driver_fan_clx8000;
+    struct fan_driver_clx *fan = &driver_fan_clx;
     uint8_t syse2p_enable = true;
     int ret;
 

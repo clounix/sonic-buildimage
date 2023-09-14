@@ -3,7 +3,7 @@
 
 #include "fan_interface.h"
 
-struct fan_driver_clx8000 {
+struct fan_driver_clx {
     struct fan_fn_if fan_if;
     //private
     void __iomem *fan_base;

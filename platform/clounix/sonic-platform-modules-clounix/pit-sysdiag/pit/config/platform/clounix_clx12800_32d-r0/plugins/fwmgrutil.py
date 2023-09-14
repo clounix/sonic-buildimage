@@ -204,13 +204,15 @@ class FwMgrUtil(object):
         #     print(str(e))
         # return ret
 
-    def firmware_refresh(self, item, fw_path, fw_extra=None):
-        print("======firmware_refresh=====",item, fw_path, fw_extra)
-        if item == "CPLD-1" or item == "CPLD-2":
-            os.system("sleep 10; echo 0x77 > /sys/devices/pci0000:00/0000:00:11.0/power_cycle &")
+    def firmware_refresh(self, item, fw_path, power_cycle_cmd, fw_extra=None):
+        print("======firmware_refresh=====",item, fw_path, power_cycle_cmd, fw_extra)
+        if item == "CPLD-1":
+            return True
+	if item == "CPLD-2":
+            os.system(power_cycle_cmd)
             return True
         if item == "FPGA":
-            os.system("sleep 10; echo 0x77 > /sys/devices/pci0000:00/0000:00:11.0/power_cycle &")
+            os.system(power_cycle_cmd)
             return True
 
     # 获取FRU列表

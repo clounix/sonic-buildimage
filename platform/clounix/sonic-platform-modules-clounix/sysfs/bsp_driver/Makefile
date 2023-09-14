@@ -46,6 +46,8 @@ clounix_platform-objs := clx_platform_driver.o \
 		$(INTERFACE_DIR)/clx_driver.o \
 		$(PLAT_DRV)/drv_platform_common.o
 
+obj-m += io_signal_ctrl.o
+
 obj-m += fpga_dev_driver.o
 fpga_dev_driver-objs := fpga_device_driver.o \
 			$(INTERFACE_DIR)/fpga_interface.o \
@@ -109,7 +111,8 @@ curr_sensor_dev_driver-objs := curr_sensor_device_driver.o \
 obj-m += watchdog_dev_driver.o
 watchdog_dev_driver-objs := watchdog_device_driver.o \
 			$(INTERFACE_DIR)/watchdog_interface.o \
-			$(WDT_DRV)/drv_wdt_clx.o
+			$(WDT_DRV)/drv_wdt_fpga_clx.o \
+			$(WDT_DRV)/drv_wdt_cpld_clx.o
 
 obj-m += lpc_syscpld_dev_driver.o
 lpc_syscpld_dev_driver-objs := lpc_syscpld_device_driver.o \

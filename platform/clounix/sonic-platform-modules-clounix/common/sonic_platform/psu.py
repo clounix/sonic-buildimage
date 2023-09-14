@@ -15,6 +15,9 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+psu_status_list = []
+last_psu_index = 0
+
 class Psu(PsuBase):
 
     def __init__(self, index,psu_conf):
@@ -44,6 +47,18 @@ class Psu(PsuBase):
             thermal = Thermal(x,thermal_conf)
             self._thermal_list.append(thermal)
 
+        self.set_last_psu_index()
+        self.psu_status_list = psu_status_list
+        self.psu_status_list.append(1)
+
+    def set_last_psu_index(self):
+        global last_psu_index
+        last_psu_index = self.__index
+
+    def get_last_psu_index(self):
+        global last_psu_index
+        return last_psu_index
+
 ##############################################
 # Device methods
 ##############################################
@@ -71,6 +86,14 @@ class Psu(PsuBase):
             attr_rv = int(attr_rv, 16)
             if ((attr_rv & 0x3) != 0):
                 presence = True
+
+        self.psu_status_list[self.__index] = attr_rv
+        if (self.__index == self.get_last_psu_index()):
+            if (2 in self.psu_status_list or 0 in self.psu_status_list):
+                os.system("echo 2 > /sys/switch/sysled/psu_led_status")
+            else:
+                os.system("echo 1 > /sys/switch/sysled/psu_led_status")
+
         return presence
 
     def get_model(self):
@@ -261,7 +284,7 @@ class Psu(PsuBase):
         if (attr_rv != None):
             voltage_high_threshold = float(attr_rv)
 
-        return voltage_high_threshold
+        return voltage_high_threshold/1000
 
     def get_voltage_low_threshold(self):
         """
@@ -277,7 +300,7 @@ class Psu(PsuBase):
         if (attr_rv != None):
             voltage_low_threshold = float(attr_rv)
 
-        return voltage_low_threshold
+        return voltage_low_threshold/1000
 
     def get_maximum_supplied_power(self):
         """

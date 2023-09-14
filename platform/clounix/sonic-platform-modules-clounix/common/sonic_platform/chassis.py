@@ -80,9 +80,12 @@ class Chassis(ChassisBase):
         for index in range(0, self.__num_of_sfps):
             sfp = Sfp(index,sfp_conf=chassis_conf['sfps'])
             self._sfp_list.append(sfp)
-            
+
         # Initialize CHASSIS THERMAL
-        thermal_conf=self.__conf['thermals']
+        thermal_conf = self.__conf['thermals']
+        cpu_type = self.get_platform_cpu_type()
+        self.__num_of_thermals += len(chassis_conf[cpu_type])
+        thermal_conf += chassis_conf[cpu_type]
         for x in range(0, self.__num_of_thermals):
             thermal_conf[x].update({'container':'chassis'})
             thermal_conf[x].update({'container_index':0})
@@ -103,6 +106,20 @@ class Chassis(ChassisBase):
 ##############################################
 # Device methods
 ##############################################
+    def get_platform_cpu_type(self):
+        fd = os.popen("head /proc/cpuinfo | grep \"model name\"")
+        model_name = fd.readline()
+        if "ZHAOXIN" in model_name:
+            return 'thermals-zhaoxin'
+
+        if "D-1627" in model_name or "D-1539" in model_name:
+            return 'thermals-intel-d16xx'
+
+        if "D1517" in model_name:
+            return 'thermals-intel-d15xx'
+
+        return 'not found'
+
     def _get_attr_val(self, attr_file, default='N/A'):
         """
         Retrieves the sysfs file content(int).
@@ -381,6 +398,10 @@ class Chassis(ChassisBase):
         res_dict['sfp'].clear()
         status, res_dict['sfp'] = self.get_transceiver_change_event(timeout)
         return status, res_dict
+    
+    def initizalize_system_led(self):
+        return True;
+
 
     def __initialize_cpld(self):
         cpld_num = self._get_attr_val('/sys/switch/cpld/num', 0)

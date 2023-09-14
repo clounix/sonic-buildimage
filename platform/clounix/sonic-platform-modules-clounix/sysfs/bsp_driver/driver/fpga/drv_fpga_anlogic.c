@@ -7,13 +7,12 @@
 #include <linux/io.h>
 #include <linux/device.h>
 #include <linux/delay.h>
-#include <linux/spinlock.h>
-#include <linux/msi.h>
 #include <linux/notifier.h>
 #include <linux/reboot.h>
 #include <linux/bits.h>
 
 #include "clounix/clounix_fpga.h"
+#include "clounix/io_signal_ctrl.h"
 #include "device_driver_common.h"
 #include "clx_driver.h"
 
@@ -26,18 +25,104 @@ extern void __iomem *clounix_fpga_base;
 static struct notifier_block reboot_nb = {0};
 static struct notifier_block restart_nb = {0};
 
+static int set_sys_led_status(int type, int num, int val)
+{
+    void __iomem *sysled_stat;
+    int bit = type - PSU_LED_G;
+    int data;
+
+    if (bit < 0)
+        return -EIO;
+
+    sysled_stat = clounix_fpga_base + sys_led_reg_offset;
+    data = readb(sysled_stat);
+
+    if (val > 0) {
+        data = data | (1 << bit);
+    } else {
+        data = data & (~(1 << bit));
+    }
+
+    writeb(data, sysled_stat);
+
+    return 1;
+}
+
+static int get_sys_led_status(int type, int num)
+{
+    void __iomem *sysled_stat;
+    int bit = type - PSU_LED_G;
+    int data;
+
+    if (bit < 0)
+        return 0;
+
+    sysled_stat = clounix_fpga_base + sys_led_reg_offset;
+    data = readb(sysled_stat);
+
+    data = (data >> bit) & 0x1;
+
+    return data;
+}
+
+static void init_io_sig(void)
+{
+    add_io_sig_desc(PSU_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(PSU_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    add_io_sig_desc(SYS_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(SYS_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    add_io_sig_desc(FAN_LED_G, 0, get_sys_led_status, set_sys_led_status);
+    add_io_sig_desc(FAN_LED_R, 0, get_sys_led_status, set_sys_led_status);
+
+    return;
+}
+
+static void rm_io_sig(void)
+{
+    del_io_sig_desc(PSU_LED_G, 0);
+    del_io_sig_desc(PSU_LED_R, 0);
+
+    del_io_sig_desc(SYS_LED_G, 0);
+    del_io_sig_desc(SYS_LED_R, 0);
+
+    del_io_sig_desc(FAN_LED_G, 0);
+    del_io_sig_desc(FAN_LED_R, 0);
+
+    return;
+}
+
 static ssize_t led_show(struct device *dev, struct device_attribute *attr,
         char *buf)
 {
     struct fpga_device_attribute *fpga_attr;
-    char reg_data;
+    unsigned char green;
+    unsigned char red;
+    unsigned char blue;
+    int type;
+    char *led_color[] = {
+        "off",
+        "green",
+        "red",
+        "yellow",
+        "blue"
+    };
 
     fpga_attr = to_fpga_dev_attr(attr);
+    type = PSU_LED_G + fpga_attr->index;
+    switch (type) {
+        case ID_LED_B:
+            blue = read_io_sig_desc(type, 0);
+            blue = blue == 0 ? 0 : (blue + 4);
+            return sprintf(buf, "%s\n", led_color[blue]);
 
-    reg_data = readb(clounix_fpga_base + sys_led_reg_offset);
-    reg_data = (reg_data >> fpga_attr->index) & LED_MASK;
-
-    return sprintf(buf, "%x\n", reg_data);
+        default:
+            green = read_io_sig_desc(type, 0);
+            red = read_io_sig_desc(type + 1, 0);
+            red = red << 1;
+            return sprintf(buf, "%s\n", led_color[green + red]);
+    }
 }
 
 static ssize_t led_store(struct device *dev, struct device_attribute *attr,
@@ -45,15 +130,24 @@ static ssize_t led_store(struct device *dev, struct device_attribute *attr,
 {
     struct fpga_device_attribute *fpga_attr;
     char data = *buf - '0';
+    char green;
+    char red;
     char reg_data;
+    int type;
 
     if (data < 0 || data > LED_MASK)
         return -EPERM;
 
-    reg_data = readb(clounix_fpga_base + sys_led_reg_offset);
-    reg_data = reg_data & ~(LED_MASK << fpga_attr->index);
-    reg_data = reg_data | (data <<  fpga_attr->index);
-    writeb(reg_data, clounix_fpga_base + sys_led_reg_offset);
+    reg_data = buf[0] - '0';
+    if (reg_data < 0 || reg_data > 3)
+        return -EIO;
+
+    green = reg_data & 0x1;
+    red = (reg_data >> 1) & 0x1;
+
+    type = PSU_LED_G + fpga_attr->index;
+    write_io_sig_desc(type, 0, green);
+    write_io_sig_desc(type + 1, 0, red);
 
     return count;
 }
@@ -85,26 +179,9 @@ static int sys_led_reboot_work(struct notifier_block *nb, unsigned long action, 
     return NOTIFY_DONE;
 }
 
-/*
-static irqreturn_t clounix_fpga_irq_hd(int irq, void *dev_id)
-{
-    struct pci_dev *pdev = dev_id;
-    unsigned short data;
-
-    spin_lock(&fpga_msi_lock);
-    pci_read_config_word(pdev, pdev->msi_cap + PCI_MSI_DATA_32, &data);
-    printk(KERN_ALERT "%s: %x\n", __func__, data);
-    spin_unlock(&fpga_msi_lock);
-
-    return IRQ_HANDLED;
-}
-*/
-
-//static char irq_nums;
 int drv_fpga_anlogic_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
 {
     int err;
-  //int i;
     
     if (pci_find_capability(pdev, PCI_CAP_ID_MSI) == 0) {
         printk(KERN_ERR "%s[%d] MSI not support.\r\n", __func__, __LINE__);
@@ -124,7 +201,6 @@ int drv_fpga_anlogic_probe(struct pci_dev *pdev, const struct pci_device_id *pci
     }
     
     pci_set_master(pdev);
-    
     clounix_fpga_base = ioremap(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
     if (clounix_fpga_base  == NULL) {
         printk(KERN_ERR "%s[%d] ioremap resource fail.\r\n", __func__, __LINE__);
@@ -134,19 +210,11 @@ int drv_fpga_anlogic_probe(struct pci_dev *pdev, const struct pci_device_id *pci
     pci_set_drvdata(pdev, clounix_fpga_base);
 
     LOG_ERR(CLX_DRIVER_TYPES_FPGA, "support %d msi vector\n", pci_msi_vec_count(pdev));
-  //irq_nums = pci_alloc_irq_vectors(pdev, 1, 32, PCI_IRQ_MSI | PCI_IRQ_AFFINITY);
-  //if (irq_nums < 0) {
-  //    printk(KERN_ERR "%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
-  //    goto err_alloc_msi;
-  //}
-  //
-  //for (i=0; i<irq_nums; i++) {
-  //    err = request_irq(pci_irq_vector(pdev, i), clounix_fpga_irq_hd, IRQF_SHARED, pdev->driver->name, pdev);
-  //    if (err < 0) {
-  //        printk(KERN_ERR "%s[%d] IRQ request fail.\r\n", __func__, __LINE__);
-  //        goto err_irq;
-  //    }
-  //}
+    err = pci_alloc_irq_vectors(pdev, 1, 32, PCI_IRQ_MSI);
+    if (err < 0) {
+        printk(KERN_ERR "%s[%d] MSI vector alloc fail.\r\n", __func__, __LINE__);
+        goto err_alloc_msi;
+    }
     
     err = sysfs_create_group(&pdev->dev.kobj, &clx12800_fpga_group);
     if (err) {
@@ -159,17 +227,14 @@ int drv_fpga_anlogic_probe(struct pci_dev *pdev, const struct pci_device_id *pci
     register_reboot_notifier(&reboot_nb);
     register_restart_handler(&restart_nb);
 
+    init_io_sig();
+
     return 0;
 
 err_sysfs:
-//err_irq:
-  //irq_nums = i;
-  //for (i=0; i<irq_nums; i++) {
-  //    free_irq(pci_irq_vector(pdev, i), pdev);
-  //}
-  //pci_free_irq_vectors(pdev);
-//err_alloc_msi:
-//  iounmap(clounix_fpga_base);
+    pci_free_irq_vectors(pdev);
+err_alloc_msi:
+    iounmap(clounix_fpga_base);
 err_ioremap:
     pci_clear_master(pdev);
     release_mem_region(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));
@@ -181,15 +246,12 @@ err_request:
 
 void drv_fpga_anlogic_remove(struct pci_dev *pdev)
 {
-  //int i;
+    rm_io_sig();
     unregister_reboot_notifier(&reboot_nb);
     unregister_restart_handler(&restart_nb);
     
     sysfs_remove_group(&pdev->dev.kobj, &clx12800_fpga_group);
-  //for (i=0; i<irq_nums; i++) {
-  //    free_irq(pci_irq_vector(pdev, i), pdev);
-  //}
-  //pci_free_irq_vectors(pdev);
+    pci_free_irq_vectors(pdev);
     iounmap(clounix_fpga_base);
     pci_clear_master(pdev);
     release_mem_region(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0));

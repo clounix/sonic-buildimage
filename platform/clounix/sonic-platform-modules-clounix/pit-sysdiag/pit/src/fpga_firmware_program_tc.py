@@ -46,6 +46,7 @@ class FPGAFIRMWAREPROGRAMTC(TestCaseCommon):
             self.firmware_type = self.platform_cfg_json["fpga_firmware_type"]
             self.test_firmware_list = self.platform_cfg_json["fpga_firmware_test"]
             self.baseline_firmware_list = self.platform_cfg_json["fpga_firmware_baseline"]
+            self.power_cycle_cmd = self.platform_cfg_json["power_cycle_cmd"]
             self.platform_path = os.path.dirname(self.platform_cfg_file)
         except Exception as e:
             self.logger.log_err(str(e), True)
@@ -153,7 +154,7 @@ class FPGAFIRMWAREPROGRAMTC(TestCaseCommon):
                     break
                 else:
                     result = eval(self.firmware_refresh_func)(
-                        item, fw_path, self.fw_extra
+                        item, fw_path, self.power_cycle_cmd, self.fw_extra
                     )
                     if not result:
                         self.fail_reason.append("%s firmware refresh fail" % item)

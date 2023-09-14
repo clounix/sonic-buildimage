@@ -60,7 +60,7 @@
         "num_jobs": "1",
         "iop_pattern" : "IOPS=([0-9]+)",
         "dev_pattern" : "root-overlay",
-        "ssd_run_size_percentage": "95%",
+        "ssd_run_size_percentage": "10%",
         "iops_value_standard": "3000",
         "ssd_test_count": 1,
         "total_ssd_value": "32G"
@@ -69,8 +69,8 @@
         "position" : "main board",
         "count" :5,
         "direction":"out",
-        "ratio_target": [20,80,40],
-        "speed_tolerance": 5640,
+        "ratio_target": [10,80,20],
+        "speed_tolerance": 2820,
         "speed_max":28200,
         "speed_min":2820
     },
@@ -196,12 +196,13 @@
             "slave_file_path":""
         }
     },
+    "power_cycle_cmd":"sleep 10; busybox devmem 0xf8000100 32 0x2 &",
     "voltage_margin_device":["P1V8", "P0V79", "P1V0", "P0V8", "P3V3"],
     "svid_info":{
        "P1V8":{
                 "high_voltage": 1810,
                 "low_voltage": 1738,
-                "normal_voltage": 1775
+                "normal_voltage": 1790
         },
        "P0V79":{
                 "high_voltage": 804,
@@ -238,6 +239,7 @@
         ],
         "total_portnum" : 56,
         "qsfp_portnum" : 48,
+        "port_step" : 4,
         "test_loop_times" : 10
     },
     "sensor_info":{
@@ -258,12 +260,12 @@
             "P12V_MAIN"  : ["curr1_input","in2_input","power1_input"]
         },
         "dcdc_sensor_node" : {
-            "P1V8_AVDD"  : "/sys/bus/i2c/devices/3-0029/hwmon/hwmon10/",
-            "P0V79_VDDK" : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon7/",
-            "P1V0_AVDD"  : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon7/",
-            "P3V3_SFP"   : "/sys/bus/i2c/devices/3-0021/hwmon/hwmon8/",
-            "P0V8_AVDD"  : "/sys/bus/i2c/devices/3-0021/hwmon/hwmon8/",
-            "P12V_MAIN"  : "/sys/bus/i2c/devices/5-0010/hwmon/hwmon6/"
+            "P1V8_AVDD"  : "/sys/bus/i2c/devices/3-0029/hwmon/hwmon9/",
+            "P0V79_VDDK" : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon6/",
+            "P1V0_AVDD"  : "/sys/bus/i2c/devices/3-0020/hwmon/hwmon6/",
+            "P3V3_SFP"   : "/sys/bus/i2c/devices/3-0021/hwmon/hwmon7/",
+            "P0V8_AVDD"  : "/sys/bus/i2c/devices/3-0021/hwmon/hwmon7/",
+            "P12V_MAIN"  : "/sys/bus/i2c/devices/5-0010/hwmon/hwmon5/"
         }
     },
     "cpi_port_info":{

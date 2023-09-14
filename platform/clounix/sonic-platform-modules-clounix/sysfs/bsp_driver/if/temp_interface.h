@@ -18,6 +18,8 @@ struct temp_fn_if {
     int (*set_main_board_temp_min)(void *driver, unsigned int temp_index, const char *buf, size_t count);
     ssize_t (*get_main_board_temp_value)(void *driver, unsigned int temp_index, char *buf, size_t count);
     struct sensor_descript sensor_map_index[SENSOR_MAP_INDEX_MAX];
+    unsigned short real_max_sensor_num;
+    unsigned short total_sensor_node;
 };
 
 #define TEMP_DEV_VALID(dev) \

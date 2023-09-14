@@ -28,6 +28,7 @@ class SNAKETC(TestCaseCommon):
                 self.platform_path = os.path.dirname(self.platform_cfg_file)
                 self.total_portnum = self.snake_info_dict["total_portnum"]
                 self.qsfp_portnum = self.snake_info_dict["qsfp_portnum"]
+                self.port_step = self.snake_info_dict["port_step"]
                 self.test_loop_times = self.snake_info_dict["test_loop_times"]
         except Exception as e:
             self.logger.log_err(str(e), True)
@@ -41,6 +42,10 @@ class SNAKETC(TestCaseCommon):
         process.expect('CLX#')
         cmd_output= process.before.encode()
         if "Load script OK" not in cmd_output:
+            self.logger.log_info(cmd_output, True)
+            ret = E.EFAIL
+            return ret
+        if "failed" in cmd_output:
             self.logger.log_info(cmd_output, True)
             ret = E.EFAIL
             return ret
@@ -178,15 +183,17 @@ class SNAKETC(TestCaseCommon):
         i = 1
         while i < self.total_portnum+1:
             if i<= self.qsfp_portnum:
-                port1 = (i-1)*4
-                port2 = i*4
+                port1 = (i-1)*self.port_step
+                port2 = i*self.port_step
             else:
                 port1 = (i-(self.qsfp_portnum+1))*8+192
                 port2 = (i-(self.qsfp_portnum+1))*8+200
             # stat show
             stat_ports=self.clx_show_stat_ports(process,port1,port2)
             # judge packet loss
-            if(stat_ports[1][1]!=stat_ports[5][2] or stat_ports[1][2]!=stat_ports[5][1]):
+            if(stat_ports[1][1]!=stat_ports[5][2] or stat_ports[1][2]!=stat_ports[5][1] or
+                stat_ports[1][1] == 0 or stat_ports[5][2] == 0 or
+                stat_ports[1][2] == 0 or stat_ports[5][1] == 0):
                 ret = E.EFAIL
                 self.logger.log_err('stat_ports: {}'.format(stat_ports), True)
                 self.fail_reason.append("snake {} {} pkt count fail.".format(stat_ports[0][1], stat_ports[0][2]))

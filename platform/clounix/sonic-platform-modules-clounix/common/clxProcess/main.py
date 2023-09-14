@@ -51,9 +51,9 @@ def platform_load_json():
         with open(prod_file, 'r') as jsonfile:
             json_string = json.load(jsonfile)
     except IOError as e:
-        return NULL, NULL
+        return "", "", ""
 
-    return json_string['i2c_topology_dict'], json_string['kernel_module_list']
+    return json_string['i2c_topology_dict'], json_string['kernel_module_list'], json_string['post_kernel_module_list']
 
 def process_adm1166_fault(adm1166_dic_list):
     indx = 1
@@ -93,10 +93,11 @@ def doInstall():
     status, output = common.doBash("rmmod coretemp")
     status, output = common.doBash("rmmod lm75")
     status, output = common.doBash("rmmod via_cputemp")
-    i2c_topology_dict, kernel_module = platform_load_json()
+    i2c_topology_dict, kernel_module, post_kernel_module = platform_load_json()
     checkDriver(kernel_module)
 
     os.system("/usr/local/bin/s3ip_load.py create")
+    os.system("echo 4 > /sys/switch/sysled/id_led_status")
 
     adm1166_dic_list = []
 
@@ -105,6 +106,7 @@ def doInstall():
         if o['driver'] == "adm1166":
             adm1166_dic_list.append(o)
 
+    checkDriver(post_kernel_module)
     process_adm1166_fault(adm1166_dic_list)
 
     return
@@ -121,9 +123,11 @@ def do_platformApiInstall():
 
 # Platform uninitialize
 def doUninstall():
-    i2c_topology_dict, kernel_module = platform_load_json()
+    i2c_topology_dict, kernel_module, post_kernel_module = platform_load_json()
     for o in i2c_topology_dict:
         status, output = common.doBash("echo " + o['address'] + " > " + common.I2C_PREFIX + o['bus'] + "/delete_device")
+    for mod in post_kernel_module:
+        status, output = common.doBash("modprobe -rq " + mod)
     for mod in kernel_module:
         status, output = common.doBash("modprobe -rq " + mod)
     common.doBash("rmmod " + PLATFORM_CFG_MODULE)
@@ -137,15 +141,14 @@ def main():
 
     if args[0] == 'install':
         common.RUN = True
-        doInstall()
         do_platformApiInit()
+        doInstall()
         do_platformApiInstall()
         device.deviceInit()
 
     if args[0] == 'uninstall':
         common.RUN = False
         doUninstall()
-        os.system("/usr/local/bin/s3ip_load.py stop")
 
     common.sys.exit(0)
 

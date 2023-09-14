@@ -2,6 +2,7 @@
 
 #include "drv_sysled_fpga.h"
 #include "clx_driver.h"
+#include "clounix/io_signal_ctrl.h"
 
 //external function declaration
 extern void __iomem *clounix_fpga_base;
@@ -9,225 +10,18 @@ extern void __iomem *clounix_fpga_base;
 //internal function declaration
 struct drv_sysled_fpga driver_sysled_clx8000;
 
-/*
-0: dark(灭)
-1: green(绿色)
-2: yellow(黄色)
-3: red(红色)
-4: green light flashing(绿色闪烁)
-5: yellow light flashing(黄色闪烁)
-6: red light flashing(红色闪烁)
-7: blue(篮色)
-8: blue light flashing(蓝色闪烁)
-*/
-static char *colors[] =
-{
-    "off",
-    "blue",
-    "green",
-    "yellow",
-    "red",
-    "blink_green",
-};
-
-typedef enum sysled_types{
-PSU_LED_STATUS,
-SYS_LED_STATUS,
-FAN_LED_STATUS,
-ID_LED_STATUS,
-LED_MAX
-}sysled_types_s;
-
-#define PSU_LED_STATUS_BIT_IDX 0
-#define PSU_LED_STATUS_BIT_MASK 0x3
-#define SYS_LED_STATUS_BIT_IDX 2
-#define SYS_LED_STATUS_BIT_MASK (0x3 << SYS_LED_STATUS_BIT_IDX)
-#define FAN_LED_STATUS_BIT_IDX 4
-#define FAN_LED_STATUS_BIT_MASK (0x3 << FAN_LED_STATUS_BIT_IDX)
-#define ID_LED_STATUS_BIT_IDX 6
-#define ID_LED_STATUS_BIT_MASK (0x1 << ID_LED_STATUS_BIT_IDX)
-//righ move
-#define SYSLED_REG_BIT_DATA_RD(idx, mask, data) (((data) >> ((idx) * 2)) & mask)
-//left move
-#define SYSLED_REG_BIT_DATA_WR(idx, mask, data) (((data) << ((idx)) * 2) & mask)
-
-typedef enum user_sysled_state {
+enum user_sysled_state {
     USER_SYSLED_DARK,
     USER_SYSLED_GREEN,
     USER_SYSLED_YELLOW,
     USER_SYSLED_RED,
+    USER_SYSLED_BLUE,
     USER_SYSLED_GREEN_BLINKING,
     USER_SYSLED_YELLOW_BLINKING,
     USER_SYSLED_RED_BLINKING,
-    USER_SYSLED_BLUE,
     USER_SYSLED_BLUE_BLINKING,
     USER_SYSLED_NOT_SUPPORT
-}user_sysled_state_s;
-
-/*PSU FAN*/
-enum dev_led_state {
-    DEV_LED_DARK,
-    DEV_LED_GREEN,
-    DEV_LED_RED,
-    DEV_LED_YELLOW,
 };
-/*SYSLED*/
-enum dev_sysled_state {
-    DEV_SYSLED_GREEN_BLINKING,
-    DEV_SYSLED_GREEN,
-    DEV_SYSLED_RED,
-    DEV_SYSLED_YELLOW,
-};
-/*IDLED*/
-enum dev_idled_state {
-    DEV_IDLED_DARK,
-    DEV_IDLED_BLUE,
-};
-//should be following requirement ???
-static u8 led_state_user_to_dev[] = { DEV_LED_DARK, DEV_LED_GREEN, DEV_LED_YELLOW, DEV_LED_RED,
-USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT };
-static u8 sysled_state_user_to_dev[] = { USER_SYSLED_NOT_SUPPORT, DEV_SYSLED_GREEN, DEV_SYSLED_YELLOW, DEV_SYSLED_RED,
-DEV_SYSLED_GREEN_BLINKING, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT };
-static u8 idled_state_user_to_dev[] = { DEV_IDLED_DARK, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT,
-USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, USER_SYSLED_NOT_SUPPORT, DEV_IDLED_BLUE };
-
-static u8 led_state_dev_to_user[] = { USER_SYSLED_DARK, USER_SYSLED_GREEN, USER_SYSLED_RED, USER_SYSLED_YELLOW };
-static u8 sysled_state_dev_to_user[] = { USER_SYSLED_GREEN_BLINKING, USER_SYSLED_GREEN, USER_SYSLED_RED, USER_SYSLED_YELLOW };
-static u8 idled_state_dev_to_user[] = { USER_SYSLED_BLUE, USER_SYSLED_DARK};
-
-ssize_t front_panel_show(struct drv_sysled_fpga *sysled, sysled_types_s type, char *buf)
-{
-    unsigned char data = readb(sysled->sysled_base + FRONT_PANEL_CFG);
-    unsigned char bit_info = 0;
-    user_sysled_state_s user_led_state;
-    char *led_type_name[LED_MAX] = {"psu", "sys", "fan", "id"};
-
-    switch (type) {
-        case PSU_LED_STATUS:
-        case FAN_LED_STATUS:
-            bit_info = SYSLED_REG_BIT_DATA_RD(type, 0x3, data);
-            user_led_state = led_state_dev_to_user[bit_info];
-            break;
-
-        case SYS_LED_STATUS:
-            bit_info = SYSLED_REG_BIT_DATA_RD(type, 0x3, data);
-            user_led_state = sysled_state_dev_to_user[bit_info];
-            break;
-
-        case ID_LED_STATUS:
-            bit_info = SYSLED_REG_BIT_DATA_RD(type, 0x1, data);
-            user_led_state = idled_state_dev_to_user[bit_info];
-            break;
-
-        default:
-            user_led_state = USER_SYSLED_DARK;
-            break;
-    }
-
-    LOG_DBG(CLX_DRIVER_TYPES_SYSLED, "read LED:%s reg value:0x%x, dev index:%d, user index:%d\n",
-            led_type_name[type], data, bit_info, user_led_state);
-    return sprintf(buf, "%d\n", user_led_state);
-}
-
-ssize_t front_panel_store(struct drv_sysled_fpga *sysled, sysled_types_s type, unsigned char state)
-{
-    unsigned char data = readb(sysled->sysled_base + FRONT_PANEL_CFG);
-    unsigned char dev_state = 0;
-    unsigned char mask = 0;
-    char *led_type_name[LED_MAX] = {"psu", "sys", "fan", "id"};
-
-    if (state > USER_SYSLED_NOT_SUPPORT)
-        return -1;
-
-    switch (type) {
-        case PSU_LED_STATUS:
-            data &= PSU_LED_STATUS_BIT_MASK;
-            dev_state = led_state_user_to_dev[state];
-            mask = PSU_LED_STATUS_BIT_MASK;
-            break;
-
-        case FAN_LED_STATUS:
-            data &= FAN_LED_STATUS_BIT_MASK;
-            dev_state = led_state_user_to_dev[state];
-            mask = FAN_LED_STATUS_BIT_MASK;
-            break;
-
-        case SYS_LED_STATUS:
-            data &= SYS_LED_STATUS_BIT_MASK;
-            dev_state = sysled_state_user_to_dev[state];
-            mask = SYS_LED_STATUS_BIT_MASK;
-            break;
-
-        case ID_LED_STATUS:
-            data &= ID_LED_STATUS_BIT_MASK;
-            dev_state = idled_state_user_to_dev[state];
-            mask = ID_LED_STATUS_BIT_MASK;
-            break;
-
-        default:
-            return -1;
-    }
-    if (dev_state == USER_SYSLED_NOT_SUPPORT)
-        return -1;
-
-    data |= SYSLED_REG_BIT_DATA_WR(type, mask, dev_state);
-    LOG_DBG(CLX_DRIVER_TYPES_SYSLED, "write LED:%s reg value:0x%x, dev index:%d, user index:%d\n",
-            led_type_name[type], data, dev_state, state);
-    writeb(data, sysled->sysled_base + FRONT_PANEL_CFG);
-
-    return 1;
-}
-//to be update
-ssize_t back_panel_show(struct drv_sysled_fpga *sysled, char *buf, int index)
-{
-    unsigned char data = readb(sysled->sysled_base + BACK_PANEL_CFG);
-    unsigned char bit_info = (data >> index) & 0x3;
-    char *ret_str;
-
-    switch (index) {
-        case 0:
-            if (bit_info == 0)
-                ret_str = OFF(colors);
-            else
-                ret_str = YELLOW(colors);
-            break;
-
-        case 2:
-            if (bit_info == 0)
-                ret_str = OFF(colors);
-            else
-                ret_str = BLUE(colors);
-            break;
-
-        default:
-            break;
-    }
-
-    return sprintf(buf, "%s\n", ret_str);
-}
-//to be update
-ssize_t back_panel_store(struct drv_sysled_fpga *sysled, const char *buf, int index)
-{
-
-    unsigned char data = readb(sysled->sysled_base + BACK_PANEL_CFG);
-    unsigned char bit_info;
-
-    if (*buf < '0')
-        return 0;
-
-    if (*buf > '3')
-        return 0;
-
-    bit_info = *buf - '0';
-    bit_info = bit_info << index;
-
-    data = data & (~(LED_MASK << index));
-
-    data = data | bit_info;
-    writeb(data, sysled->sysled_base + BACK_PANEL_CFG);
-
-    return 1;
-}
 
 /*
  * clx_get_sys_led_status - Used to get sys led status
@@ -249,11 +43,69 @@ ssize_t back_panel_store(struct drv_sysled_fpga *sysled, const char *buf, int in
  * if not support this attributes filled "NA" to buf,
  * otherwise it returns a negative value on failed.
  */
+
+static void led_color_set(char color, char *green, char *red, char *blue)
+{
+    if (green != NULL && red != NULL) {
+        switch (color)
+        {
+            case USER_SYSLED_DARK:
+                *green = 0;
+                *red = 0;
+                break;
+
+            case USER_SYSLED_GREEN:
+                *green = 1;
+                *red = 0;
+                break;
+
+            case USER_SYSLED_YELLOW:
+                *green = 1;
+                *red = 1;
+                break;
+
+            case USER_SYSLED_RED:
+                *green = 0;
+                *red = 1;
+                break;
+
+                break;
+        }
+    } else if (blue != NULL) {
+        *blue = (color == USER_SYSLED_BLUE) ? 1 : 0;
+    }
+
+    return;
+}
+
+static int led_color_get(char green, char red, char blue)
+{
+    char color;
+
+    if (green == 1 && red == 1)
+        color = USER_SYSLED_YELLOW;
+    else if (green == 1)
+        color = USER_SYSLED_GREEN;
+    else if (red == 1)
+        color = USER_SYSLED_RED;
+    else
+        color = USER_SYSLED_DARK;
+
+    return color;
+}
+
 static ssize_t drv_get_sys_led_status(void *driver, char *buf, size_t count)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green;
+    unsigned char red;
+    char color;
 
-    return front_panel_show(sysled, SYS_LED_STATUS, buf);
+    green = read_io_sig_desc(SYS_LED_G, 0);
+    red = read_io_sig_desc(SYS_LED_R, 0);
+
+    color = led_color_get(green, red, 0);
+
+    return sprintf(buf, "%d\n", color);
 }
 
 /*
@@ -274,9 +126,15 @@ static ssize_t drv_get_sys_led_status(void *driver, char *buf, size_t count)
  */
 static int drv_set_sys_led_status(void *driver, int status)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green;
+    unsigned char red;
 
-    return front_panel_store(sysled, SYS_LED_STATUS, status);
+    led_color_set(status, &green, &red, NULL);
+
+    write_io_sig_desc(SYS_LED_G, 0, green);
+    write_io_sig_desc(SYS_LED_R, 0, red);
+
+    return 1;
 }
 
 /* Similar to clx_get_sys_led_status */
@@ -294,49 +152,78 @@ static int drv_set_bmc_led_status(void *driver, int status)
 /* Similar to clx_get_sys_led_status */
 static ssize_t drv_get_sys_fan_led_status(void *driver, char *buf, size_t count)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green;
+    unsigned char red;
+    char color;
 
-    return front_panel_show(sysled, FAN_LED_STATUS, buf);
+    green = read_io_sig_desc(FAN_LED_G, 0);
+    red = read_io_sig_desc(FAN_LED_R, 0);
+
+    color = led_color_get(green, red, 0);
+
+    return sprintf(buf, "%d\n", color);
 }
 
 /* Similar to clx_set_sys_led_status */
 static int drv_set_sys_fan_led_status(void *driver, int status)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green = 0;
+    unsigned char red = 0;
 
-    return front_panel_store(sysled, FAN_LED_STATUS, status);
+    led_color_set(status, &green, &red, NULL);
+
+    write_io_sig_desc(FAN_LED_G, 0, green);
+    write_io_sig_desc(FAN_LED_R, 0, red);
+
+    return 1;
 }
 
 /* Similar to clx_get_sys_led_status */
 static ssize_t drv_get_sys_psu_led_status(void *driver, char *buf, size_t count)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green;
+    unsigned char red;
+    char color;
 
-    return front_panel_show(sysled, PSU_LED_STATUS, buf);
+    green = read_io_sig_desc(PSU_LED_G, 0);
+    red = read_io_sig_desc(PSU_LED_R, 0);
+
+    color = led_color_get(green, red, 0);
+
+    return sprintf(buf, "%d\n", color);
 }
 
 /* Similar to clx_set_sys_led_status */
 static int drv_set_sys_psu_led_status(void *driver, int status)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char green = 0;
+    unsigned char red = 0;
 
-    return front_panel_store(sysled, PSU_LED_STATUS, status);
+    led_color_set(status, &green, &red, NULL);
+
+    write_io_sig_desc(PSU_LED_G, 0, green);
+    write_io_sig_desc(PSU_LED_R, 0, red);
+
+    return 1;
 }
 
 /* Similar to clx_get_sys_led_status */
 static ssize_t drv_get_id_led_status(void *driver, char *buf, size_t count)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    unsigned char status;
 
-    return front_panel_show(sysled, ID_LED_STATUS, buf);
+    status = read_io_sig_desc(ID_LED_B, 0);
+    status = status > 0 ? 4 : 0;
+
+    return sprintf(buf, "%d\n", status);
 }
 
 /* Similar to clx_set_sys_led_status */
 static int drv_set_id_led_status(void *driver, int status)
 {
-    struct drv_sysled_fpga *sysled = (struct drv_sysled_fpga *)driver;
+    status = status > 0 ? 1 : 0;
 
-    return front_panel_store(sysled, ID_LED_STATUS, status);
+    return write_io_sig_desc(ID_LED_B, 0, status);
 }
 
 static int drv_sysled_dev_init(struct drv_sysled_fpga *sysled)

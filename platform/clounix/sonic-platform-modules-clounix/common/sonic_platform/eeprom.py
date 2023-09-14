@@ -4,25 +4,41 @@
 #
 # Description: Module contains the definitions of SONiC platform APIs 
 #
-
+import os
 try:
     from sonic_eeprom import eeprom_tlvinfo
     import binascii
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
-class Eeprom(eeprom_tlvinfo.TlvInfoDecoder):
+CACHE_ROOT = '/var/cache/sonic/decode-syseeprom'
+CACHE_FILE = 'syseeprom_cache'
 
+class Eeprom(eeprom_tlvinfo.TlvInfoDecoder):
     def __init__(self):
         self.__eeprom_path = "/sys/switch/syseeprom/eeprom"
         super(Eeprom, self).__init__(self.__eeprom_path, 0, '', True)
         self.__eeprom_tlv_dict = dict()
+        
+        if not os.path.exists(CACHE_ROOT):
+            try:
+                os.makedirs(CACHE_ROOT)
+            except Exception:
+                pass
+        try:
+            self.set_cache_name(os.path.join(CACHE_ROOT, CACHE_FILE))
+        except Exception:
+            pass
         try:
             self.__eeprom_data = self.read_eeprom()
         except:
             self.__eeprom_data = "N/A"
             raise RuntimeError("Eeprom is not Programmed")
         else:
+            try:
+                self.update_cache(self.__eeprom_data)
+            except Exception:
+                pass
             eeprom = self.__eeprom_data
 
             if not self.is_valid_tlvinfo_header(eeprom):

@@ -377,6 +377,7 @@ lm75_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		break;
 	case tmp75c:
 		clr_mask |= 1 << 5;		/* not one-shot mode */
+		clr_mask |= 1 << 1;      /* alert in interrupt mode */
 		data->resolution = 12;
 		data->sample_time = MSEC_PER_SEC / 4;
 		break;
@@ -436,7 +437,7 @@ static const struct i2c_device_id lm75_ids[] = {
 	{ "tmp175", tmp175, },
 	{ "tmp275", tmp275, },
 	{ "tmp75", tmp75, },
-	{ "tmp75c", tmp75c, },
+	{ "clx_tmp75c", tmp75c, },
 	{ /* LIST END */ }
 };
 MODULE_DEVICE_TABLE(i2c, lm75_ids);

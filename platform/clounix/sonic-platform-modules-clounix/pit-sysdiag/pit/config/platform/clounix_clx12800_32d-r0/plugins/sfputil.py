@@ -136,11 +136,7 @@ class SfpUtil(object):
         t1 =  re.match(r"^Ethernet(\d+)", port_index)
         if t1:
             index = int(t1.group(1).strip())
-            if index < 200:
-                index = index / 4 + 1
-            else:
-                index = (index / 4) - (index - 192) / 8 + 1
-            
+            index = index / 8 + 1
             path = TRANSCEIVER_DEVICES_PATH + '/eth' + str(index)
             print("PATH:",path)
             ret = self.check_transceiver_eeprom(path)

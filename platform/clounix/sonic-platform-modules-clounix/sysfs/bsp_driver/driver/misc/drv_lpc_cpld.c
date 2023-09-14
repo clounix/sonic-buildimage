@@ -10,8 +10,10 @@
 #include <linux/delay.h>
 #include <linux/platform_device.h>
 #include <linux/iomap.h>
+
 #include "clounix/clounix_fpga.h"
 #include "lpc_syscpld_interface.h"
+#include "clounix/io_signal_ctrl.h"
 
 #define DRIVER_NAME "clounix_cpld_lpc"
 #define CPLD_REG_MAX_IDX   0x13
@@ -160,32 +162,42 @@ struct lpc_pdata {
 #define SYS_CPLD_BF(name,value)				\
 	(((value) & ((1 << SYS_CPLD_##name##_SIZE) - 1))	\
 	 << SYS_CPLD_##name##_OFFSET)
-#define SYS_CPLD_BFEXT(name,value)\
-	(((value) >> SYS_CPLD_##name##_OFFSET)		\
-	 & ((1 << SYS_CPLD_##name##_SIZE) - 1))
+#define SYS_CPLD_BFEXT(name,value) \
+	(((value) >> SYS_CPLD_##name##_OFFSET) \
+     & ((1 << SYS_CPLD_##name##_SIZE) - 1))
 #define SYS_CPLD_BFINS(name,value,old)			\
 	(((old) & ~(((1 << SYS_CPLD_##name##_SIZE) - 1)	\
 		    << SYS_CPLD_##name##_OFFSET))		\
 	 | SYS_CPLD_BF(name,value))
-
+static struct mutex  lpc_lock;
 #ifdef CONFIG_X86
 u8 lpc_cpld_read_reg(u16 address)
 {
     u8 reg_val;
+
+    mutex_lock(&lpc_lock);
+    
     reg_val = inb(CPLD_LPC_BASE + (address & 0xff));
     
     LOG_DBG(CLX_DRIVER_TYPES_LPC, "cpld_base:0x%x, address:0x%x, value:0x%02x\n", 
         CPLD_LPC_BASE, address, reg_val);
+    
+    mutex_unlock(&lpc_lock);
 
     return reg_val;
 }
 
 void lpc_cpld_write_reg(u16 address, u8 reg_val)
 {
+    mutex_lock(&lpc_lock);
+    
     outb((reg_val & 0xff), CPLD_LPC_BASE + (address & 0xff));
     
     LOG_DBG(CLX_DRIVER_TYPES_LPC, "cpld_base:0x%x, address:0x%x, value:0x%02x\r\n", 
         CPLD_LPC_BASE, address, reg_val);
+
+    mutex_unlock(&lpc_lock);   
+	 
     return;
 }
 #endif
@@ -193,23 +205,35 @@ void lpc_cpld_write_reg(u16 address, u8 reg_val)
 u8 lpc_cpld_read_reg(u32 address)
 {
     u8 reg_val;
+
+    mutex_lock(&lpc_lock);
+	
     reg_val =  readb(g_cpld_lpc_base + address);
     
     LOG_DBG(CLX_DRIVER_TYPES_LPC, "cpld_base:0x%p, address:0x%x, value:0x%02x\n", 
         g_cpld_lpc_base, address, reg_val);
 
+    mutex_unlock(&lpc_lock); 
+	
     return reg_val;
 }
 
 void lpc_cpld_write_reg(u32 address, u8 reg_val)
 {
+    mutex_lock(&lpc_lock);
+
     writeb(reg_val, g_cpld_lpc_base + address);
     
     LOG_DBG(CLX_DRIVER_TYPES_LPC, "cpld_base:0x%p, address:0x%x, value:0x%02x\r\n", 
         g_cpld_lpc_base, address, reg_val);
+
+    mutex_unlock(&lpc_lock);   
+	  
     return;
 }
 #endif
+EXPORT_SYMBOL_GPL(lpc_cpld_read_reg);
+EXPORT_SYMBOL_GPL(lpc_cpld_write_reg);
 #if 0
 void reset_mux_pca9548(void)
 {
@@ -277,50 +301,69 @@ static ssize_t set_sys_cpld_test(struct device *dev, struct device_attribute *da
     return count;
 }
 
-static ssize_t get_sys_cpld_psu_present(struct device *dev, struct device_attribute *da,
-             char *buf)
+static int get_sys_cpld_psu_present(int type, int num)
 {
-    struct fpga_device_attribute *attr = to_fpga_dev_attr(da);   
     u8 value = 0; 
+    int data;
+
     value = lpc_cpld_read_reg(SYS_CPLD_PSU_STATUS);
-    if(0 == attr->index)
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU0_PRESENT,value));
+    if(0 == num)
+        data = SYS_CPLD_BFEXT(PSU0_PRESENT, value);
     else
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU1_PRESENT,value));
+        data = SYS_CPLD_BFEXT(PSU1_PRESENT, value);
+
+    data = (data == 0) ? 1 : 0;
+    return data;
 }
-static ssize_t get_sys_cpld_psu_acok(struct device *dev, struct device_attribute *da,
-             char *buf)
+
+static int get_sys_cpld_psu_acok(int type, int num)
 {
-    struct fpga_device_attribute *attr = to_fpga_dev_attr(da);   
     u8 value = 0;
     value = lpc_cpld_read_reg(SYS_CPLD_PSU_STATUS);
-    if(0 == attr->index)
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU0_ACOK,value));
+    if(0 == num)
+        return SYS_CPLD_BFEXT(PSU0_ACOK, value);
     else
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU1_ACOK,value));
+        return SYS_CPLD_BFEXT(PSU1_ACOK, value);
 }
-static ssize_t get_sys_cpld_psu_pwok(struct device *dev, struct device_attribute *da,
-             char *buf)
+static int get_sys_cpld_psu_pwok(int type, int num)
 {
-    struct fpga_device_attribute *attr = to_fpga_dev_attr(da);   
     u8 value = 0;
     value = lpc_cpld_read_reg(SYS_CPLD_PSU_STATUS);
-    if(0 == attr->index)
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU0_PWOK,value));
+    if(0 == num)
+        return SYS_CPLD_BFEXT(PSU0_PWOK,value);
     else
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU1_PWOK,value));
+        return SYS_CPLD_BFEXT(PSU1_PWOK,value);
 }
-static ssize_t get_sys_cpld_psu_int(struct device *dev, struct device_attribute *da,
-             char *buf)
+
+static int io_sig_get_sys_cpld_id_led(int type, int num)
+{
+    char val;
+    val = lpc_cpld_read_reg(SYS_CPLD_ID_LED);
+    GET_BIT(val, 0, val);
+    val = val > 0 ? 0 : 1;
+    return val;
+}
+
+static int io_sig_set_sys_cpld_id_led(int type, int num, int val)
+{
+    val = val > 0 ? 0 : 1;
+    lpc_cpld_write_reg(SYS_CPLD_ID_LED, val);
+
+    return 1;
+}
+/*
+static ssize_t get_sys_cpld_psu_int(struct device *dev, struct device_attribute *da, char *buf)
 {
     struct fpga_device_attribute *attr = to_fpga_dev_attr(da);    
     u8 value = 0;
     value = lpc_cpld_read_reg(SYS_CPLD_PSU_STATUS);
     if(0 == attr->index)
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU0_INT,value));
+        return sprintf(buf, "%x\n", SYS_CPLD_BFEXT(PSU0_INT,value));
     else
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU1_INT,value));
+        return sprintf(buf, "%x\n", SYS_CPLD_BFEXT(PSU1_INT,value));
 }
+*/
+
 static ssize_t get_sys_cpld_psu_poweron(struct device *dev, struct device_attribute *da,
              char *buf)
 {
@@ -328,9 +371,9 @@ static ssize_t get_sys_cpld_psu_poweron(struct device *dev, struct device_attrib
     u8 value = 0;
     value = lpc_cpld_read_reg(SYS_CPLD_PSU_POWER_ON);
     if(0 == attr->index)
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU0_POWER_ON,value));
+        return sprintf(buf, "%x\n", SYS_CPLD_BFEXT(PSU0_POWER_ON,value));
     else
-        return sprintf(buf, "%x ", SYS_CPLD_BFEXT(PSU1_POWER_ON,value));
+        return sprintf(buf, "%x\n", SYS_CPLD_BFEXT(PSU1_POWER_ON,value));
 }
 static ssize_t set_sys_cpld_psu_poweron(struct device *dev, struct device_attribute *da,
              const char *buf, size_t count)
@@ -350,6 +393,7 @@ static ssize_t set_sys_cpld_psu_poweron(struct device *dev, struct device_attrib
         lpc_cpld_write_reg(SYS_CPLD_PSU_POWER_ON,SYS_CPLD_BFINS(PSU1_POWER_ON,value,old));
     return count;
 }
+
 static ssize_t get_sys_cpld_fan_present(struct device *dev, struct device_attribute *da,
              char *buf)
 { 
@@ -672,6 +716,7 @@ static ssize_t get_sys_cpld_id_led(struct device *dev, struct device_attribute *
     GET_BIT(value, 0, value);
     return sprintf(buf, "0x%x\n", value);;
 }
+
 static ssize_t set_sys_cpld_id_led(struct device *dev, struct device_attribute *da,
              const char *buf, size_t count)
 {
@@ -705,6 +750,8 @@ static FPGA_DEVICE_ATTR(build_time, S_IRUGO, get_sys_cpld_build_time, NULL, 0);
 static FPGA_DEVICE_ATTR(hw_verison, S_IRUGO, get_sys_cpld_hw_verison, NULL, 0);
 static FPGA_DEVICE_ATTR(test, S_IRUGO | S_IWUSR, get_sys_cpld_test, set_sys_cpld_test, 0);
 /*PSU status start */
+
+/*
 #define GET_SYS_CPLD_PSU_STATUS(_num) \
     static FPGA_DEVICE_ATTR(psu##_num##_present, S_IRUGO, get_sys_cpld_psu_present, NULL, _num);\
     static FPGA_DEVICE_ATTR(psu##_num##_acok, S_IRUGO, get_sys_cpld_psu_acok, NULL, _num);\
@@ -713,11 +760,14 @@ static FPGA_DEVICE_ATTR(test, S_IRUGO | S_IWUSR, get_sys_cpld_test, set_sys_cpld
 
 GET_SYS_CPLD_PSU_STATUS(0);
 GET_SYS_CPLD_PSU_STATUS(1);
+*/
+
 /*PSU status end */
 #define SYS_CPLD_PSU_POWERON(_num) \
     static FPGA_DEVICE_ATTR(psu##_num##_on, S_IRUGO| S_IWUSR, get_sys_cpld_psu_poweron, set_sys_cpld_psu_poweron, _num);
 SYS_CPLD_PSU_POWERON(0);
 SYS_CPLD_PSU_POWERON(1);
+
 static FPGA_DEVICE_ATTR(fan_present, S_IRUGO, get_sys_cpld_fan_present, NULL, 0);
 static FPGA_DEVICE_ATTR(fan_alarm, S_IRUGO, get_sys_cpld_fan_alarm, NULL, 0);
 /*PW_EN*/
@@ -763,14 +813,14 @@ static struct attribute *drv_lpc_cpld_attributes[] = {
     &fpga_dev_attr_build_time.dev_attr.attr,
     &fpga_dev_attr_hw_verison.dev_attr.attr,
     &fpga_dev_attr_test.dev_attr.attr,
-    &fpga_dev_attr_psu0_present.dev_attr.attr,
-    &fpga_dev_attr_psu0_acok.dev_attr.attr,
-    &fpga_dev_attr_psu0_pwok.dev_attr.attr,
-    &fpga_dev_attr_psu0_int.dev_attr.attr,
-    &fpga_dev_attr_psu1_present.dev_attr.attr,
-    &fpga_dev_attr_psu1_acok.dev_attr.attr,
-    &fpga_dev_attr_psu1_pwok.dev_attr.attr,
-    &fpga_dev_attr_psu1_int.dev_attr.attr,
+////&fpga_dev_attr_psu0_present.dev_attr.attr,
+////&fpga_dev_attr_psu0_acok.dev_attr.attr,
+////&fpga_dev_attr_psu0_pwok.dev_attr.attr,
+////&fpga_dev_attr_psu0_int.dev_attr.attr,
+////&fpga_dev_attr_psu1_present.dev_attr.attr,
+////&fpga_dev_attr_psu1_acok.dev_attr.attr,
+////&fpga_dev_attr_psu1_pwok.dev_attr.attr,
+////&fpga_dev_attr_psu1_int.dev_attr.attr,
     &fpga_dev_attr_psu0_on.dev_attr.attr,
     &fpga_dev_attr_psu1_on.dev_attr.attr,
     &fpga_dev_attr_fan_present.dev_attr.attr,
@@ -809,6 +859,36 @@ static struct attribute *drv_lpc_cpld_attributes[] = {
 
     NULL
 };
+
+static void init_psu_io_sig(void)
+{
+    add_io_sig_desc(PSU_PRST, 0, get_sys_cpld_psu_present, NULL);
+    add_io_sig_desc(PSU_PRST, 1, get_sys_cpld_psu_present, NULL);
+
+    add_io_sig_desc(PSU_ACOK, 0, get_sys_cpld_psu_acok, NULL);
+    add_io_sig_desc(PSU_ACOK, 1, get_sys_cpld_psu_acok, NULL);
+
+    add_io_sig_desc(PSU_PWOK, 0, get_sys_cpld_psu_pwok, NULL);
+    add_io_sig_desc(PSU_PWOK, 1, get_sys_cpld_psu_pwok, NULL);
+
+    add_io_sig_desc(ID_LED_B, 0, io_sig_get_sys_cpld_id_led, io_sig_set_sys_cpld_id_led);
+    return;
+}
+
+static void rm_psu_io_sig(void)
+{
+    del_io_sig_desc(PSU_PRST, 0);
+    del_io_sig_desc(PSU_PRST, 1);
+
+    del_io_sig_desc(PSU_ACOK, 0);
+    del_io_sig_desc(PSU_ACOK, 1);
+
+    del_io_sig_desc(PSU_PWOK, 0);
+    del_io_sig_desc(PSU_PWOK, 1);
+
+    del_io_sig_desc(ID_LED_B, 0);
+    return;
+}
 
 static const struct attribute_group drv_lpc_cpld_group = { .attrs = drv_lpc_cpld_attributes};
 #ifdef CONFIG_X86
@@ -859,11 +939,15 @@ int drv_lpc_syscpld_init(void **driver)
         LOG_ERR(CLX_DRIVER_TYPES_LPC,  "lpc_pld_group error status %d\r\n", status);
         return status;
     }
+
+    init_psu_io_sig();
     return 0; 
 }
 void drv_lpc_syscpld_exit(void **driver)
 {
     struct pci_dev *pdev = pci_get_device(LPC_PCI_VENDOR_ID_INTEL, LPC_PCI_DEVICE_ID_INTEL, NULL);
+
+    rm_psu_io_sig();
     release_region(CPLD_LPC_BASE, CPLD_LPC_SIZE);
     if(pdev) {
         sysfs_remove_group(&pdev->dev.kobj, &drv_lpc_cpld_group);
@@ -886,7 +970,7 @@ static int cpld_lpc_drv_probe(struct platform_device *pdev)
     printk("clounix_cpld_lpc_probe\n");
 
     /* enable LPC*/
-    pad_base = ioremap(GPIO_MUX_PAD_BASE,GPIO_MUX_PAD_SIZE);
+    pad_base = ioremap(GPIO_MUX_PAD_BASE, GPIO_MUX_PAD_SIZE);
     if (!pad_base) {
 		LOG_ERR(CLX_DRIVER_TYPES_LPC,  "@0x%x: Unable to map LPC PAD registers\n", GPIO_MUX_PAD_BASE);
 		return -ENOMEM;
@@ -895,7 +979,7 @@ static int cpld_lpc_drv_probe(struct platform_device *pdev)
     writel(GPIO_MUX_PAD_2_VALUE, pad_base + GPIO_MUX_PAD_2_ADDR);
     iounmap(pad_base);
     LOG_DBG(CLX_DRIVER_TYPES_LPC, "Enable LPC PAD registers successful\n");
-    lpc_config_base = ioremap(PHYTIUM_LPC_CONFIG_BASE,PHYTIUM_LPC_CONFIG_SIZE);
+    lpc_config_base = ioremap(PHYTIUM_LPC_CONFIG_BASE, PHYTIUM_LPC_CONFIG_SIZE);
     if (!lpc_config_base) {
 		LOG_ERR(CLX_DRIVER_TYPES_LPC,  "@0x%x: Unable to map LPC PAD registers\n", PHYTIUM_LPC_CONFIG_BASE);
 		return -ENOMEM;
@@ -930,11 +1014,16 @@ static int cpld_lpc_drv_probe(struct platform_device *pdev)
         LOG_ERR(CLX_DRIVER_TYPES_LPC,  "drv_lpc_cpld_group error status %d\r\n", status);
         return -ENODEV;
     }
+
+    init_psu_io_sig();
+
     return 0;
 }
 static int cpld_lpc_drv_remove(struct platform_device *pdev)
 {
     struct lpc_pdata *pdata = platform_get_drvdata(pdev);
+    
+    rm_psu_io_sig();
     sysfs_remove_group(&pdev->dev.kobj, &drv_lpc_cpld_group);
     printk("clounix_cpld_lpc_remove\n");
     if(pdata)

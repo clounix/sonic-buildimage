@@ -12,7 +12,7 @@ class BaseUtil(object):
         status, out = run_command(cmd)
         if status != 0 or len(out) <= 0:
             self.fail_reason.append("get cpu mac error.")
-            return "-1"
+            return "N/A"
         else:
             return out
 
@@ -23,7 +23,7 @@ class BaseUtil(object):
         parsed_syseeprom = {}
         if status != 0 or len(out) <= 0:
             self.fail_reason.append("get base mac error.")
-            return "-1"
+            return "N/A"
         else:
             for line in out.splitlines():
                 if line.find("Base MAC Address") >= 0:
@@ -31,7 +31,3 @@ class BaseUtil(object):
                     if t1:
                         base_mac = t1.group(4).strip()
                         return base_mac
-               
-    
-                
-    

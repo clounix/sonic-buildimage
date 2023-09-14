@@ -105,17 +105,17 @@ class SwitchPolicyAction(ThermalPolicyActionBase):
         helper_logger.log_error("recorded the fault cause begin...")
         print("Error: thermal overload !!!!!!!!!!!!!!!!!!Please reboot Now!!") 
          #wait for all record actions done
+        thermal_overload_pos = 'cpu'
         wait_ms =  30
         while wait_ms > 0:
             if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
                 thermal_overload_pos = self.__api_helper.read_one_line_file(THERMAL_OVERLOAD_POSITION_FILE)
-            if "critical threshold" in thermal_overload_pos:
-                break
-            time.sleep(1)
+                if "critical threshold" in thermal_overload_pos:
+                    break
+            time.sleep(1/1000)
             helper_logger.log_error("wait ############for recorded")
             wait_ms = wait_ms - 1
         helper_logger.log_error("recorded the fault cause...done")
-        cmd = 'bash /usr/share/sonic/platform/thermal_overload_control.sh {}'.format(
-            thermal_overload_pos)
+        cmd = 'bash /usr/share/sonic/platform/thermal_overload_control.sh {}'.format(thermal_overload_pos)
         APIHelper().run_command(cmd)
 

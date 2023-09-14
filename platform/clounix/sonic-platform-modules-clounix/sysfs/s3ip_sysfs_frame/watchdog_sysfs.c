@@ -230,13 +230,10 @@ static ssize_t watchdog_enable_status_store(struct switch_obj *obj, struct switc
 static ssize_t watchdog_reset_store(struct switch_obj *obj, struct switch_attribute *attr,
                    const char *buf, size_t count)
 {
-    return count;
-    /*
     int ret, value;
 
     check_p(g_wdt_drv);
     check_p(g_wdt_drv->set_watchdog_reset);
-
     sscanf(buf, "%d", &value);
     if ((value != WDT_DISENABLE) && (value != WDT_ENABLE)) {
         WDT_ERR("invaild enable value: %d, can't set watchdog reset\n", value);
@@ -250,7 +247,7 @@ static ssize_t watchdog_reset_store(struct switch_obj *obj, struct switch_attrib
     }
     WDT_DBG("set watchdog reset %d success\n", ret);
     return count;
-    */
+    
 }
 
 /************************************watchdog*******************************************/

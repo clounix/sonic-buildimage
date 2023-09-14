@@ -39,9 +39,6 @@ def deviceInit():
 
     # Set SFP && QSFP  high power mode  according to the present signal
     for x in range(0, sfp_num):
-        path = SFP_PATH  + '/eth' + str(x+1) + '/present'
-        result  = common.readFile(path)
-        if result == '1':
-            path = SFP_PATH  + '/eth' + str(x+1) + '/lpmode'
-            result = common.writeFile(path, "0")
+        path = SFP_PATH  + '/eth' + str(x+1) + '/lpmode'
+        result = common.writeFile(path, "0")
     return

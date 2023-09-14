@@ -94,6 +94,9 @@ inline int get_attr_val_by_name(struct i2c_client *client, char *node_name, char
     int ret = -1;
     int i;
 
+    if (p->groups == NULL)
+        return -1;
+
     for (i=0; p->groups[0]->attrs[i] != NULL; i++) {
         a = p->groups[0]->attrs[i];
         if (memcmp(a->name, node_name, strlen(node_name)) ==0) {
@@ -115,6 +118,9 @@ inline int set_attr_val_by_name(struct i2c_client *client, char *node_name, cons
     struct device dev = {0};
     int ret = -1;
     int i;
+
+    if (p->groups == NULL)
+        return -1;
 
     for (i=0; p->groups[0]->attrs[i] != NULL; i++) {
         a = p->groups[0]->attrs[i];

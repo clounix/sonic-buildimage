@@ -2,13 +2,14 @@
 #include "clx_driver.h"
 //#include <linux/compiler.h>
 
-extern int drv_watchdog_init(void **watchdog_driver);
-
+extern int drv_watchdog_fpga_init(void **watchdog_driver);
+extern int drv_watchdog_cpld_init(void **watchdog_driver);
 
 struct watchdog_fn_if *watchdog_driver;
 
 static struct driver_map watchdog_drv_map[] = {
-	{"drv_wdt_cpld", drv_watchdog_init, NULL},
+	{"drv_wdt_fpga", drv_watchdog_fpga_init, NULL},
+	{"drv_wdt_cpld", drv_watchdog_cpld_init, NULL},
 };	
 
 

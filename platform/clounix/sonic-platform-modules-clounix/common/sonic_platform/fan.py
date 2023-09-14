@@ -13,6 +13,12 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+fan_status_list = []
+fan_speed_list = []
+fan_target_speed_list = []
+
+last_fan_index = 0
+
 class Fan(FanBase):
 
     def __init__(self, index,fan_conf):
@@ -26,11 +32,28 @@ class Fan(FanBase):
         if fan_conf[self.__index]['container'] == 'psu':
             self.__attr_path_prefix = '/sys/switch/psu/psu{}/'.format(fan_conf[self.__index]['container_index'] + 1)
             self.__is_psu_fan = True
+            return
         elif fan_conf[self.__index]['container'] == 'fan_drawer':
             self.__attr_path_prefix = '/sys/switch/fan/fan{}/'.format(self.__index+1)
         else:
             #chassis fan to be done
             self.__attr_path_prefix = '/sys/switch/fan/fan{}/'.format(self.__index+1)
+
+        self.set_last_fan_index()
+        self.fan_status_list = fan_status_list
+        self.fan_speed_list = fan_speed_list
+        self.fan_target_speed_list = fan_target_speed_list
+        self.fan_status_list.append(1)
+        self.fan_speed_list.append(1)
+        self.fan_target_speed_list.append(1)
+
+    def get_last_fan_index(self):
+        global last_fan_index
+        return last_fan_index
+
+    def set_last_fan_index(self):
+        global last_fan_index
+        last_fan_index = self.__index
 
 ##############################################
 # Device methods
@@ -98,13 +121,20 @@ class Fan(FanBase):
         Returns:
             A boolean value, True if device is operating properly, False if not
         """
-        #return self.get_presence()
         status = False
         attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'status')
         if (attr_rv != None):
             attr_rv = int(attr_rv, 16)
             if ((attr_rv & 0x1) == 1):
                 status = True
+
+        if (not self.__is_psu_fan):
+            self.fan_status_list[self.__index] = attr_rv
+
+        if (self.__index == self.get_last_fan_index()):
+            if (0 in self.fan_status_list or 2 in self.fan_status_list):
+                os.system("echo 2 > /sys/switch/sysled/fan_led_status")
+
         return status
 
     def get_position_in_parent(self):
@@ -161,10 +191,14 @@ class Fan(FanBase):
             attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'fan_speed')
         else:
             attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'motor0/speed')
+
         if (attr_rv != None):
             attr_rv = int(attr_rv) 
             if (attr_rv >= 0):
                 speed = attr_rv
+
+        if (not self.__is_psu_fan):
+            self.fan_speed_list[self.__index] = speed
 
         return speed
 
@@ -177,16 +211,30 @@ class Fan(FanBase):
                  to 100 (full speed)
         """
         speed = 0
+        fail_fans = 0
         if self.__is_psu_fan :
             return int(self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'fan_speed'))
         else:
-            attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'motor0/ratio')
+            attr_rv = self.__api_helper.read_one_line_file(self.__attr_path_prefix + 'motor0/speed_target')
         
         if (attr_rv != None):
             attr_rv = int(attr_rv) 
             if (attr_rv >= 0):
-                speed = (attr_rv*274+180)
-       
+                speed = attr_rv
+
+        if (not self.__is_psu_fan):
+            self.fan_target_speed_list[self.__index] = speed
+            if (self.__index == self.get_last_fan_index()):
+                for s, t in zip(self.fan_speed_list, self.fan_target_speed_list):
+                    if (s < 4*(t/5)) or (s > 6*(t/5)):
+                        fail_fans += 1
+                if (fail_fans > 1):
+                    os.system("echo 3 > /sys/switch/sysled/fan_led_status")
+                elif (fail_fans == 1):
+                    os.system("echo 2 > /sys/switch/sysled/fan_led_status")
+                else:
+                    os.system("echo 1 > /sys/switch/sysled/fan_led_status")
+
         return speed
 
     def get_speed_tolerance(self):

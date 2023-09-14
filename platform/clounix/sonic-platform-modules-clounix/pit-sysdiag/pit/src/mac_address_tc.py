@@ -65,9 +65,9 @@ class MACADDRESSTC(TestCaseCommon):
         pass_cnt = 0
         fail_cnt = 0
         base_mac = self.base_util.get_base_mac()
-        if base_mac == "N/A":
+        if base_mac == "N/A" or base_mac == None:
             ret = E.EMGMT11006
-            self.fail_reason.append("get mac error, base_mac:%s" % (base_mac.lower()))
+            self.fail_reason.append("get base_mac error")
             result = E.EFAIL
             fail_cnt += 1
             return [pass_cnt, fail_cnt, result]

@@ -29,6 +29,11 @@ static DEFINE_RWLOCK(list_lock);
 #define TEMP_MAX "_crit"
 #define TEMP_MAX_HYST "_max"
 
+#define MIN_VOL "_min"
+#define MAX_VOL "_max"
+#define VOL_OUTPUT "vout"
+#define VOL_INPUT "vin"
+
 #define FAN_CLASS "fan"
 #define FAN_RATIO "_target"
 
@@ -45,6 +50,7 @@ static DEFINE_RWLOCK(list_lock);
 #define ACOK "_acok"
 #define PWOK "_pwok"
 #define LED_STATUS "led_status"
+
 
 #define PSU_TEMP_INDEX_OFFSET (1)
 
@@ -233,7 +239,7 @@ static int drv_get_psu_temp_number(void *driver, unsigned int psu_index)
  */
 static ssize_t drv_get_psu_model_name(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct device *dev;
 
     /* add vendor codes here */
@@ -246,7 +252,7 @@ static ssize_t drv_get_psu_model_name(void *driver, unsigned int psu_index, char
     }
     write_unlock(&list_lock);
 
-    return ret;
+    return ret > 0 ? ret : -ENODATA;
 }
 
 /*
@@ -261,7 +267,7 @@ static ssize_t drv_get_psu_model_name(void *driver, unsigned int psu_index, char
  */
 static ssize_t drv_get_psu_serial_number(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct device *dev;
 
     /* add vendor codes here */
@@ -274,7 +280,7 @@ static ssize_t drv_get_psu_serial_number(void *driver, unsigned int psu_index, c
     }
     write_unlock(&list_lock);
 
-    return ret;
+    return ret > 0 ? ret : -ENODATA;
 }
 
 /*
@@ -289,7 +295,7 @@ static ssize_t drv_get_psu_serial_number(void *driver, unsigned int psu_index, c
  */
 static ssize_t drv_get_psu_part_number(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct device *dev;
 
     /* add vendor codes here */
@@ -302,7 +308,7 @@ static ssize_t drv_get_psu_part_number(void *driver, unsigned int psu_index, cha
     }
     write_unlock(&list_lock);
 
-    return ret;
+    return ret > 0 ? ret : -ENODATA;
 }
 
 /*
@@ -317,7 +323,7 @@ static ssize_t drv_get_psu_part_number(void *driver, unsigned int psu_index, cha
  */
 static ssize_t drv_get_psu_hardware_version(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct device *dev;
 
     /* add vendor codes here */
@@ -330,7 +336,7 @@ static ssize_t drv_get_psu_hardware_version(void *driver, unsigned int psu_index
     }
     write_unlock(&list_lock);
 
-    return ret;
+    return ret > 0 ? ret : -ENODATA;
 }
 
 /*
@@ -366,7 +372,7 @@ static ssize_t drv_get_psu_type(void *driver, unsigned int psu_index, char *buf,
  */
 static ssize_t drv_get_psu_in_curr(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -395,7 +401,7 @@ static ssize_t drv_get_psu_in_curr(void *driver, unsigned int psu_index, char *b
  */
 static ssize_t drv_get_psu_in_vol(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -424,7 +430,7 @@ static ssize_t drv_get_psu_in_vol(void *driver, unsigned int psu_index, char *bu
  */
 static ssize_t drv_get_psu_in_power(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -452,7 +458,7 @@ static ssize_t drv_get_psu_in_power(void *driver, unsigned int psu_index, char *
  */
 static ssize_t drv_get_psu_out_curr(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -481,7 +487,7 @@ static ssize_t drv_get_psu_out_curr(void *driver, unsigned int psu_index, char *
  */
 static ssize_t drv_get_psu_out_vol(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -510,7 +516,7 @@ static ssize_t drv_get_psu_out_vol(void *driver, unsigned int psu_index, char *b
  */
 static ssize_t drv_get_psu_out_power(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     struct i2c_client *client;
 
     /* add vendor codes here */
@@ -561,7 +567,7 @@ static ssize_t drv_get_psu_out_max_power(void *driver, unsigned int psu_index, c
  */
 static ssize_t drv_get_psu_present_status(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct device *dev;
     unsigned char prst = 0;
@@ -613,7 +619,7 @@ static ssize_t drv_get_psu_present_status(void *driver, unsigned int psu_index, 
  */
 static ssize_t drv_get_psu_in_status(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct device *dev;
 
@@ -647,7 +653,7 @@ static ssize_t drv_get_psu_in_status(void *driver, unsigned int psu_index, char 
  */
 static ssize_t drv_get_psu_out_status(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct device *dev;
 
@@ -678,7 +684,7 @@ static ssize_t drv_get_psu_out_status(void *driver, unsigned int psu_index, char
  */
 static ssize_t drv_get_psu_fan_speed(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -709,7 +715,7 @@ static ssize_t drv_get_psu_fan_speed(void *driver, unsigned int psu_index, char 
  */
 static ssize_t drv_get_psu_fan_ratio(void *driver, unsigned int psu_index, char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -737,7 +743,7 @@ static ssize_t drv_get_psu_fan_ratio(void *driver, unsigned int psu_index, char 
  */
 static int drv_set_psu_fan_ratio(void *driver, unsigned int psu_index, int ratio)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
     char buf[16];
@@ -812,7 +818,7 @@ static ssize_t drv_get_psu_led_status(void *driver, unsigned int psu_index, char
         "off",
         "blink_green",
     */ 
-    int ret = 0;
+    int ret = -ENODATA;
     struct device *dev;
 
     /* add vendor codes here */
@@ -897,7 +903,7 @@ static ssize_t drv_get_psu_temp_type(void *driver, unsigned int psu_index, unsig
 static ssize_t drv_get_psu_temp_max(void *driver, unsigned int psu_index, unsigned int temp_index,
                    char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -930,7 +936,7 @@ static ssize_t drv_get_psu_temp_max(void *driver, unsigned int psu_index, unsign
 static int drv_set_psu_temp_max(void *driver, unsigned int psu_index, unsigned int temp_index,
                const char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -964,7 +970,7 @@ static int drv_set_psu_temp_max(void *driver, unsigned int psu_index, unsigned i
 static ssize_t drv_get_psu_temp_min(void *driver, unsigned int psu_index, unsigned int temp_index,
                    char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -997,7 +1003,7 @@ static ssize_t drv_get_psu_temp_min(void *driver, unsigned int psu_index, unsign
 static int drv_set_psu_temp_min(void *driver, unsigned int psu_index, unsigned int temp_index,
                const char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -1029,7 +1035,7 @@ static int drv_set_psu_temp_min(void *driver, unsigned int psu_index, unsigned i
 static ssize_t drv_get_psu_temp_value(void *driver, unsigned int psu_index, unsigned int temp_index,
                    char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -1051,7 +1057,7 @@ static ssize_t drv_get_psu_temp_value(void *driver, unsigned int psu_index, unsi
 static ssize_t drv_get_psu_temp_max_hyst(void *driver, unsigned int psu_index, unsigned int temp_index,
                    char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -1073,7 +1079,7 @@ static ssize_t drv_get_psu_temp_max_hyst(void *driver, unsigned int psu_index, u
 int drv_set_psu_temp_max_hyst(void *driver, unsigned int psu_index, unsigned int temp_index,
                    const char *buf, size_t count)
 {
-    int ret = 0;
+    int ret = -ENODATA;
     char node_name[PMBUS_NAME_SIZE];
     struct i2c_client *client;
 
@@ -1088,6 +1094,71 @@ int drv_set_psu_temp_max_hyst(void *driver, unsigned int psu_index, unsigned int
         ret = set_attr_val_by_name(client, node_name, buf, count);
     }
     read_unlock(&list_lock);
+
+    return ret;
+}
+
+ssize_t drv_get_psu_max_output_vol(void *driver, unsigned int psu_index, char *buf, size_t count)
+{
+    int ret = -ENODATA;
+    char node_name[PMBUS_NAME_SIZE];
+    struct i2c_client *client;
+    int i;
+
+    /* add vendor codes here */
+    INDEX_CHECK(psu_index);
+
+    read_lock(&list_lock);
+    client = client_arry[psu_index];
+    if (client != NULL) {
+        i = 1;
+        while (i++) {
+            sprintf(node_name, "%s%d%s", VOL_CLASS, i, DIR_NODE);
+            ret = get_attr_val_by_name(client, node_name, buf);
+            if (ret < 0)
+                break;
+
+            if (strstr(buf, VOL_OUTPUT) != NULL) {
+                sprintf(node_name, "%s%d%s", VOL_CLASS, i, MAX_VOL);
+                ret = get_attr_val_by_name(client, node_name, buf);
+                break;
+            }
+        }
+    }
+    read_unlock(&list_lock);
+
+    return ret;
+}
+
+ssize_t drv_get_psu_min_output_vol(void *driver, unsigned int psu_index, char *buf, size_t count)
+{
+    int ret = -ENODATA;
+    char node_name[PMBUS_NAME_SIZE];
+    struct i2c_client *client;
+    int i;
+
+    /* add vendor codes here */
+    INDEX_CHECK(psu_index);
+
+    read_lock(&list_lock);
+    client = client_arry[psu_index];
+    if (client != NULL) {
+        i = 1;
+        while (i++) {
+            sprintf(node_name, "%s%d%s", VOL_CLASS, i, DIR_NODE);
+            ret = get_attr_val_by_name(client, node_name, buf);
+            if (ret < 0)
+                break;
+
+            if (strstr(buf, VOL_OUTPUT) != NULL) {
+                sprintf(node_name, "%s%d%s", VOL_CLASS, i, MIN_VOL);
+                ret = get_attr_val_by_name(client, node_name, buf);
+                break;
+            }
+        }
+    }
+    read_unlock(&list_lock);
+
 
     return ret;
 }
@@ -1138,6 +1209,8 @@ int drv_psu_clx_init(void **psu_driver)
 
     psu->psu_if.get_psu_temp_max_hyst = drv_get_psu_temp_max_hyst;
     psu->psu_if.set_psu_temp_max_hyst = drv_set_psu_temp_max_hyst;
+    psu->psu_if.get_psu_max_output_vol = drv_get_psu_max_output_vol;
+    psu->psu_if.get_psu_min_output_vol = drv_get_psu_min_output_vol;
 
     *psu_driver = psu;
     LOG_INFO(CLX_DRIVER_TYPES_PSU, "PSU driver initialization done.\n");
