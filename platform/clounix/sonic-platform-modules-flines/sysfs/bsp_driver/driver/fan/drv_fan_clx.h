@@ -9,8 +9,6 @@ struct fan_driver_clx {
     void __iomem *fan_base;
 };
 
-#define FAN_CHIP_NUM 2
-
 #define FAN_BASE_ADDRESS           (0x0300)
 
 //register define
@@ -56,11 +54,6 @@ enum hwmon_fan_offset
     FAN_EEPROM_IIC_START_OFFSET,
     FAN_EEPROM_IIC_STATUS_OFFSET
 };
-#define FAN_EEPROM_SIZE 256
-#define FAN_EEPROM_I2C_TIMEOUT (msecs_to_jiffies(500))
-#define FAN_EEPROM_TX_FINISH_MASK (0x80)
-#define FAN_EEPROM_TX_ERROR_MASK (0x40)
-
 
 enum user_fan_led_state {
     USER_FAN_LED_DARK,
@@ -82,6 +75,11 @@ enum dev_fan_led_state {
     DEV_FAN_LED_RED,
     DEV_FAN_LED_YELLOW,
 };
+
 #define FAN_LED_REG_MAX 2
+#define FAN_EEPROM_SIZE 256
+#define FAN_EEPROM_I2C_TIMEOUT (msecs_to_jiffies(500))
+#define FAN_EEPROM_TX_FINISH_MASK (0x80)
+#define FAN_EEPROM_TX_ERROR_MASK (0x40)
 
 #endif //_DRV_FAN_CLX_H_

@@ -12,7 +12,6 @@
 
 #include "switch.h"
 #include "fpga_sysfs.h"
-#include "reboot_eeprom_sysfs.h"
 
 static int g_fpga_loglevel = 0;
 
@@ -41,9 +40,6 @@ struct fpga_obj_s {
 struct fpga_s {
     unsigned int fpga_number;
     struct fpga_obj_s *fpga;
-};
-
-struct reboot_eeprom_s {
     struct bin_attribute bin;
     int creat_eeprom_bin_flag;
 };
@@ -51,10 +47,6 @@ struct reboot_eeprom_s {
 static struct fpga_s g_fpga;
 static struct switch_obj *g_fpga_obj = NULL;
 static struct s3ip_sysfs_fpga_drivers_s *g_fpga_drv = NULL;
-
-static struct reboot_eeprom_s g_reboot_eeprom;
-static struct switch_obj *g_reboot_eeprom_obj = NULL;
-static struct s3ip_sysfs_reboot_eeprom_drivers_s *g_reboot_eeprom_drv = NULL;
 
 static ssize_t fpga_number_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
 {
@@ -269,6 +261,83 @@ static struct attribute_group fpga_attr_group = {
     .attrs = fpga_attrs,
 };
 
+static ssize_t reboot_eeprom_read(struct file *filp, struct kobject *kobj, struct bin_attribute *attr,
+                   char *buf, loff_t offset, size_t count)
+{
+    ssize_t rd_len;
+
+    check_p(g_fpga_drv);
+    check_p(g_fpga_drv->read_reboot_eeprom_data);
+
+    memset(buf, 0, count);
+    rd_len = g_fpga_drv->read_reboot_eeprom_data(buf, offset, count);
+    if (rd_len < 0) {
+        FPGA_ERR("read reboot eeprom data error, offset: 0x%llx, read len: %lu, ret: %ld.\n",
+            offset, count, rd_len);
+        return -EIO;
+    }
+    FPGA_DBG("read reboot eeprom data success, offset:0x%llx, read len:%lu, really read len:%ld.\n",
+        offset, count, rd_len);
+    return rd_len;
+}
+
+static ssize_t reboot_eeprom_write(struct file *filp, struct kobject *kobj, struct bin_attribute *attr,
+                   char *buf, loff_t offset, size_t count)
+{
+    ssize_t wr_len;
+
+    check_p(g_fpga_drv);
+    check_p(g_fpga_drv->write_reboot_eeprom_data);
+
+    wr_len = g_fpga_drv->write_reboot_eeprom_data(buf, offset, count);
+    if (wr_len < 0) {
+        FPGA_ERR("write reboot eeprom data error, offset: 0x%llx, read len: %lu, ret: %ld.\n",
+            offset, count, wr_len);
+        return -EIO;
+    }
+    FPGA_DBG("write reboot eeprom data success, offset:0x%llx, write len:%lu, really write len:%ld.\n",
+        offset, count, wr_len);
+    return wr_len;
+}
+
+static int reboot_eeprom_create_eeprom_attrs(void)
+{
+    int ret, eeprom_size;
+
+    eeprom_size = g_fpga_drv->get_reboot_eeprom_size();
+    if (eeprom_size <= 0) {
+        FPGA_ERR("reboot eeprom size: %d, invalid.\n", eeprom_size);
+        return -EINVAL;
+    }
+
+    sysfs_bin_attr_init(&g_fpga.bin);
+    g_fpga.bin.attr.name = "reboot_cause";
+    g_fpga.bin.attr.mode = 0644;
+    g_fpga.bin.read = reboot_eeprom_read;
+    g_fpga.bin.write = reboot_eeprom_write;
+    g_fpga.bin.size = eeprom_size;
+
+    ret = sysfs_create_bin_file(&g_fpga_obj->kobj, &g_fpga.bin);
+    if (ret) {
+        FPGA_ERR("create reboot eeprom bin error, ret: %d. \n", ret);
+        return -EBADRQC;
+    }
+    FPGA_DBG("create reboot eeprom bin file success, eeprom size:%d.\n", eeprom_size);
+    g_fpga.creat_eeprom_bin_flag = 1;
+    return 0;
+}
+
+static void reboot_eeprom_remove_eeprom_attrs(void)
+{
+    if (g_fpga.creat_eeprom_bin_flag) {
+        sysfs_remove_bin_file(&g_fpga_obj->kobj, &g_fpga.bin);
+        g_fpga.creat_eeprom_bin_flag = 0;
+    }
+
+    return;
+}
+
+
 static int fpga_sub_single_remove_kobj_and_attrs(unsigned int index)
 {
     struct fpga_obj_s *curr_fpga;
@@ -320,6 +389,9 @@ static int fpga_sub_create_kobj_and_attrs(struct kobject *parent, int fpga_num)
             goto error;
         }
     }
+
+    reboot_eeprom_create_eeprom_attrs();
+
     return 0;
 error:
     for(i = fpga_index; i > 0; i--) {
@@ -348,6 +420,9 @@ static void fpga_sub_remove(void)
         for (fpga_index = g_fpga.fpga_number; fpga_index > 0; fpga_index--) {
             fpga_sub_single_remove_kobj_and_attrs(fpga_index);
         }
+
+        reboot_eeprom_remove_eeprom_attrs();
+
         kfree(g_fpga.fpga);
         g_fpga.fpga = NULL;
     }
@@ -435,240 +510,8 @@ void s3ip_sysfs_fpga_drivers_unregister(void)
     return;
 }
 
-
-static ssize_t reboot_eeprom_read(struct file *filp, struct kobject *kobj, struct bin_attribute *attr,
-                   char *buf, loff_t offset, size_t count)
-{
-    ssize_t rd_len;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->read_reboot_eeprom_data);
-
-    memset(buf, 0, count);
-    rd_len = g_reboot_eeprom_drv->read_reboot_eeprom_data(buf, offset, count);
-    if (rd_len < 0) {
-        FPGA_ERR("read reboot eeprom data error, offset: 0x%llx, read len: %lu, ret: %ld.\n",
-            offset, count, rd_len);
-        return -EIO;
-    }
-    FPGA_DBG("read reboot eeprom data success, offset:0x%llx, read len:%lu, really read len:%ld.\n",
-        offset, count, rd_len);
-    return rd_len;
-}
-
-static ssize_t reboot_eeprom_write(struct file *filp, struct kobject *kobj, struct bin_attribute *attr,
-                   char *buf, loff_t offset, size_t count)
-{
-    ssize_t wr_len;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->write_reboot_eeprom_data);
-
-    wr_len = g_reboot_eeprom_drv->write_reboot_eeprom_data(buf, offset, count);
-    if (wr_len < 0) {
-        FPGA_ERR("write reboot eeprom data error, offset: 0x%llx, read len: %lu, ret: %ld.\n",
-            offset, count, wr_len);
-        return -EIO;
-    }
-    FPGA_DBG("write reboot eeprom data success, offset:0x%llx, write len:%lu, really write len:%ld.\n",
-        offset, count, wr_len);
-    return wr_len;
-}
-
-static int reboot_eeprom_create_eeprom_attrs(void)
-{
-    int ret, eeprom_size;
-
-    eeprom_size = g_reboot_eeprom_drv->get_reboot_eeprom_size();
-    if (eeprom_size <= 0) {
-        FPGA_ERR("reboot eeprom size: %d, invalid.\n", eeprom_size);
-        return -EINVAL;
-    }
-
-    sysfs_bin_attr_init(&g_reboot_eeprom.bin);
-    g_reboot_eeprom.bin.attr.name = "reboot_cause";
-    g_reboot_eeprom.bin.attr.mode = 0644;
-    g_reboot_eeprom.bin.read = reboot_eeprom_read;
-    g_reboot_eeprom.bin.write = reboot_eeprom_write;
-    g_reboot_eeprom.bin.size = eeprom_size;
-
-    ret = sysfs_create_bin_file(&g_reboot_eeprom_obj->kobj, &g_reboot_eeprom.bin);
-    if (ret) {
-        FPGA_ERR("create reboot eeprom bin error, ret: %d. \n", ret);
-        return -EBADRQC;
-    }
-    FPGA_DBG("create reboot eeprom bin file success, eeprom size:%d.\n", eeprom_size);
-    g_reboot_eeprom.creat_eeprom_bin_flag = 1;
-    return 0;
-}
-
-static void reboot_eeprom_remove_eeprom_attrs(void)
-{
-    if (g_reboot_eeprom.creat_eeprom_bin_flag) {
-        sysfs_remove_bin_file(&g_reboot_eeprom_obj->kobj, &g_reboot_eeprom.bin);
-        g_reboot_eeprom.creat_eeprom_bin_flag = 0;
-    }
-
-    return;
-}
-
-static ssize_t reboot_eeprom_debug_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
-{
-    int ret;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->get_debug);
-
-    ret = g_reboot_eeprom_drv->get_debug(buf, PAGE_SIZE);
-    if (ret < 0) {
-        FPGA_ERR("get reboot_eeprom debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
-    }
-    return ret;
-}
-
-static ssize_t reboot_eeprom_debug_store(struct switch_obj *obj, struct switch_attribute *attr,
-                   const char* buf, size_t count)
-{
-    int ret;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->set_debug);
-
-    ret = g_reboot_eeprom_drv->set_debug(buf, PAGE_SIZE);
-    if (ret < 0) {
-        FPGA_ERR("set reboot_eeprom debug failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
-    }
-    return ret;
-}
-
-static ssize_t reboot_eeprom_loglevel_show(struct switch_obj *obj, struct switch_attribute *attr, char *buf)
-{
-    int ret;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->get_loglevel);
-
-    ret = g_reboot_eeprom_drv->get_loglevel(buf, PAGE_SIZE);
-    if (ret < 0) {
-        FPGA_ERR("get reboot eeprom loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
-    }
-    return ret;
-}
-
-static ssize_t reboot_eeprom_loglevel_store(struct switch_obj *obj, struct switch_attribute *attr,
-                   const char* buf, size_t count)
-{
-    int ret;
-
-    check_p(g_reboot_eeprom_drv);
-    check_p(g_reboot_eeprom_drv->set_loglevel);
-
-    ret = g_reboot_eeprom_drv->set_loglevel(buf, PAGE_SIZE);
-    if (ret < 0) {
-        FPGA_ERR("set reboot eeprom loglevel failed, ret: %d\n", ret);
-        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
-    }
-    return ret;
-}
-
-
-/************************************reboot eeprom dir and attrs*******************************************/
-static struct switch_attribute reboot_eeprom_debug_att = __ATTR(debug, S_IRUGO | S_IWUSR, reboot_eeprom_debug_show, reboot_eeprom_debug_store);
-static struct switch_attribute reboot_eeprom_loglevel_att = __ATTR(loglevel, S_IRUGO | S_IWUSR, reboot_eeprom_loglevel_show, reboot_eeprom_loglevel_store);
-
-static struct attribute *reboot_eeprom_dir_attrs[] = {
-    //&reboot_eeprom_debug_att.attr,
-    //&reboot_eeprom_loglevel_att.attr,
-    NULL,
-};
-
-static struct attribute_group reboot_eeprom_attr_group = {
-    .attrs = reboot_eeprom_dir_attrs,
-};
-
-static int fpga_sub_eeprom_create_obj(struct kobject *parent, const char *name)
-{
-    g_reboot_eeprom_obj = switch_kobject_create(name, parent);
-    
-    if (!g_reboot_eeprom_obj) {
-        FPGA_ERR("create %s object error!\n", name);
-        return -ENOMEM;
-    }
-  
-    if (sysfs_create_group(&g_reboot_eeprom_obj->kobj, &reboot_eeprom_attr_group) != 0) {
-        FPGA_ERR("create %s attrs error.\n", name);
-        switch_kobject_delete(&g_reboot_eeprom_obj);
-        return -ENOMEM;
-    }
-
-    FPGA_DBG("create %s dir and attrs success.\n", name);
-
-    return 0;
-
-}
-
-static void fpga_sub_eeprom_remove_obj(void)
-{
-    if (g_reboot_eeprom_obj) {
-
-        sysfs_remove_group(&g_reboot_eeprom_obj->kobj, &reboot_eeprom_attr_group);
-
-        switch_kobject_delete(&g_reboot_eeprom_obj);
-    }
-
-    return;
-}
-
-int s3ip_sysfs_reboot_eeprom_drivers_register(struct s3ip_sysfs_reboot_eeprom_drivers_s *drv)
-{
-    int ret;
-
-    FPGA_INFO("s3ip_sysfs_reboot_eeprom_drivers_register...\n");
-    if (g_reboot_eeprom_drv) {
-        FPGA_ERR("g_reboot_eeprom_drv is not NULL, can't register\n");
-        return -EPERM;
-    }
-
-    check_p(drv);
-    check_p(drv->get_reboot_eeprom_size);
-    g_reboot_eeprom_drv = drv;
-    ret = fpga_sub_eeprom_create_obj(NULL, "reboot_eeprom");
-    if (ret < 0) {
-        FPGA_ERR("create reboot_eeprom root dir and attrs failed, ret: %d\n", ret);
-        g_reboot_eeprom_drv = NULL;
-        return ret;
-    }
-    ret = reboot_eeprom_create_eeprom_attrs();
-    if (ret < 0) {
-        FPGA_ERR("create reboot_eeprom attributes failed, ret: %d\n", ret);
-        fpga_sub_eeprom_remove_obj();
-        g_reboot_eeprom_drv = NULL;
-        return ret;
-    }
-
-    FPGA_INFO("s3ip_sysfs_reboot_eeprom_drivers_register success.\n");
-    return 0;
-}
-
-void s3ip_sysfs_reboot_eeprom_drivers_unregister(void)
-{
-    if (g_reboot_eeprom_drv) {
-        reboot_eeprom_remove_eeprom_attrs();
-        fpga_sub_eeprom_remove_obj();
-        g_reboot_eeprom_drv = NULL;
-        FPGA_DBG("s3ip_sysfs_reboot_eeprom_drivers_unregister success.\n");
-    }
-
-    return;
-}
-
 EXPORT_SYMBOL(s3ip_sysfs_fpga_drivers_register);
 EXPORT_SYMBOL(s3ip_sysfs_fpga_drivers_unregister);
-EXPORT_SYMBOL(s3ip_sysfs_reboot_eeprom_drivers_register);
-EXPORT_SYMBOL(s3ip_sysfs_reboot_eeprom_drivers_unregister);
 module_param(g_fpga_loglevel, int, 0644);
 MODULE_PARM_DESC(g_fpga_loglevel, "the log level(info=0x1, err=0x2, dbg=0x4).\n");
 

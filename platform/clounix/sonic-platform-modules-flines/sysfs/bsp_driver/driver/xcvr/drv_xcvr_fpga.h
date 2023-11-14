@@ -5,6 +5,10 @@
 
 #include "xcvr_interface.h"
 
+#define PORT_DSFP 1
+#define PORT_QSFP 2
+#define PORT_SFP 3
+
 #define XCVR_PORT_MAX (56)
 
 #define XCVR_CHIP_NUM 1
@@ -53,6 +57,7 @@
 #define SFP_EEPROM_A0_ADDR  0xA0
 #define SFP_EEPROM_A2_ADDR  0xA2
 #define SFP_PAGE_SELECT_REG   0x7F
+#define SFP_IEDNTIFIER_REG 0x00
 #define ONE_ADDR_PAGEABLE_REG 0x02
 #define QSFP_NOT_PAGEABLE (1<<2)
 #define CMIS_NOT_PAGEABLE (1<<7)
@@ -86,7 +91,6 @@
  * it's important to recover from write timeouts.
  */
 static unsigned int write_timeout = 250;
-
 struct sfp_platform_data {
     u32          byte_len;       /* size (sum of all addr) */
     u16          page_size;      /* for writes */
@@ -132,11 +136,11 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define QSFP_START_PORT                  48
 /*platform CLX128000*/
 #define SFP_CONFIG_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x30)
-#define SFP_CONFIG_TX_DIS_OFFSET         0
+#define SFP_CONFIG_TX_DIS_OFFSET        0
 #define SFP_STATUS_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x34)
-#define SFP_STATUS_RXLOS_OFFSET       0
-#define SFP_STATUS_TXTAULT_OFFSET     2
-#define SFP_STATUS_PRESENT_OFFSET     4 
+#define SFP_STATUS_RXLOS_OFFSET       	0
+#define SFP_STATUS_TXTAULT_OFFSET     	2
+#define SFP_STATUS_PRESENT_OFFSET     	4 
 #define SFP_START_PORT                  32
 
 #define FPGA_PORT_BASE      (0x1000) 
@@ -159,24 +163,32 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define FPGA_MGR_RD     (0x81 << 24)
 #define FPGA_MGR_WT     (0x84 << 24)
 
-#define DSFP_RESET_ADDRESS_BASE       (CPLD_BASE_ADDRESS+0x10)
-#define DSFP_LOW_POWER_ADDRESS_BASE   (CPLD_BASE_ADDRESS+0x14)
-#define DSFP_IRQ_STATUS_ADDRESS_BASE  (CPLD_BASE_ADDRESS+0x18)
-#define DSFP_PRESENT_ADDRESS_BASE     (CPLD_BASE_ADDRESS+0x1c)
+#define DSFP_RESET_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x10)
+#define DSFP_LOW_POWER_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x14)
+#define DSFP_IRQ_STATUS_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x18)
+#define DSFP_PRESENT_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x1c)
+
+#define SFP_TX_DIS_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x10)
+#define SFP_RX_LOS_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x18)
+#define SFP_TX_FAULT_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x38)
 
 #define XCVR_CPLD_GROUP_MAX 2
 
 #define GET_DSFP_RST_ADDRESS(idx, reg) \
-            reg = (DSFP_RESET_ADDRESS_BASE + (0x10 * (idx))); 
-
+    reg = (DSFP_RESET_ADDRESS_BASE + (0x10 * (idx)));
 #define GET_DSFP_LOWPOWER_ADDRESS(idx, reg) \
-            reg = (DSFP_LOW_POWER_ADDRESS_BASE + (0x10 * (idx))); 
-
+    reg = (DSFP_LOW_POWER_ADDRESS_BASE + (0x10 * (idx)));
 #define GET_DSFP_IRQ_STATUS_ADDRESS(idx, reg) \
-            reg = (DSFP_IRQ_STATUS_ADDRESS_BASE + (0x10 * (idx)));
-
+    reg = (DSFP_IRQ_STATUS_ADDRESS_BASE + (0x10 * (idx)));
 #define GET_DSFP_PRESENT_ADDRESS(idx, reg) \
-            reg = (DSFP_PRESENT_ADDRESS_BASE + (0x10 * (idx)));
+    reg = (DSFP_PRESENT_ADDRESS_BASE + (0x10 * (idx)));
+
+#define GET_SFP_TX_DIS_ADDRESS(idx, reg) \
+    reg = (SFP_TX_DIS_ADDRESS_BASE + (0x10 * (idx)));
+#define GET_SFP_RX_LOS_STATUS_ADDRESS(idx, reg) \
+    reg = (SFP_RX_LOS_ADDRESS_BASE + (0x10 * (idx)));
+#define GET_SFP_TX_FAULT_ADDRESS(idx, reg) \
+    reg = (SFP_TX_FAULT_ADDRESS_BASE + (0x10 * (idx)));
 
 #define XCVRD_POWR_ON 1
 
@@ -187,6 +199,10 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define FPGA_PORT_BATCH_DATA (0x100000)
 
 #define XCVR_I2C_DEV_MAX 3
+
+#define FPGA_I2C_TIMEOUT (msecs_to_jiffies(250))
+#define FPGA_I2C_MASTER_TX_FINISH_MASK (0x80000000UL)
+#define FPGA_I2C_MASTER_TX_ERROR_MASK (0x40000000UL)
 
 enum {
     XCVR_PLATFORM_TYPEA,

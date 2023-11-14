@@ -382,16 +382,16 @@ static ssize_t eth_low_power_mode_store(struct switch_obj *obj, struct switch_at
     sscanf(buf, "%d", &value);
     eth_index = obj->index;
     if (value < 0 || value > 1) {
-        SFF_ERR("invalid value: %d, can't set eth%u reset status.\n", value, eth_index);
+        SFF_ERR("invalid value: %d, can't set eth%u low power mode status.\n", value, eth_index);
         return -EINVAL;
     }
 
     ret = g_sff_drv->set_eth_low_power_mode_status(eth_index, value);
     if (ret < 0) {
-        SFF_ERR("set eth%u lpmode status %d failed, ret: %d\n", eth_index, value, ret);
+        SFF_ERR("set eth%u low power mode status %d failed, ret: %d\n", eth_index, value, ret);
         return -EIO;
     }
-    SFF_DBG("set eth%u lpmode status %d success\n", eth_index, value);
+    SFF_DBG("set eth%u low power mode status %d success\n", eth_index, value);
     return count;
 }
 
@@ -491,7 +491,7 @@ static struct attribute_group sff_signal_attr_group = {
 };
 
 /*******************************transceiver dir and attrs*******************************************/
-static struct switch_attribute transceiver_power_on_attr = __ATTR(power_on, S_IRUGO | S_IWUSR, transceiver_power_on_show, transceiver_power_on_store);
+static struct switch_attribute transceiver_power_on_attr = __ATTR(power_on, S_IRUGO, transceiver_power_on_show, NULL);
 static struct switch_attribute transceiver_presence_attr = __ATTR(present, S_IRUGO, transceiver_presence_show, NULL);
 static struct switch_attribute transceiver_number_attr = __ATTR(num, S_IRUGO, transceiver_number_show, NULL);
 static struct switch_attribute transceiver_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR, transceiver_debug_show, transceiver_debug_store);

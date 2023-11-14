@@ -38,6 +38,7 @@ int fan_if_create_driver(void)
     if (DRIVER_OK == rc) {
         bd = clx_driver_get_platform_bd();
         fan_driver->fan_num = bd->fan.fan_num;
+        fan_driver->fan_max_speed = bd->fan.fan_max_speed;
         fan_driver->motor_per_fan = bd->fan.motor_per_fan;
         fan_driver->bus = bd->fan.bus;
         fan_driver->addr = bd->fan.addr;

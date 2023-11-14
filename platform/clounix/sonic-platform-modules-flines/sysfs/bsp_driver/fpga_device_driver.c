@@ -219,6 +219,80 @@ static int clx_set_main_board_fpga_test_reg(unsigned int fpga_index, unsigned in
 
     return ret;
 }
+/*
+ * clx_get_reboot_eeprom_size - Used to get reboot eeprom size
+ *
+ * This function returns the size of reboot eeprom,
+ * otherwise it returns a negative value on failed.
+ */
+static int clx_get_reboot_eeprom_size(void)
+{
+    int ret;
+    struct fpga_fn_if *fpga_dev = get_fpga();
+
+    FPGA_DEV_VALID(fpga_dev);
+    FPGA_DEV_VALID(fpga_dev->get_reboot_eeprom_size);
+    ret = fpga_dev->get_reboot_eeprom_size(fpga_dev);
+    if (ret < 0)
+    {
+        return -ENOSYS;
+    }
+
+    return ret;
+}
+
+/*
+ * clx_read_reboot_eeprom_data - Used to read reboot eeprom data,
+ * @buf: Data read buffer
+ * @offset: offset address to read reboot eeprom data
+ * @count: length of buf
+ *
+ * This function returns the length of the filled buffer,
+ * returns 0 means EOF,
+ * otherwise it returns a negative value on failed.
+ */
+static ssize_t clx_read_reboot_eeprom_data(char *buf, loff_t offset,size_t count)
+{
+    int ret;
+    struct fpga_fn_if *fpga_dev = get_fpga();
+
+    FPGA_DEV_VALID(fpga_dev);
+    FPGA_DEV_VALID(fpga_dev->read_reboot_eeprom_data);
+    ret = fpga_dev->read_reboot_eeprom_data(fpga_dev, buf, offset, count);
+    if (ret < 0)
+    {
+        return -ENOSYS;
+    }
+
+    return ret;
+}
+
+/*
+ * clx_write_reboot_eeprom_data - Used to write reboot eeprom data
+ * @buf: Data write buffer
+ * @offset: offset address to write reboot eeprom data
+ * @count: length of buf
+ *
+ * This function returns the written length of reboot eeprom,
+ * returns 0 means EOF,
+ * otherwise it returns a negative value on failed.
+ */
+static ssize_t clx_write_reboot_eeprom_data(char *buf, loff_t offset, size_t count)
+{
+    int ret;
+    struct fpga_fn_if *fpga_dev = get_fpga();
+
+    FPGA_DEV_VALID(fpga_dev);
+    FPGA_DEV_VALID(fpga_dev->write_reboot_eeprom_data);
+    ret = fpga_dev->write_reboot_eeprom_data(fpga_dev, buf, offset, count);
+    if (ret < 0)
+    {
+        return -ENOSYS;
+    }
+
+    return ret;
+}
+
 /***************************************end of FPGA*******************************************/
 
 static struct s3ip_sysfs_fpga_drivers_s drivers = {
@@ -237,6 +311,9 @@ static struct s3ip_sysfs_fpga_drivers_s drivers = {
     .get_main_board_fpga_board_version = clx_get_main_board_fpga_board_version,
     .get_main_board_fpga_test_reg = clx_get_main_board_fpga_test_reg,
     .set_main_board_fpga_test_reg = clx_set_main_board_fpga_test_reg,
+    .get_reboot_eeprom_size = clx_get_reboot_eeprom_size,
+    .read_reboot_eeprom_data = clx_read_reboot_eeprom_data,
+    .write_reboot_eeprom_data = clx_write_reboot_eeprom_data,
 };
 
 static int __init fpga_dev_drv_init(void)

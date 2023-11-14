@@ -20,6 +20,11 @@
 extern void __iomem *clounix_fpga_base;
 extern int g_loglevel;
 
+//internal function declaration
+static ssize_t get_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, char *buf, size_t count);
+static ssize_t set_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, int status);
+static int get_sfp_porttype(unsigned int eth_index,u8 platform_type);
+
 struct drv_xcvr_fpga drv_xcvr;
 
 static uint8_t clx_fpga_sfp_translate_offset(struct clounix_priv_data *sfp,
@@ -184,6 +189,116 @@ static int fpga_i2c_byte_write(struct clounix_priv_data *sfp,
     return -ENXIO;
 }
 
+static int clx_fpga_sfp_i2c_wait_bus_tx_done(struct clounix_priv_data *sfp, uint32_t idx)
+{
+    unsigned int data;
+    unsigned long timeout = jiffies + FPGA_I2C_TIMEOUT;
+
+    do
+    {
+        data = readl(port_mgr_stat_reg(sfp->mmio, idx));
+
+        if (data & FPGA_I2C_MASTER_TX_FINISH_MASK)
+        {
+            if (data & FPGA_I2C_MASTER_TX_ERROR_MASK)
+            {
+                LOG_DBG(CLX_DRIVER_TYPES_XCVR, "clx_fpga_sfp_i2c_wait_bus_tx_done data ECOMM error\r\n");
+
+                return -ECOMM;
+            }
+
+            return 0;
+        }
+
+    } while (time_before(jiffies, timeout));
+
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, "clx_fpga_sfp_i2c_wait_bus_tx_done data ETIMEDOUT error\r\n");
+
+    return -ETIMEDOUT;
+}
+
+static ssize_t clx_fpga_sfp_eeprom_read_byte_by_byte(struct clounix_priv_data *sfp,
+            int port,
+            char *buf, unsigned int offset, size_t count)
+{
+    uint32_t data;
+    uint32_t idx = 0;
+    unsigned int *tmp_addr = NULL;
+    unsigned int tmp_value = 0, j = 0;
+
+    idx = sfp->chip[port].dev_idx;
+    data = 0xe0000000 | (((sfp->chip[port].slave_addr + 1) & 0xFF) << 8) | (sfp->chip[port].slave_addr & 0xFF) | (sfp->chip[port].clk_div << 16);
+    writel(data, port_mgr_cfg_reg(sfp->mmio, idx));
+
+    data = drv_xcvr_i2c_port_data(port, sfp->platform_type, idx);
+    writel(data, port_mgr_mux_reg(sfp->mmio, idx));
+
+    if (count == 1)
+    {
+        data = 0;
+        data = 0x81000000 | ((offset & 0xFF) << 16);
+        writel(data, port_mgr_ctrl_reg(sfp->mmio, idx));
+
+        if (clx_fpga_sfp_i2c_wait_bus_tx_done(sfp, idx) != 0)
+        {
+            return -ECOMM;
+        }
+        else
+        {
+            data = readl(port_mgr_stat_reg(sfp->mmio, idx));
+            *buf = data & 0xFF;
+        }
+    }
+    else
+    {
+        data = 0;
+        data = (0x82000000 | ((offset & 0xFF) << 16) | ((count & 0xFF) << 8));
+        writel(data, port_mgr_ctrl_reg(sfp->mmio, idx));
+
+        if (clx_fpga_sfp_i2c_wait_bus_tx_done(sfp, idx) != 0)
+        {
+            return -ECOMM;
+        }
+        else
+        {
+            tmp_addr = (sfp->mmio + FPGA_PORT_BATCH_DATA + 0x10000 * (idx));
+
+            for (j = 0; j < count; j += 4)
+            {
+                tmp_value = readl(tmp_addr);
+
+                buf[j] = (tmp_value & 0xFF);
+
+                if ((j + 1) >= count)
+                {
+                    break;
+                }
+
+                buf[j + 1] = ((tmp_value >> 8) & 0xFF);
+
+                if ((j + 2) >= count)
+                {
+                    break;
+                }
+
+                buf[j + 2] = ((tmp_value >> 16) & 0xFF);
+
+                if ((j + 3) >= count)
+                {
+                    break;
+                }
+
+                buf[j + 3] = ((tmp_value >> 24) & 0xFF);
+
+                tmp_addr++;
+            }
+        }
+    }
+
+    return count;
+}
+
+#if 0
 static ssize_t clx_fpga_sfp_eeprom_read_byte_by_byte(struct clounix_priv_data *sfp,
             int port,
             char *buf, unsigned int offset, size_t count)
@@ -208,18 +323,65 @@ static ssize_t clx_fpga_sfp_eeprom_read_byte_by_byte(struct clounix_priv_data *s
 
     return -ETIMEDOUT;
 }
+#endif
+static int fpga_i2c_block_read(struct clounix_priv_data *sfp,
+            int port,
+            char *buf, unsigned int offset,size_t count)
+{
+    uint32_t data;
+    uint32_t idx = 0;
+    int i = 0;
+    int buf_offset = 0;
 
+    idx = sfp->chip[port].dev_idx;
+    data = 0x80000000;
+    writel(data, port_mgr_cfg_reg(sfp->mmio, idx));
+
+    data = 0x40000000 | (((sfp->chip[port].slave_addr+1) & 0xFF) << 8) | (sfp->chip[port].slave_addr & 0xFF) | (sfp->chip[port].clk_div << 16);
+    writel(data, port_mgr_cfg_reg(sfp->mmio, idx));
+
+    data = drv_xcvr_i2c_port_data(port, sfp->platform_type, idx);
+    writel(data, port_mgr_mux_reg(sfp->mmio, idx));
+
+    data = 0x82000000 | ((offset&0xFF) << 16) | ((count & 0xFF) << 8);
+    writel(data, port_mgr_ctrl_reg(sfp->mmio, idx));
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, "fpga_i2c_block_read port %d, offset:0x%x, idx:%d,cfg:%p@%x mux:%p@%x ctrl:%p@%x stat:%p@%x\n", port, offset, idx,
+                       port_mgr_cfg_reg(sfp->mmio, idx), readl(port_mgr_cfg_reg(sfp->mmio, idx)),
+                       port_mgr_mux_reg(sfp->mmio, idx), readl(port_mgr_mux_reg(sfp->mmio, idx)),
+                       port_mgr_ctrl_reg(sfp->mmio, idx), readl(port_mgr_ctrl_reg(sfp->mmio, idx)),
+                       port_mgr_stat_reg(sfp->mmio, idx), readl(port_mgr_stat_reg(sfp->mmio, idx))
+                       );
+    do {
+        data = readl(port_mgr_stat_reg(sfp->mmio, idx));
+        if ((data & 0xC0000000) == 0x80000000) {
+            for(buf_offset = 0; buf_offset < count;buf_offset++) {
+                *buf++ = readb(port_mgr_batch_reg(sfp->mmio, idx, buf_offset));
+            }
+            return buf_offset;
+        }
+        usleep_range(100,200);
+    } while(i++ < 1000);
+    return -ENXIO;
+}
+
+static ssize_t clx_fpga_sfp_eeprom_read_data(struct clounix_priv_data *sfp,
+            int port,
+            char *buf, unsigned int offset, size_t count)
+{
+    return fpga_i2c_block_read(sfp, port, buf, offset, count);
+    //return clx_fpga_sfp_eeprom_read_byte_by_byte(sfp, port, buf, offset, count);
+}
 static ssize_t clx_fpga_sfp_eeprom_read(struct clounix_priv_data *sfp,
             int port,
             char *buf, unsigned int offset, size_t count)
 {
     unsigned long timeout, read_time;
     int status;
-
+#if 0
     /*smaller eeproms can work given some SMBus extension calls */
     if (count > I2C_SMBUS_BLOCK_MAX)
         count = I2C_SMBUS_BLOCK_MAX;
-
+#endif
     /*
      * Reads fail if the previous write didn't complete yet. We may
      * loop a few times until this one succeeds, waiting at least
@@ -263,7 +425,7 @@ static ssize_t clx_fpga_sfp_eeprom_write_byte_by_byte(
         if (ret == -ENXIO)
             return ret;
     i++;
-    usleep_range(10000, 15000);
+    usleep_range(5000, 6000);
     } while (time_before(write_time, timeout) && (i < count));
 
     if (i == count) {
@@ -344,7 +506,7 @@ static ssize_t clx_fpga_sfp_eeprom_update_client(struct clounix_priv_data *sfp,
     ret =  clx_fpga_sfp_eeprom_read(sfp, eth_index,
             &page_check , SFP_PAGE_SELECT_REG, 1);
     if (ret < 0) {
-            LOG_ERR(CLX_DRIVER_TYPES_XCVR, "Read page register for page %d failed ret:%d!\n",page, ret);
+            LOG_ERR(CLX_DRIVER_TYPES_XCVR, "Read page register for eth%d page %d failed ret:%d!\n", eth_index, page, ret);
             return ret;
     }
     LOG_DBG(CLX_DRIVER_TYPES_XCVR, "read page register %d checked %d, ret:%d\n",page, page_check, ret);
@@ -435,6 +597,58 @@ static ssize_t clx_fpga_sfp_eeprom_write_client(struct clounix_priv_data *sfp,
     }
     return retval;
 }
+enum sfp_idntifier_index {
+    SFP_IDENTIFIER_UNKNOWN = 0x00,
+    SFP_IDENTIFIER_GBIC = 0x01,
+    SFP_IDENTIFIER_CONNECTOR = 0x02,
+    SFP_IDENTIFIER_SFP = 0x03,
+    SFP_IDENTIFIER_300_PIN_XBI = 0x04,
+    SFP_IDENTIFIER_XENPAK = 0x05,
+    SFP_IDENTIFIER_XFP = 0x06,
+    SFP_IDENTIFIER_XFF = 0x07,
+    SFP_IDENTIFIER_XFP_E = 0x08,
+    SFP_IDENTIFIER_XPAK = 0x09,
+    SFP_IDENTIFIER_X2 = 0x0a,
+    SFP_IDENTIFIER_DWDM = 0x0b,
+    SFP_IDENTIFIER_QSFP_INF8438 = 0x0c,
+    SFP_IDENTIFIER_QSFP_SFF8636 = 0x0d,
+    SFP_IDENTIFIER_CXP = 0x0d,
+    SFP_IDENTIFIER_MUTILANE_4X = 0x0f,
+    SFP_IDENTIFIER_MUTILANE_8X = 0x10,
+    SFP_IDENTIFIER_QSFP28_SFF8636 = 0x11,
+    SFP_IDENTIFIER_CXP2 = 0x12,
+    SFP_IDENTIFIER_CDFP = 0x13,
+    SFP_IDENTIFIER_MUTILANE_4X_FP = 0x14,
+    SFP_IDENTIFIER_MUTILANE_8X_FP = 0x15,
+    SFP_IDENTIFIER_CDFP3 = 0x16,
+    SFP_IDENTIFIER_mQSFP = 0x17,
+    SFP_IDENTIFIER_QSFP_DD = 0x18,
+    SFP_IDENTIFIER_QSFP_8X = 0x19,
+    SFP_IDENTIFIER_SFP_DD = 0x1a,
+    SFP_IDENTIFIER_DSFP = 0x1b,
+    SFP_IDENTIFIER_MINILINK_4X = 0x1c,
+    SFP_IDENTIFIER_MINILINK_8X = 0x1d,
+    SFP_IDENTIFIER_CMIS = 0x1e,
+    SFP_IDENTIFIER_MAX = 0xff
+};
+
+static int clx_fpga_sfp_update_types(struct clounix_priv_data *sfp, int eth_index)
+{
+    u8 regval = 0;
+    int status = -1;
+
+    status = clx_fpga_sfp_eeprom_read(sfp, eth_index, &regval,
+                SFP_IEDNTIFIER_REG, 1);
+    if (status < 0)
+        return status;  /* error out (no module?) */
+
+    if ((regval == SFP_IDENTIFIER_QSFP28_SFF8636)
+        || (regval == SFP_IDENTIFIER_QSFP_SFF8636)) {
+        sfp->chip[eth_index].dev_class = ONE_ADDR;
+    }
+
+    return 0;
+}
 
 /*
  * Figure out if this access is within the range of supported pages.
@@ -512,6 +726,9 @@ static ssize_t clx_fpga_sfp_page_legal(struct clounix_priv_data *sfp,
                 ONE_ADDR_PAGEABLE_REG, 1);
         if (status < 0)
             return status;  /* error out (no module?) */
+
+        if (clx_fpga_sfp_update_types(sfp, eth_index) < 0)
+            return (-1);  /* error out (no module?) */
 
         if (sfp->chip[eth_index].dev_class == ONE_ADDR) {
             not_pageable = QSFP_NOT_PAGEABLE;
@@ -922,6 +1139,23 @@ static int drv_xcvr_set_eth_power_on_status(void *xcvr, unsigned int eth_index, 
 
     return DRIVER_OK;
 }
+static ssize_t platforma_xcvr_get_eth_tx_fault_status(struct clounix_priv_data *sfp,
+                                unsigned int eth_index, char *buf, size_t count)
+{
+    uint32_t data = 0, val = 0, idx = 0, reg;
+
+    idx = sfp->chip[eth_index].cpld_idx;
+    GET_SFP_TX_FAULT_ADDRESS(idx, reg);
+    data = fpga_reg_read(sfp, reg);
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, "eth_index:%d, reg: %x, data: %x\r\n", eth_index, reg, data);
+    if (eth_index >= xcvr_cpld_index[sfp->platform_type][0])
+        GET_BIT(data, (eth_index - xcvr_cpld_index[sfp->platform_type][0]), val);
+    else
+        GET_BIT(data, eth_index, val);
+
+    return sprintf(buf, "%d\n", val);
+}
+
 static ssize_t platformb_xcvr_get_eth_tx_fault_status(struct clounix_priv_data *sfp, unsigned int eth_index, char *buf, size_t count)
 {
     size_t val = 0x1;
@@ -952,13 +1186,23 @@ static ssize_t drv_xcvr_get_eth_tx_fault_status(void *xcvr, unsigned int eth_ind
     struct clounix_priv_data *sfp = &(((struct drv_xcvr_fpga *)xcvr)->dev);
     switch(sfp->platform_type)
     {
-    case XCVR_PLATFORM_TYPEB:
-        return platformb_xcvr_get_eth_tx_fault_status(sfp,eth_index,buf,count);
     case XCVR_PLATFORM_TYPEA:
+        if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+            return platforma_xcvr_get_eth_tx_fault_status(sfp, eth_index, buf, count);
+        else
+            return -ENOSYS;
+    case XCVR_PLATFORM_TYPEB:
+        return platformb_xcvr_get_eth_tx_fault_status(sfp, eth_index, buf, count);
     default:
-             return -ENOSYS;
+        return -ENOSYS;
     }
 }
+
+static ssize_t platforma_xcvr_get_eth_tx_disable_status(struct clounix_priv_data *sfp , unsigned int eth_index, char *buf, size_t count)
+{
+    return get_dsfp_reset(sfp, eth_index, buf, count);
+}
+
 static ssize_t platformb_xcvr_get_eth_tx_disable_status(struct clounix_priv_data *sfp , unsigned int eth_index, char *buf, size_t count)
 {
     size_t val = 0x1;
@@ -989,12 +1233,19 @@ static ssize_t drv_xcvr_get_eth_tx_disable_status(void *xcvr, unsigned int eth_i
     switch(sfp->platform_type)
     {
     case XCVR_PLATFORM_TYPEA:
-        return -ENOSYS;
+        if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+            return platforma_xcvr_get_eth_tx_disable_status(sfp, eth_index, buf, count);
+        else
+            return -ENOSYS;
     case XCVR_PLATFORM_TYPEB:
         return platformb_xcvr_get_eth_tx_disable_status(sfp,eth_index,buf,count);
     default:
         return -ENOSYS;
     }
+}
+static int platforma_xcvr_set_eth_tx_disable_status(struct clounix_priv_data *sfp, unsigned int eth_index, int status)
+{
+    return set_dsfp_reset(sfp, eth_index, status);
 }
 static int platformb_xcvr_set_eth_tx_disable_status(struct clounix_priv_data *sfp, unsigned int eth_index, int status)
 {
@@ -1029,7 +1280,10 @@ static int drv_xcvr_set_eth_tx_disable_status(void *xcvr, unsigned int eth_index
     switch(sfp->platform_type)
     {
         case XCVR_PLATFORM_TYPEA:
-            return -ENOSYS;
+            if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+                return platforma_xcvr_set_eth_tx_disable_status(sfp, eth_index, status);
+            else
+                return -ENOSYS;
 
         case XCVR_PLATFORM_TYPEB:
             return platformb_xcvr_set_eth_tx_disable_status(sfp,eth_index,status);
@@ -1074,9 +1328,6 @@ static ssize_t drv_xcvr_get_eth_rx_los_status(void *xcvr, unsigned int eth_index
              return -ENOSYS;
     }
 }
-#define PORT_DSFP 1
-#define PORT_QSFP 2
-#define PORT_SFP 3
 
 static int get_sfp_porttype(unsigned int eth_index,u8 platform_type)
 {
@@ -1133,6 +1384,36 @@ static ssize_t get_sfp_present(struct clounix_priv_data *sfp,
 
     return sprintf(buf, "%d\n", val);
 }
+
+static ssize_t get_dsfp_interrupt(struct clounix_priv_data *sfp,
+                unsigned int eth_index, char *buf, size_t count)
+{
+    uint32_t data = 0, val = 0, idx = 0,reg;
+
+    idx = sfp->chip[eth_index].cpld_idx;
+    GET_DSFP_IRQ_STATUS_ADDRESS(idx, reg);
+    data = fpga_reg_read(sfp, reg);
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, "eth_index:%d, reg: %x, data: %x\r\n",eth_index, reg, data);
+    if(eth_index >= xcvr_cpld_index[sfp->platform_type][0])
+        GET_BIT(data, (eth_index - xcvr_cpld_index[sfp->platform_type][0]), val);
+    else
+        GET_BIT(data, eth_index, val);
+
+    return sprintf(buf, "%d\n", val);
+}
+
+static ssize_t get_qsfp_interrupt(struct clounix_priv_data *sfp,
+                unsigned int eth_index, char *buf, size_t count)
+{
+    uint32_t data = 0, val = 0;
+
+    data = fpga_reg_read(sfp, QSFP_STATUS_ADDRESS_BASE);
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, " reg: %x, data: %x\r\n", QSFP_STATUS_ADDRESS_BASE, data);
+    GET_BIT((data >> QSFP_STATUS_IRQ_OFFSET), (eth_index - QSFP_START_PORT), val);
+
+    return sprintf(buf, "%d\n", val);
+}
+
 /*
  * drv_xcvr_get_eth_present_status - Used to get port present status,
  * filled the value to buf, 1: present, 0: absent
@@ -1160,6 +1441,20 @@ static ssize_t drv_xcvr_get_eth_present_status(void *xcvr, unsigned int eth_inde
     }
 }
 
+static ssize_t get_sfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, char *buf, size_t count)
+{
+    uint32_t data = 0, val = 0, reg;
+
+    GET_DSFP_RST_ADDRESS(sfp->chip[eth_index].cpld_idx, reg);
+    data = fpga_reg_read(sfp, reg);
+
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, " reg: %x, data: %x\r\n",  reg, data);
+    if(eth_index >= xcvr_cpld_index[sfp->platform_type][0])
+        GET_BIT(data, (eth_index - xcvr_cpld_index[sfp->platform_type][0]), val);
+    else
+        GET_BIT(data, eth_index, val);
+    return sprintf(buf, "%d\n", val);
+}
 
 static ssize_t get_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_index, char *buf, size_t count)
 {
@@ -1202,18 +1497,21 @@ static ssize_t get_qsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_in
 static ssize_t drv_xcvr_get_eth_reset_status(void *xcvr, unsigned int eth_index, char *buf, size_t count)
 {
     struct clounix_priv_data *sfp = &(((struct drv_xcvr_fpga *)xcvr)->dev);
+    uint32_t status = 0;
 
     switch (get_sfp_porttype(eth_index,sfp->platform_type))
     {
-    case PORT_DSFP:
-        return get_dsfp_reset(sfp, eth_index, buf, count);
-    case PORT_QSFP:
-        return get_qsfp_reset(sfp, eth_index, buf, count);
-    case PORT_SFP:
-        return count;
-
-    default:
-        return -ENOSYS;
+        case PORT_DSFP:
+            if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+                return get_sfp_reset(sfp, eth_index, buf, count);
+            else
+                return get_dsfp_reset(sfp, eth_index, buf, count);
+        case PORT_QSFP:
+            return get_qsfp_reset(sfp, eth_index, buf, count);
+        case PORT_SFP:
+            return count;
+        default:
+            return -ENOSYS;
     }
 }
 
@@ -1231,7 +1529,8 @@ static ssize_t set_dsfp_reset(struct clounix_priv_data *sfp, unsigned int eth_in
             CLEAR_BIT(data, (eth_index - xcvr_cpld_index[sfp->platform_type][0]));
         else
             CLEAR_BIT(data, eth_index );
-    }else
+    }
+    else
     {
         if(eth_index >= xcvr_cpld_index[sfp->platform_type][0])
             SET_BIT(data, (eth_index - xcvr_cpld_index[sfp->platform_type][0]));
@@ -1272,6 +1571,9 @@ static int drv_xcvr_set_eth_reset_status(void *xcvr, unsigned int eth_index, int
     switch (get_sfp_porttype(eth_index,sfp->platform_type))
     {
     case PORT_DSFP:
+        //temp solution for ds410
+        if (eth_index < ((struct drv_xcvr_fpga *)xcvr)->xcvr_if.sfp_max)
+            status = ((status + 1) & 0x1);
         return set_dsfp_reset(sfp, eth_index, status);
     case PORT_QSFP:
         return set_qsfp_reset(sfp, eth_index, status);
@@ -1419,8 +1721,18 @@ static int drv_xcvr_set_eth_low_power_mode_status(void *xcvr, unsigned int eth_i
  */
 static ssize_t drv_xcvr_get_eth_interrupt_status(void *xcvr, unsigned int eth_index, char *buf, size_t count)
 {
-    /* it is not supported */
-    return -ENOSYS;
+    struct clounix_priv_data *sfp = &(((struct drv_xcvr_fpga *)xcvr)->dev);
+    switch (get_sfp_porttype(eth_index,sfp->platform_type))
+    {
+    case PORT_DSFP:
+        return get_dsfp_interrupt(sfp, eth_index, buf, count);
+    case PORT_QSFP:
+        return get_qsfp_interrupt(sfp, eth_index, buf, count);
+    case PORT_SFP:
+        return sprintf(buf, "0x%02x\n", 1);       
+    default:
+        return -ENOSYS;
+    }
 }
 
 /*
@@ -1494,7 +1806,7 @@ static int drv_xcvr_dev_init(void *xcvr)
     mutex_init(&(driver->dev.lock));
     driver->xcvr_base = clounix_fpga_base + XCVR_BASE_ADDRESS;
     driver->dev.mmio = driver->xcvr_base;
-    LOG_ERR(CLX_DRIVER_TYPES_XCVR, "clx_driver_xcvr_dev_init:%p :base:%p.\r\n", driver->dev.mmio, driver->xcvr_base);
+    LOG_DBG(CLX_DRIVER_TYPES_XCVR, "clx_driver_xcvr_dev_init:%p :base:%p.\r\n", driver->dev.mmio, driver->xcvr_base);
     drv_xcvr_fpga_init_port(&driver->dev);
     platform_type = drv_xcvr_get_platform_idx(driver->xcvr_if.port_max);
     if (platform_type == DRIVER_ERR) {
@@ -1531,6 +1843,7 @@ static int drv_xcvr_dev_init(void *xcvr)
        
         driver->dev.chip[eth_idx].dev_idx = i2c_dev_idx;
         driver->dev.chip[eth_idx].cpld_idx = cpld_idx;
+
     }
 
     return DRIVER_OK;

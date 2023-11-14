@@ -19,12 +19,12 @@ class PsuUtil(PsuBase):
 
     def __init__(self):
         PsuBase.__init__(self)
-    
-             
+
     # Get sysfs attribute
+
     def get_attr_value(self, attr_path):
-        
-        retval = 'ERR'        
+
+        retval = 'ERR'
         if (not os.path.isfile(attr_path)):
             return retval
 
@@ -57,15 +57,15 @@ class PsuUtil(PsuBase):
         """
         status = 0
         attr_file = 'psu'+str(index)+'/status'
-        attr_path = self.SYSFS_PSU_DIR +'/' + attr_file
-                  
+        attr_path = self.SYSFS_PSU_DIR + '/' + attr_file
+
         attr_value = self.get_attr_value(attr_path)
-        
+
         if (attr_value != 'ERR'):
             attr_value = int(attr_value, 16)
             # Check for PSU status
-            if((attr_value & 0x2) == 0):
-                    status = 1
+            if ((attr_value & 0x2) == 0):
+                status = 1
 
         return status
 
@@ -78,15 +78,14 @@ class PsuUtil(PsuBase):
         """
         status = 0
         attr_file = 'psu'+str(index)+'/status'
-        attr_path = self.SYSFS_PSU_DIR +'/' + attr_file
-        
+        attr_path = self.SYSFS_PSU_DIR + '/' + attr_file
+
         attr_value = self.get_attr_value(attr_path)
 
         if (attr_value != 'ERR'):
             attr_value = int(attr_value, 16)
             # Check for PSU presence
             if (attr_value & 0x3):
-                    status = 1
+                status = 1
 
         return status
-

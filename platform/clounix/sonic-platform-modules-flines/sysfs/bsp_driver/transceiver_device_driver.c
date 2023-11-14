@@ -412,11 +412,10 @@ static ssize_t clx_get_eth_low_power_mode_status(unsigned int eth_index, char *b
     return ret;
 }
 
-
 /*
- * clx_set_eth_reset_status - Used to set port reset status,
+ * clx_set_eth_low_power_mode_status - Used to set port low power mode status,
  * @eth_index: start with 1
- * @status: lpmode status, 0: high power mode, 1: low power mode
+ * @status: low power mode status, 0: low power mode, 1: high power mode
  *
  * This function returns 0 on success,
  * otherwise it returns a negative value on failed.

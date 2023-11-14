@@ -118,7 +118,7 @@ int32_t clx_i2c_mux_write(int bus, int addr, int offset, uint8_t *buf, uint32_t 
     for (i = 0; i < size; i++) {
         rv = clx_i2c_smbus_transfer(bus, addr, I2C_SMBUS_WRITE, offset, &buf[i], I2C_SMBUS_BYTE);
         if (rv < 0) {
-            LOG_ERR(CLX_DRIVER_TYPES_PLT, "clx_i2c_write[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
+            LOG_ERR(CLX_DRIVER_TYPES_PLT, "clx_i2c_mux_write[bus=%d addr=0x%x offset=0x%x]fail, rv=%d\r\n",
                 bus, addr, offset, rv);
             return rv;
         }
@@ -132,10 +132,10 @@ EXPORT_SYMBOL_GPL(clx_i2c_mux_write);
 
 int clx_syseeprom_read(uint8_t *buf, int offset, uint32_t size)
 {
-    char dummy = 0;
+    //char dummy = 0;
 
     //to be update for standard interface
-    clx_i2c_mux_write(CLX_SYSEEPROM_BUS, CLX_PCA9548_ADDR, CLX_PCA9548_CHANNEL_IDROM, &dummy, 1);
+    //clx_i2c_mux_write(CLX_SYSEEPROM_BUS, CLX_PCA9548_ADDR, CLX_PCA9548_CHANNEL_IDROM, &dummy, 1);
     return clx_i2c_read(CLX_SYSEEPROM_BUS, CLX_SYSEEPROM_ADDR, offset, buf, size); 
 }
 
@@ -481,7 +481,7 @@ int clx_driver_common_init(char *hw_platform)
         LOG_ERR(CLX_DRIVER_TYPES_PLT, "clx_driver_common_init:failed to read syseeprom");
         return DRIVER_ERR;
     }
-    if (tlvinfo_decode_tlv(eeprom, TLV_CODE_PRODUCT_NAME, tlv_value)) {
+    if (tlvinfo_decode_tlv(eeprom, TLV_CODE_PLATFORM_NAME, tlv_value)) {
         LOG_DBG(CLX_DRIVER_TYPES_PLT, "decode product name:%s", tlv_value);
         snprintf(hw_platform, PRODUCT_NAME_LEN_MAX, "%s", tlv_value);
     } else {

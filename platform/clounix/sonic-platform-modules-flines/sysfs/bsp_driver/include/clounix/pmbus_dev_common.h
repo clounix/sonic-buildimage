@@ -1,4 +1,5 @@
 #include "pmbus.h"
+#include "clx_driver.h"
 
 #define PMBUS_NAME_SIZE 24
 
@@ -66,6 +67,8 @@ struct pmbus_data {
 #define ADDR_LABEL 0
 #define LOCATION_LABEL 1
 #define SENSOR_OFFSET_LABEL 2
+#define SCALE_FACTOR_LABEL  3
+
 
 static inline int get_psu_sensor_index(int curr_index, unsigned char (*range_map)[2])
 {
@@ -80,7 +83,7 @@ static inline int get_psu_sensor_index(int curr_index, unsigned char (*range_map
     return range_map[i][LOCATION_LABEL];
 }
 
-static inline int get_sensor_internal_index(int sensor_index, int node_index, short (*sensor_map)[3])
+static inline int get_sensor_internal_index(int sensor_index, int node_index, short (*sensor_map)[SENSOR_DRIVER_INDEX_COL_MAX])
 {
     return node_index - sensor_map[sensor_index][SENSOR_OFFSET_LABEL];
 }

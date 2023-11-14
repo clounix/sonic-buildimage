@@ -13,6 +13,9 @@ struct s3ip_sysfs_fpga_drivers_s {
     ssize_t (*get_main_board_fpga_board_version)(unsigned int fpga_index, char *buf, size_t count);
     ssize_t (*get_main_board_fpga_test_reg)(unsigned int fpga_index, char *buf, size_t count);
     int (*set_main_board_fpga_test_reg)(unsigned int fpga_index, unsigned int value);
+    int (*get_reboot_eeprom_size)(void);
+    ssize_t (*read_reboot_eeprom_data)(char *buf, loff_t offset, size_t count);
+    ssize_t (*write_reboot_eeprom_data)(char *buf, loff_t offset, size_t count);
 };
 
 extern int s3ip_sysfs_fpga_drivers_register(struct s3ip_sysfs_fpga_drivers_s *drv);

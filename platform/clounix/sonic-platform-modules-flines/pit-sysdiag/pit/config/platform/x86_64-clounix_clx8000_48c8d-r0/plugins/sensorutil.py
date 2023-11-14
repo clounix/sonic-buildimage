@@ -195,10 +195,10 @@ class SensorUtil(object):
         status,output = run_command(cmd)
         print("FAN_0x49 output: {}".format(output))
 
-        cmd = 'redis-cli -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x48" "temperature"'
+        cmd = 'redis-cli -p 6382 -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x48" "temperature"'
         status,output = run_command(cmd)
         print("Redis FAN_0x48 output: {}".format(output))
-        cmd = 'redis-cli -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x49" "temperature"'
+        cmd = 'redis-cli -p 6382 -n 6 hget "TEMPERATURE_INFO|LM75BD / FAN 0x49" "temperature"'
         status,output = run_command(cmd)
         print("Redis FAN_0x49 output: {}".format(output))
 

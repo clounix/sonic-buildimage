@@ -306,10 +306,10 @@ static struct attribute_group temp_sensor_root_attr_group = {
 static struct switch_attribute temp_value_attr = __ATTR(temp_input, S_IRUGO, temp_sensor_value_show, NULL);
 static struct switch_attribute temp_alias_attr = __ATTR(temp_alias, S_IRUGO, temp_sensor_alias_show, NULL);
 static struct switch_attribute temp_type_attr = __ATTR(temp_type, S_IRUGO, temp_sensor_type_show, NULL);
-static struct switch_attribute temp_max_attr = __ATTR(temp_max, S_IRUGO | S_IWUSR, temp_sensor_max_show, temp_sensor_max_store);
+static struct switch_attribute temp_max_attr = __ATTR(temp_max, S_IRUGO, temp_sensor_max_show, NULL);
 //static struct switch_attribute temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO | S_IWUSR, temp_sensor_max_hyst_show, temp_sensor_max_hyst_store);
 static struct switch_attribute temp_max_hyst_attr = __ATTR(temp_max_hyst, S_IRUGO , temp_sensor_max_hyst_show, NULL);
-static struct switch_attribute temp_min_attr = __ATTR(temp_min,  S_IRUGO | S_IWUSR, temp_sensor_min_show, temp_sensor_min_store);
+static struct switch_attribute temp_min_attr = __ATTR(temp_min,  S_IRUGO, temp_sensor_min_show, NULL);
 
 static struct attribute *temp_sensor_attrs[] = {
     &temp_value_attr.attr,

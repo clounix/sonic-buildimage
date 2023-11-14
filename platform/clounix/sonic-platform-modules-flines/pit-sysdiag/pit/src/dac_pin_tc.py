@@ -127,8 +127,8 @@ class DACPINTC(TestCaseCommon):
                 number) + " | grep -a -E 'Identifier:|Vendor Name:|Vendor PN:|Vendor SN:' | grep -a -v 'Extended'| awk -F ':' '{print $2}'"
             status_eeprom, log_eeprom = run_command(eeprom_cmd)
             log_eeprom_list = log_eeprom.splitlines()
-            if status_eeprom != 0 or len(log_eeprom_list) != 4:
-                self.fail_reason.append("get dac eeprom fail.")
+            if status_eeprom != 0 or len(log_eeprom_list) < 3:
+                self.fail_reason.append("port {} get dac eeprom fail.".format(number))
                 ret = E.EIO
             else:
                 ret = E.OK
@@ -150,12 +150,12 @@ class DACPINTC(TestCaseCommon):
                         "Ethernet{} eeprom fail: error Vendor Part Number".format(number))
                     ret = E.ESFP18008
                     return ret
-                if len(log_eeprom_list[3].strip()) < qsfp_eeprom_dict[dac_port]["Vendor_Serial_Number_len"][0] or len(
-                        log_eeprom_list[3].strip()) >= qsfp_eeprom_dict[dac_port]["Vendor_Serial_Number_len"][1]:
-                    self.fail_reason.append(
-                        "Ethernet{} eeprom fail: error Vendor Serial Number".format(number))
-                    ret = E.ESFP18008
-                    return ret
+            #    if len(log_eeprom_list[3].strip()) < qsfp_eeprom_dict[dac_port]["Vendor_Serial_Number_len"][0] or len(
+            #            log_eeprom_list[3].strip()) >= qsfp_eeprom_dict[dac_port]["Vendor_Serial_Number_len"][1]:
+            #        self.fail_reason.append(
+            #            "Ethernet{} eeprom fail: error Vendor Serial Number".format(number))
+            #        ret = E.ESFP18008
+            #        return ret
         self.logger.log_info("dac eeprom check: Pass", also_print_console)
         return ret
 

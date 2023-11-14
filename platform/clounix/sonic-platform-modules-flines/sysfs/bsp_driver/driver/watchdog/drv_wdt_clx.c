@@ -36,7 +36,6 @@ static ssize_t drv_get_watchdog_identify(void *driver, char *buf, size_t count)
  */
 static ssize_t drv_get_watchdog_state(void *driver, char *buf, size_t count)
 {
-    /* add vendor codes here */
     unsigned int  data = 0 ;
     unsigned char value = 0;
     int ret = -1;
@@ -44,7 +43,7 @@ static ssize_t drv_get_watchdog_state(void *driver, char *buf, size_t count)
     if (NULL != clounix_fpga_base) {
         data= readl(clounix_fpga_base + WATCHDOG_ENABLE_CONFIG);
         value = data & WATCHDOG_ENABLE_BIT ;
-        ret = sprintf(buf,"%d\n",value);
+        ret = snprintf(buf, count,"%s\n", (value)?"active":"inactive");
     }
     else {
         LOG_INFO(CLX_DRIVER_TYPES_WATCHDOG, "fpga resource is not available.\r\n");
@@ -178,7 +177,7 @@ static int drv_set_watchdog_enable_status(void *driver, int value)
 }
 
 /*
- * clx_driver_clx8000_set_watchdog_wdi - Used to set watchdog input(wdi),
+ * drv_set_watchdog_reset - Used to set watchdog reset(wdi),
  * @value: any value is ok
  *
  * This function returns 0 on success,
@@ -186,7 +185,6 @@ static int drv_set_watchdog_enable_status(void *driver, int value)
  */
 static int drv_set_watchdog_reset(void *driver, int value)
 {
-    /* add vendor codes here */
     unsigned int  data = 0 ;
 
     if (clounix_fpga_base == NULL) {

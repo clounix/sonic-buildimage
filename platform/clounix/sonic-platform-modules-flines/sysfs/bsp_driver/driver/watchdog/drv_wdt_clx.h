@@ -19,9 +19,9 @@ struct drv_wdt_clx {
 #define WATCHDOG_CNT_VAL                0x011c
 #define WATCHDOG_WDI_ADDR               0x0118
 /*bit mask*/
-#define WATCHDOG_CNT_MASK            0xFFFF
-#define WATCHDOG_ENABLE_BIT          0x01
-#define WATCHDOG_WDI_BIT             0x01
+#define WATCHDOG_CNT_MASK               0xFFFF
+#define WATCHDOG_ENABLE_BIT             0x01
+#define WATCHDOG_WDI_BIT                0x01
 
 //register define
 #define WATCHDOG_VERSION_ADDR           (0x4)

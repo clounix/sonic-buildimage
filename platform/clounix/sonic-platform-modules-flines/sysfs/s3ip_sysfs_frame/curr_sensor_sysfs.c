@@ -260,9 +260,9 @@ static struct attribute_group curr_sensor_root_attr_group = {
 static struct switch_attribute curr_value_attr = __ATTR(curr_input, S_IRUGO, curr_sensor_value_show, NULL);
 static struct switch_attribute curr_alias_attr = __ATTR(curr_alias, S_IRUGO, curr_sensor_alias_show, NULL);
 static struct switch_attribute curr_type_attr = __ATTR(curr_type, S_IRUGO, curr_sensor_type_show, NULL);
-static struct switch_attribute curr_max_attr = __ATTR(curr_max, S_IRUGO | S_IWUSR, curr_sensor_max_show, curr_sensor_max_store);
-static struct switch_attribute curr_min_attr = __ATTR(curr_min,  S_IRUGO | S_IWUSR, curr_sensor_min_show, curr_sensor_min_store);
-static struct switch_attribute curr_crit_attr = __ATTR(curr_crit,  S_IRUGO | S_IWUSR, curr_sensor_crit_show, curr_sensor_crit_store);
+static struct switch_attribute curr_max_attr = __ATTR(curr_max, S_IRUGO, curr_sensor_max_show, NULL);
+static struct switch_attribute curr_min_attr = __ATTR(curr_min,  S_IRUGO, curr_sensor_min_show, NULL);
+static struct switch_attribute curr_crit_attr = __ATTR(curr_crit,  S_IRUGO, curr_sensor_crit_show, NULL);
 static struct switch_attribute curr_average_attr = __ATTR(curr_average, S_IRUGO, curr_sensor_average_show, NULL);
 
 static struct attribute *curr_sensor_attrs[] = {

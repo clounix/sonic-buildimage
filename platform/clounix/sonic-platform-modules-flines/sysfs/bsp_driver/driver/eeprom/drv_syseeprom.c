@@ -7,6 +7,9 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 #include <linux/jiffies.h>
+#include <linux/sched/task.h>
+#include <linux/sched.h>
+#include <linux/fs_struct.h>
 
 #include "drv_syseeprom.h"
 #include "drv_platform_common.h"
@@ -46,6 +49,7 @@ int32_t clx_ko_read_file(char *fpath, int32_t addr, uint8_t *val, int32_t read_b
 {
     int32_t ret;
     struct file *filp;
+    struct path root;
     loff_t pos;
 
     if ((fpath == NULL) || (val == NULL) || (addr < 0) || (read_bytes < 0)) {
@@ -53,7 +57,10 @@ int32_t clx_ko_read_file(char *fpath, int32_t addr, uint8_t *val, int32_t read_b
         return -1;
     }
 
-    filp = filp_open(fpath, O_RDONLY, 0);
+    task_lock(&init_task);
+    get_fs_root(init_task.fs, &root);
+    task_unlock(&init_task);
+    filp = file_open_root(root.dentry, root.mnt, fpath, O_RDONLY, 0);
     if (IS_ERR(filp)){
         LOG_ERR(CLX_DRIVER_TYPES_SYSEEPROM, "open file[%s] fail\n", fpath);
         return -1;

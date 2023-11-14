@@ -95,16 +95,16 @@ class REPLACEABLE_EEPROM_WRITE_TC(TestCaseCommon):
         return result1, result2
 
     def fan_eeprom_write_protect(self, value):
-        cmd = " ".join(["echo", value, ">/sys/switch/fan/fan_eeprom_write_enable"])
+        cmd = " ".join(["echo", value, ">/sys/switch/fan/eepromwp"])
         output = exec_cmd(cmd)
 
     def set_fan_syseeprom(self, syseeprom_info):
-        #self.fan_eeprom_write_protect(WRITE_PROTECT_DISABLE)
+        self.fan_eeprom_write_protect(WRITE_PROTECT_DISABLE)
         for key, value in syseeprom_info.items():
             cmd = " ".join([CMD_FRUIDUTIL_SET, "fanboard", key, value])
             print(cmd)
             output = exec_cmd(cmd)
-        #self.fan_eeprom_write_protect(WRITE_PROTECT_ENABLE)
+        self.fan_eeprom_write_protect(WRITE_PROTECT_ENABLE)
 
     def read_fan_syseeprom(self):
         cmd = " ".join([CMD_FRUIDUTIL_GET, "fanboard"])

@@ -18,148 +18,6 @@ static u8 led_state_user_to_dev[] = { DEV_FAN_LED_DARK, DEV_FAN_LED_GREEN, DEV_F
 USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT };
 static u8 led_state_dev_to_user[] = { USER_FAN_LED_DARK, USER_FAN_LED_GREEN, USER_FAN_LED_RED, USER_FAN_LED_YELLOW };
 
-static int fan_eeprom_wait_bus_tx_done(struct fan_driver_clx *driver)
-{
-    unsigned char val = 0;
-    unsigned char reg = 0;
-    unsigned long timeout = jiffies + FAN_EEPROM_I2C_TIMEOUT;
-
-    do
-    {
-        val = 0;
-        reg = FAN_EEPROM_IIC_STATUS_OFFSET;
-        clx_i2c_read(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-        if (val & FAN_EEPROM_TX_FINISH_MASK)
-        {
-            if (val & FAN_EEPROM_TX_ERROR_MASK)
-            {
-                LOG_DBG(CLX_DRIVER_TYPES_FAN, "fan_eeprom_wait_bus_tx_done data ECOMM error\r\n");
-                return -ECOMM;
-            }
-
-            return 0;
-        }
-
-    } while (time_before(jiffies, timeout));
-
-    LOG_DBG(CLX_DRIVER_TYPES_FAN, "fan_eeprom_wait_bus_tx_done data ETIMEDOUT error\r\n");
-
-    return -ETIMEDOUT;
-}
-static ssize_t drv_write_fan_eeprom(struct fan_driver_clx *driver, unsigned int fan_index, char *buf, loff_t offset, size_t len)
-{
-    unsigned char val = 0;
-    unsigned char reg = 0;
-    unsigned int i = 0;
-
-    if(len > FAN_EEPROM_SIZE)
-    {
-        return -EMSGSIZE;
-    }
-    if(fan_index >= driver->fan_if.fan_num)
-    {
-        return -EMSGSIZE;
-    }
-
-    val = fan_index;
-    reg = FAN_EEPROM_SELECT_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    val = 0x01;
-    reg = FAN_EEPROM_DATA_SIZE_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    val = 0x04;
-    reg = FAN_EEPROM_IIC_MAGE_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    LOG_DBG(CLX_DRIVER_TYPES_FAN, "drv_write_fan_eeprom len = %d\r\n",len);
-
-    for (i = 0; i < len; i++)
-    {
-        val = (offset + i);
-        reg = FAN_EEPROM_IIC_REG_OFFSET;
-        clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-        val = buf[i];
-        reg = FAN_EEPROM_BYTE_WRITE_OFFSET;
-        clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-        
-        //LOG_DBG(CLX_DRIVER_TYPES_FAN, "drv_write_fan_eeprom i = %d ,data = 0x%x\r\n",i,val);
-
-        val = 0x80;
-        reg = FAN_EEPROM_IIC_START_OFFSET;
-        clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-        if (fan_eeprom_wait_bus_tx_done(driver) != 0)
-        {
-            return -ETIMEDOUT;
-        }
-
-        usleep_range(5000, 6000);
-    }
-
-    return len;
-}
-
-static ssize_t drv_read_fan_eeprom(struct fan_driver_clx *driver, unsigned int fan_index, char *buf, loff_t offset, size_t len)
-{
-    unsigned char val = 0;
-    unsigned char reg = 0;
-    unsigned int i = 0;
-
-    if(len > FAN_EEPROM_SIZE)
-    {
-        return -EMSGSIZE;
-    }
-
-    if(fan_index >= driver->fan_if.fan_num)
-    {
-        return -EMSGSIZE;
-    }
-
-    val = fan_index;
-    reg = FAN_EEPROM_SELECT_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    val = 0x01;
-    reg = FAN_EEPROM_DATA_SIZE_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    val = 0x01;
-    reg = FAN_EEPROM_IIC_MAGE_OFFSET;
-    clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-    //LOG_DBG(CLX_DRIVER_TYPES_FAN, "drv_read_fan_eeprom len = %d\r\n",len);
-
-    for ( i = 0; i < len; i++ )
-    {
-        val = (offset + i);
-        reg = FAN_EEPROM_IIC_REG_OFFSET;
-        clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-        val = 0x80;
-        reg = FAN_EEPROM_IIC_START_OFFSET;
-        clx_i2c_write(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-
-        if (fan_eeprom_wait_bus_tx_done(driver) != 0)
-        {
-            return -ETIMEDOUT;
-        }
-        else
-        {
-            val = 0;
-            reg = FAN_EEPROM_BYTE_READ_OFFSET;
-            clx_i2c_read(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
-            buf[i] = val;
-            LOG_DBG(CLX_DRIVER_TYPES_FAN, "drv_read_fan_eeprom i = %d ,buf = 0x%x\r\n",i,buf[i]);
-        }
-    } 
-
-    return len;  
-}
-
-
 static int set_fan_eeprom_wp(void *fan, uint8_t enable)
 {
     struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
@@ -197,7 +55,7 @@ static int drv_get_fan_motor_number(void *fan, unsigned int fan_index)
 
 static ssize_t drv_get_fan_vendor_name(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    return sprintf(buf, "clounix");
+    return sprintf(buf, "clounix\n");
 }
 /*
  * clx_get_fan_model_name - Used to get fan model name,
@@ -211,7 +69,7 @@ static ssize_t drv_get_fan_vendor_name(void *fan, unsigned int fan_index, char *
  */
 static ssize_t drv_get_fan_model_name(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    return sprintf(buf, "DFTA0456B2UP209");
+    return sprintf(buf, "DFTA0456B2UP209\n");
 }
 
 /*
@@ -226,7 +84,7 @@ static ssize_t drv_get_fan_model_name(void *fan, unsigned int fan_index, char *b
  */
 static ssize_t drv_get_fan_serial_number(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    return sprintf(buf, "N/A");
+    return sprintf(buf, "N/A\n");
 }
 
 /*
@@ -241,7 +99,7 @@ static ssize_t drv_get_fan_serial_number(void *fan, unsigned int fan_index, char
  */
 static ssize_t drv_get_fan_part_number(void *fan, unsigned int fan_index, char *buf, size_t count)
 {
-    return sprintf(buf, "N/A");
+    return sprintf(buf, "N/A\n");
 }
 
 /*
@@ -430,13 +288,12 @@ static ssize_t drv_get_fan_motor_speed(void *fan, unsigned int fan_index, unsign
     u8 reg1 ,reg2;
 
     //is it possible to update cpld?
-    if (fan_index < 5) {
+    if (fan_index < 6) {
         reg1 = FAN1_INNER_RPM_OFFSET + fan_index;
         reg2 = FAN1_OUTER_RPM_OFFSET + fan_index;
     }
     else {
-        reg1 = FAN6_INNER_RPM_OFFSET;
-        reg2 = FAN6_OUTER_RPM_OFFSET;
+        return sprintf(buf, "0");
     } 
     clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg1, &data1, 1);
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg1, data1);
@@ -462,8 +319,9 @@ static ssize_t drv_get_fan_motor_speed(void *fan, unsigned int fan_index, unsign
 static ssize_t drv_get_fan_motor_speed_tolerance(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    /* to be update: is it not supported from hardware */
-    return sprintf(buf, "2100");
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
+
+    return sprintf(buf, "%d\n", (dev->fan_if.fan_max_speed/10));
 }
 
 /*
@@ -506,7 +364,9 @@ static ssize_t drv_get_fan_motor_speed_target(void *fan, unsigned int fan_index,
 static ssize_t drv_get_fan_motor_speed_max(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    return sprintf(buf, "21000");
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
+
+    return sprintf(buf, "%d\n", dev->fan_if.fan_max_speed);
 }
 
 /*
@@ -524,7 +384,9 @@ static ssize_t drv_get_fan_motor_speed_max(void *fan, unsigned int fan_index, un
 static ssize_t drv_get_fan_motor_speed_min(void *fan, unsigned int fan_index, unsigned int motor_index,
                    char *buf, size_t count)
 {
-    return sprintf(buf, "2100");
+    struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
+
+    return sprintf(buf, "%d\n", (dev->fan_if.fan_max_speed/10));
 }
 
 /*
@@ -577,6 +439,7 @@ static int drv_set_fan_motor_ratio(void *fan, unsigned int fan_index, unsigned i
 
     return DRIVER_OK;
 }
+
 /*
  * drv_get_fan_eeprom_size - Used to get fan eeprom size
  *
@@ -586,6 +449,35 @@ static int drv_set_fan_motor_ratio(void *fan, unsigned int fan_index, unsigned i
 static int drv_get_fan_eeprom_size(void *fan, unsigned int fan_index)
 {
     return FAN_EEPROM_SIZE;
+}
+
+static int fan_eeprom_wait_bus_tx_done(struct fan_driver_clx *driver)
+{
+    unsigned char val = 0;
+    unsigned char reg = 0;
+    unsigned long timeout = jiffies + FAN_EEPROM_I2C_TIMEOUT;
+
+    do
+    {
+        val = 0;
+        reg = FAN_EEPROM_IIC_STATUS_OFFSET;
+        clx_i2c_read(driver->fan_if.bus, driver->fan_if.addr, reg, &val, 1);
+        if (val & FAN_EEPROM_TX_FINISH_MASK)
+        {
+            if (val & FAN_EEPROM_TX_ERROR_MASK)
+            {
+                LOG_DBG(CLX_DRIVER_TYPES_FAN, "fan_eeprom_wait_bus_tx_done data ECOMM error\r\n");
+                return -ECOMM;
+            }
+
+            return 0;
+        }
+
+    } while (time_before(jiffies, timeout));
+
+    LOG_DBG(CLX_DRIVER_TYPES_FAN,"fan_eeprom_wait_bus_tx_done data ETIMEDOUT error\r\n");
+
+    return -ETIMEDOUT;
 }
 
 /*
@@ -602,9 +494,56 @@ static ssize_t drv_read_fan_eeprom_data(void *fan, unsigned int fan_index, char 
                    size_t count)
 {
     struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
+    unsigned char val = 0;
+    unsigned char reg = 0;
+    unsigned int i = 0;
 
-    return drv_read_fan_eeprom(dev, fan_index, buf, offset, count);
-   
+    if(count > FAN_EEPROM_SIZE)
+    {
+        return -EMSGSIZE;
+    }
+
+    val = fan_index;
+    reg = FAN_EEPROM_SELECT_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1);
+
+    val = 0x01;
+    reg = FAN_EEPROM_DATA_SIZE_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+    val = 0x01;
+    reg = FAN_EEPROM_IIC_MAGE_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1);
+
+    //LOG_DBG(CLX_DRIVER_TYPES_FAN,"drv_read_fan_eeprom len = %d\r\n",count);
+
+    for ( i = 0; i < count; i++ )
+    {
+        val = (offset + i);
+        reg = FAN_EEPROM_IIC_REG_OFFSET;
+        clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+        val = 0x80;
+        reg = FAN_EEPROM_IIC_START_OFFSET;
+        clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1);
+
+        if (fan_eeprom_wait_bus_tx_done(dev) != 0)
+        {
+            return -ETIMEDOUT;
+        }
+        else
+        {
+            val = 0;
+            reg = FAN_EEPROM_BYTE_READ_OFFSET;
+            clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+            buf[i] = val;
+            //LOG_DBG(CLX_DRIVER_TYPES_FAN,"drv_read_fan_eeprom i = %d ,buf = 0x%x\r\n",i,buf[i]);
+        }
+    } 
+
+    usleep_range(50, 100);
+
+    return count;  
 }
 
 /*
@@ -621,12 +560,56 @@ static ssize_t drv_write_fan_eeprom_data(void *fan, unsigned int fan_index, char
                    size_t count)
 {
     struct fan_driver_clx *dev = (struct fan_driver_clx *)fan;
+    unsigned char val = 0;
+    unsigned char reg = 0;
+    unsigned int i = 0;
 
-    return drv_write_fan_eeprom(dev, fan_index, buf, offset, count);
+    if(count > FAN_EEPROM_SIZE)
+    {
+        return -EMSGSIZE;
+    }
+
+    val = fan_index;
+    reg = FAN_EEPROM_SELECT_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1);
+
+    val = 0x01;
+    reg = FAN_EEPROM_DATA_SIZE_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+    val = 0x04;
+    reg = FAN_EEPROM_IIC_MAGE_OFFSET;
+    clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+    //LOG_DBG(CLX_DRIVER_TYPES_FAN,"drv_write_fan_eeprom len = %d\r\n",count);
+
+    for (i = 0; i < count; i++)
+    {
+        val = (offset + i);
+        reg = FAN_EEPROM_IIC_REG_OFFSET;
+        clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+        val = buf[i];
+        reg = FAN_EEPROM_BYTE_WRITE_OFFSET;
+        clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+        
+        //LOG_DBG(CLX_DRIVER_TYPES_FAN,"drv_write_fan_eeprom i = %d ,data = 0x%x\r\n",i,val);
+
+        val = 0x80;
+        reg = FAN_EEPROM_IIC_START_OFFSET;
+        clx_i2c_write(dev->fan_if.bus, dev->fan_if.addr, reg, &val, 1); 
+
+        if (fan_eeprom_wait_bus_tx_done(dev) != 0)
+        {
+            return -ETIMEDOUT;
+        }
+
+        usleep_range(4000, 5000);
+    }
+
+    return count;
 
 }
-
-
 
 static int drv_fan_clx_dev_init(struct fan_driver_clx *fan)
 {
@@ -642,7 +625,7 @@ static int drv_fan_clx_dev_init(struct fan_driver_clx *fan)
 int drv_fan_clx_init(void **fan_driver)
 {
     struct fan_driver_clx *fan = &driver_fan_clx;
-    uint8_t syse2p_enable = true;
+    //uint8_t syse2p_enable = true;
     int ret;
 
     LOG_INFO(CLX_DRIVER_TYPES_FAN, "clx_driver_fan_init\n");
@@ -675,7 +658,7 @@ int drv_fan_clx_init(void **fan_driver)
     fan->fan_if.write_fan_eeprom_data = drv_write_fan_eeprom_data;
  
     *fan_driver = fan;
-    set_fan_eeprom_wp(fan, syse2p_enable);
+    //set_fan_eeprom_wp(fan, syse2p_enable);
     LOG_INFO(CLX_DRIVER_TYPES_FAN, "FAN driver initialization done.\r\n");
 
     return DRIVER_OK;

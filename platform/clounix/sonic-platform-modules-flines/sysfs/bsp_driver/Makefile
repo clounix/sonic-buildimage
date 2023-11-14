@@ -57,17 +57,13 @@ obj-m += i2c_master_dev_driver.o
 i2c_master_dev_driver-objs := i2c_master_device_driver.o \
 			$(INTERFACE_DIR)/i2c_master_interface.o \
 			$(PLAT_DRV)/drv_i2c_xilinx.o \
+			$(PLAT_DRV)/drv_i2c_master_xilinx.o \
 			$(PLAT_DRV)/drv_i2c_anlogic.o
 
 obj-m += syseeprom_dev_driver.o
 syseeprom_dev_driver-objs := syseeprom_device_driver.o \
 			$(INTERFACE_DIR)/syseeprom_interface.o \
 			$(E2P_DRV)/drv_syseeprom.o
-
-obj-m += reboot_eeprom_dev_driver.o
-reboot_eeprom_dev_driver-objs := reboot_eeprom_device_driver.o \
-			$(INTERFACE_DIR)/reboot_eeprom_interface.o \
-			$(FPGA_DRV)/drv_fpga_reboot_cause_eeprom.o
 
 obj-m += fan_dev_driver.o
 fan_dev_driver-objs := fan_device_driver.o \
@@ -123,6 +119,7 @@ lpc_syscpld_dev_driver-objs := lpc_syscpld_device_driver.o \
 obj-m += i2c-mux-pca9548.o
 obj-m += adm1275.o
 obj-m += mp2882.o
+obj-m += mp2886.o
 obj-m += clx_psu_dev.o
     clx_psu_dev-objs := clx_psu.o clx_psu_cfg.o
 obj-m += tps546b24a.o

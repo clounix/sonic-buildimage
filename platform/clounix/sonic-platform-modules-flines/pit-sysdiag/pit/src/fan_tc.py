@@ -125,7 +125,7 @@ class FANTC(TestCaseCommon):
 
             ratio = self.read_sysfs('/sys/s3ip/fan/fan{n}/motor{m}/ratio'.format(n=fanid+1,m=motorid))
             #speed_target = ((speed_max-speed_min) * int(ratio)) / 100 + speed_min
-            speed_target = int(ratio) * 210
+            speed_target = int(ratio) * self.fan_info_dict['speed_min'] / 10
             speed_delta = speed_target - speed
             if (speed_delta > (-speed_tolerance)) and (speed_delta < speed_tolerance):
                   self.logger.log_info("fan control test done, PASS", True)

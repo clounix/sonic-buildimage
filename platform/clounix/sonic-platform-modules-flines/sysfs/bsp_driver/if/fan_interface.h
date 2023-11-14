@@ -31,9 +31,10 @@ struct fan_fn_if {
     ssize_t (*read_fan_eeprom_data)(void * driver, unsigned int fan_index, char *buf, loff_t offset, size_t count);
     ssize_t (*write_fan_eeprom_data)(void * driver, unsigned int fan_index, char *buf, loff_t offset, size_t count);
     unsigned int fan_num;
+    unsigned int fan_max_speed;
     unsigned int motor_per_fan;
     unsigned char bus;
-    unsigned char addr;    
+    unsigned char addr;
 };
 
 #define FAN_DEV_VALID(dev) \

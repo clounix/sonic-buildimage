@@ -3,9 +3,10 @@
 
 #include "sysled_interface.h"
 
-struct drv_sysled_fpga {
+struct drv_sysled_fpga
+{
     struct sysled_fn_if sysled_if;
-    //private
+    // private
     void __iomem *sysled_base;
     unsigned int index;
 };

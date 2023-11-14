@@ -1,11 +1,11 @@
-Source: sonic-clounix-platform-modules
+Source: sonic-flines-platform-modules
 Section: main
 Priority: extra
-Maintainer: Clounix <lufq@clounix.com>
+Maintainer: Flines <chengxiang@phoenixcompany.cn>
 Build-Depends: debhelper (>= 8.0.0), bzip2
 Standards-Version: 3.9.3
 
-Package: sonic-platform-flines-ds610-48c8d
+Package: sonic-platform-flines-common
 Architecture: any
 Description: kernel modules for platform devices such as fan, led, sfp
 

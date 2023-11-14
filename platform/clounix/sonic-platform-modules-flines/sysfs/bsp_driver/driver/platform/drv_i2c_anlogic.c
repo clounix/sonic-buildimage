@@ -16,7 +16,8 @@
 
 extern void __iomem *clounix_fpga_base;
 
-struct master_conf {
+struct master_conf
+{
     int offset;
     char *name;
 };
@@ -30,7 +31,8 @@ static const struct master_conf priv_conf[] = {
     {0x250000, "fpga-fan"},
 };
 
-struct master_priv_data {
+struct master_priv_data
+{
     struct i2c_adapter adap;
     struct mutex lock;
     void __iomem *mmio;
@@ -88,30 +90,36 @@ int drv_i2c_anlogic_init(void **driver)
     int total_adap;
     int i, err;
 
-    if (pdev == NULL) {
+    if (pdev == NULL)
+    {
         return -ENXIO;
     }
 
-    if (clounix_fpga_base == NULL) {
+    if (clounix_fpga_base == NULL)
+    {
         return -ENXIO;
     }
     base = pci_get_drvdata(pdev);
 
-    total_adap = sizeof(priv_conf)/sizeof(struct master_conf);
+    total_adap = sizeof(priv_conf) / sizeof(struct master_conf);
     group_priv = kzalloc(sizeof(struct master_priv_data) * total_adap, GFP_KERNEL);
-    if (group_priv == NULL) {
+    if (group_priv == NULL)
+    {
         return -ENOMEM;
     }
 
     irq_nums = pci_alloc_irq_vectors(pdev, 1, 32, PCI_IRQ_MSI | PCI_IRQ_AFFINITY);
-    if (irq_nums < 0) {
+    if (irq_nums < 0)
+    {
         err = irq_nums;
         goto err_vectors;
     }
 
-    for (i=0; i<irq_nums; i++) {
+    for (i = 0; i < irq_nums; i++)
+    {
         err = request_irq(pci_irq_vector(pdev, i), clounix_fpga_irq_hd, IRQF_SHARED, pdev->driver->name, pdev);
-        if (err < 0) {
+        if (err < 0)
+        {
             LOG_ERR(CLX_DRIVER_TYPES_I2C_MASTER, "%s[%d] IRQ request fail.\r\n", __func__, __LINE__);
             irq_nums = i;
             goto err_irq;
@@ -119,7 +127,8 @@ int drv_i2c_anlogic_init(void **driver)
     }
 
     priv = group_priv;
-    for (i=0; i<total_adap; i++) {
+    for (i = 0; i < total_adap; i++)
+    {
         adap = &priv[i].adap;
         adap->owner = THIS_MODULE;
         adap->algo = &clounix_i2c_algo;
@@ -131,7 +140,7 @@ int drv_i2c_anlogic_init(void **driver)
         priv[i].mmio = base + priv_conf[i].offset;
         mutex_init(&(priv[i].lock));
 
-        err =  fpga_i2c_reinit(&priv[i], 100);
+        err = fpga_i2c_reinit(&priv[i], 100);
         if (err != 0)
             goto err_i2c_group;
 
@@ -142,11 +151,13 @@ int drv_i2c_anlogic_init(void **driver)
     return 0;
 
 err_i2c_group:
-    while(--i >= 0) {
+    while (--i >= 0)
+    {
         i2c_del_adapter(adap);
     }
 err_irq:
-    for (i=0; i<irq_nums; i++) {
+    for (i = 0; i < irq_nums; i++)
+    {
         free_irq(pci_irq_vector(pdev, i), pdev);
     }
     pci_free_irq_vectors(pdev);
@@ -165,12 +176,14 @@ void drv_i2c_anlogic_exit(void **driver)
     if (clounix_fpga_base == NULL)
         return;
 
-    total_adap = sizeof(priv_conf)/sizeof(struct master_conf);
-    for (i=0; i<total_adap; i++) {
+    total_adap = sizeof(priv_conf) / sizeof(struct master_conf);
+    for (i = 0; i < total_adap; i++)
+    {
         i2c_del_adapter(&(priv[i].adap));
     }
 
-    for (i=0; i<irq_nums; i++) {
+    for (i = 0; i < irq_nums; i++)
+    {
         free_irq(pci_irq_vector(pdev, i), pdev);
     }
     pci_free_irq_vectors(pdev);

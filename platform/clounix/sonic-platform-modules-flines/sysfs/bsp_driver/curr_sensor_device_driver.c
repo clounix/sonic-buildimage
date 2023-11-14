@@ -20,7 +20,7 @@ static int clx_get_main_board_curr_number(void)
     struct current_fn_if *current_dev = get_curr();
     CURRENT_DEV_VALID(current_dev);
     CURRENT_DEV_VALID(current_dev->get_main_board_curr_number);
-    return current_dev->get_main_board_curr_number(NULL);
+    return current_dev->get_main_board_curr_number(current_dev);
 }
 
 /*

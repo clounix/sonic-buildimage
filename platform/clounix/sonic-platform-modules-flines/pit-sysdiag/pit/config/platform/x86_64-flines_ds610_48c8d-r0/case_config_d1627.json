@@ -29,7 +29,7 @@
     "software_system":{
         "sysdiag_version":"1.1",
         "timezone":"Etc/UTC",
-        "sonic_version":"SONiC.202012.clounix_uefi.0-dirty-20220815.162650"
+        "sonic_version":"SONiC.cuos.master."
     },
     "pcie":{
         "X552":{
@@ -70,9 +70,9 @@
         "count" :6,
         "direction":"out",
         "ratio_target": [20,80,40],
-        "speed_tolerance": 2100,
-        "speed_max":21000,
-        "speed_min":2100
+        "speed_tolerance": 3000,
+        "speed_max":30000,
+        "speed_min":3000
     },
     "psu_info":{
         "position" : "main board",
@@ -117,7 +117,7 @@
             "400G":{
                 "port_num":[96,152,8],
                 "Identifier":["QSFP-DD Double Density 8X Pluggable Transceiver"],
-                "Vendor_Name":["L135DD004-SD-R","QSFP-DD-LB","QSFP-400G-CU2M","GYL-400G-CU1M"],
+                "Vendor_Name":["L135DD004-SD-R","QSFP-DD-LB","QSFP-400G-CU2M","GYL-400G-CU1M","NDYYYF-0001" ],
                 "Vendor_Part_Number_len":[5,30],
                 "Vendor_Serial_Number_len":[0,40]
             }
@@ -131,13 +131,13 @@
 
     "firmware_version":["bios","fpga","cpld"],
     "cpld_version":{
-        "FAN_CPLD": "0x03",
-        "CPLD2": "02",
-        "CPLD1": "02"
+        "FAN_CPLD": "0x06",
+        "CPLD2": "04",
+        "CPLD1": "04"
     },
-    "bios_version":"5.14",
+    "bios_version":"030",
     "sdk_version":"1.7.3",
-    "fpga_version":"04",
+    "fpga_version":"0a",
 
     "fpga_firmware_type":["FPGA"],
     "fpga_firmware_baseline":{

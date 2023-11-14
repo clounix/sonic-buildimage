@@ -40,7 +40,7 @@ int syseeprom_if_create_driver(void)
         bd = clx_driver_get_platform_bd();
         syseeprom_driver->bus = bd->syse2p.bus;
         syseeprom_driver->addr = bd->syse2p.addr;
-	syseeprom_driver->size = bd->syse2p.size;
+		syseeprom_driver->size = bd->syse2p.size;
         syseeprom_driver->mux_addr = bd->syse2p.mux_addr;
         syseeprom_driver->mux_channel = bd->syse2p.mux_channel;
     }

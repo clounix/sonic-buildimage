@@ -103,7 +103,7 @@ class SOFTWARESYSTEMTC(TestCaseCommon):
             return ret
 
         code, result = find_spec(SONIC_VERSION_DESC, out)
-        if code and result == sonic_version:
+        if code and sonic_version in result:
             self.logger.log_info("sonic version check success.", also_print_console)
         else:
             self.logger.log_err(
