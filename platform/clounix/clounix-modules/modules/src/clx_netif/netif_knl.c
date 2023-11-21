@@ -1,18 +1,37 @@
-/*
- * Copyright 2022 Clounix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as
- * published by the Free Software Foundation (the "GPL").
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License version 2 (GPLv2) for more details.
- *
- * You should have received a copy of the GNU General Public License
- * version 2 (GPLv2) along with this source code.
- */
+/*******************************************************************************
+*  Copyright Statement:
+*  --------------------
+*  This software and the information contained therein are protected by
+*  copyright and other intellectual property laws and terms herein is
+*  confidential. The software may not be copied and the information
+*  contained herein may not be used or disclosed except with the written
+*  permission of Hangzhou Clounix Technology Limited. (C) 2020-2023
+*
+*  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+*  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+*  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+*  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+*  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+*  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+*  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+*  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+*  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+*  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+*  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+*  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+*
+*  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+*  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+*  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+*  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+*  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+*
+*  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+*  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+*  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+*  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN HANGZHOU,CHINA UNDER.
+*
+*******************************************************************************/
 
 /* FILE NAME:  netif_knl.c
  * PURPOSE:
@@ -97,6 +116,7 @@ typedef struct
 extern struct pci_dev                   *_ptr_ext_pci_dev;
 static NETIF_KNL_CB_T                   _netif_knl_cb;
 UI32_T                                  ext_dbg_flag = 0;
+UI32_T                                  clx_dev_tc = 15;
 UI32_T                                  vlan_push_flag = 1;
 UI32_T                                  frame_vid = 0;
 #if (defined(CONFIG_INTEL_IOMMU_DEFAULT_ON) || defined(CONFIG_INTEL_IOMMU_DEFAULT_ON_INTGPU_OFF))&& defined(CONFIG_INTEL_IOMMU)
@@ -306,6 +326,8 @@ module_exit(netif_knl_exit);
 module_param(ext_dbg_flag, uint, S_IRUGO|S_IWUSR);
 MODULE_PARM_DESC(ext_dbg_flag, "bit0:error, bit1:tx, bit2:rx, bit3:intf, bit4:profile, "   \
                                "bit5:common, bit6:netlink");
+module_param(clx_dev_tc, uint, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(clx_dev_tc, "set tc from 0-15");
 module_param(vlan_push_flag, uint, S_IRUGO|S_IWUSR);
 MODULE_PARM_DESC(vlan_push_flag, "0:flase 1:true");
 module_param(frame_vid, uint, S_IRUGO|S_IWUSR);

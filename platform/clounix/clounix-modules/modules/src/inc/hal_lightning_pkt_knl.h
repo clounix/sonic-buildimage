@@ -1,18 +1,37 @@
-/*
- * Copyright 2022 Clounix
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as
- * published by the Free Software Foundation (the "GPL").
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License version 2 (GPLv2) for more details.
- *
- * You should have received a copy of the GNU General Public License
- * version 2 (GPLv2) along with this source code.
- */
+/*******************************************************************************
+*  Copyright Statement:
+*  --------------------
+*  This software and the information contained therein are protected by
+*  copyright and other intellectual property laws and terms herein is
+*  confidential. The software may not be copied and the information
+*  contained herein may not be used or disclosed except with the written
+*  permission of Hangzhou Clounix Technology Limited. (C) 2020-2023
+*
+*  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+*  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+*  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+*  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+*  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+*  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+*  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+*  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+*  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+*  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+*  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+*  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+*
+*  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+*  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+*  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+*  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+*  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+*
+*  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+*  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+*  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+*  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN HANGZHOU,CHINA UNDER.
+*
+*******************************************************************************/
 
 /* FILE NAME:  hal_lightning_pkt_knl.h
  * PURPOSE:
@@ -2138,6 +2157,7 @@ typedef struct
     UI32_T                          channel;            /* sendGpd[In]      */
     CLX_ADDR_T                      ioctl_gpd_addr;     /* sendGpd[In]      */
     CLX_ADDR_T                      done_sw_gpd_addr;   /* waitTxFree[Out]  */
+    CLX_ERROR_NO_T                  rc;
 
 } HAL_LIGHTNING_PKT_IOCTL_TX_COOKIE_T;
 
@@ -2155,7 +2175,8 @@ typedef struct
     UI32_T                          channel;            /* getRxCnt[In], clearRxInt[In]     */
     CLX_ADDR_T                      ioctl_gpd_addr;     /* waitRxFree[Out]                  */
     UI32_T                          buf_len;            /* setRxCfg[In]                     */
-    HAL_LIGHTNING_PKT_IOCTL_RX_TYPE_T     rx_type;            /* setRxCfg[In]                     */
+    HAL_LIGHTNING_PKT_IOCTL_RX_TYPE_T     rx_type;      /* setRxCfg[In]                     */
+    CLX_ERROR_NO_T                  rc;
 
 } HAL_LIGHTNING_PKT_IOCTL_RX_COOKIE_T;
 
@@ -2201,6 +2222,18 @@ typedef union
 } HAL_LIGHTNING_PKT_IOCTL_CMD_T;
 
 #endif /* End of CLX_EN_NETIF */
+
+typedef enum{
+    PROTO_TYPE_UDLD,
+    PROTO_TYPE_ISIS_L1,
+    PROTO_TYPE_ISIS_L2,
+    PROTO_TYPE_ISIS_ALL,
+    PROTO_TYPE_MAX
+}HAL_LIGHTNING_PKT_FILTER_PROTO_TYPE_T;;
+
+typedef struct {
+    u8 dst_addr[6];
+}HAL_LIGHTNING_PKT_FILTER_PROTO_T;
 
 //} 
 /*---------------------------------------------------------------------------*/
