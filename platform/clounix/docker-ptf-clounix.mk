@@ -1,0 +1,7 @@
+# docker image for docker-ptf-clounix
+
+DOCKER_PTF_CLOUNIX = docker-ptf-clounix.gz
+$(DOCKER_PTF_CLOUNIX)_PATH = $(DOCKERS_PATH)/docker-ptf-saithrift
+$(DOCKER_PTF_CLOUNIX)_DEPENDS += $(PYTHON_SAITHRIFT)
+$(DOCKER_PTF_CLOUNIX)_LOAD_DOCKERS += $(DOCKER_PTF)
+SONIC_DOCKER_IMAGES += $(DOCKER_PTF_CLOUNIX)

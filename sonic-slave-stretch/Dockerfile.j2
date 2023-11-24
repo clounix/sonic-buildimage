@@ -382,8 +382,12 @@ RUN pip install setuptools==40.8.0
 # For sonic-swss-common testing
 RUN pip install Pympler==0.8
 
+# For sonic_yang_model build
+RUN pip3 install pyang==2.4.0
+
 # For mgmt-framework build
 RUN pip install mmh3==2.5.1
+RUN pip install pathlib==1.0.1
 
 # Install dependencies for isc-dhcp-relay build
 RUN apt-get -y build-dep isc-dhcp
