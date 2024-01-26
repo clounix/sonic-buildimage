@@ -14,8 +14,8 @@ After=opennsl-modules.service
 Requires=nps-modules-4.9-amd64.service
 After=nps-modules-4.9-amd64.service
 {% elif sonic_asic_platform == 'clounix' %}
-Requires=clx-modules-4.9-amd64.service
-After=clx-modules-4.9-amd64.service
+Requires=clx-modules.service
+After=clx-modules.service
 {% endif %}
 Requires=updategraph.service
 After=updategraph.service
