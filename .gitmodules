@@ -87,3 +87,7 @@
 	path = src/dhcprelay
 	url = https://github.com/sonic-net/sonic-dhcp-relay.git
 	branch = 201911
+[submodule "platform/clounix/clounix-modules"]
+	path = platform/clounix/clounix-modules
+	url = https://github.com/clounix/clounix-modules.git
+	branch = main
