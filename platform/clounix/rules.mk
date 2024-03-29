@@ -1,5 +1,4 @@
 include $(PLATFORM_PATH)/sai.mk
-include $(PLATFORM_PATH)/clx-utils.mk
 include $(PLATFORM_PATH)/clounix-modules.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix-rpc.mk
