@@ -319,6 +319,26 @@ static ssize_t fan_led_status_store(struct switch_obj *obj, struct switch_attrib
     return count;
 }
 
+static ssize_t fan_vmon_show(struct switch_obj *obj, struct switch_attribute *attr,
+                             char *buf)
+{
+    unsigned int fan_index;
+    int ret;
+
+    check_p(g_fan_drv);
+    check_p(g_fan_drv->get_fan_vmon);
+
+    fan_index = obj->index;
+    FAN_DBG("fan index: %u\n", fan_index);
+    ret = g_fan_drv->get_fan_vmon(fan_index, buf, PAGE_SIZE);
+    if (ret < 0)
+    {
+        FAN_ERR("get fan%u vmon failed, ret: %d\n", fan_index, ret);
+        return (ssize_t)snprintf(buf, PAGE_SIZE, "%s\n", SYSFS_DEV_ERROR);
+    }
+    return ret;
+}
+
 static ssize_t fan_motor_speed_show(struct switch_obj *obj, struct switch_attribute *attr,
                    char *buf)
 {
@@ -581,6 +601,7 @@ static struct switch_attribute fan_hw_attr = __ATTR(hardware_version, S_IRUGO, f
 static struct switch_attribute fan_num_motors_attr = __ATTR(num_motors, S_IRUGO, fan_motor_number_show, NULL);
 static struct switch_attribute fan_status_attr = __ATTR(status, S_IRUGO, fan_status_show, NULL);
 static struct switch_attribute fan_led_status_attr = __ATTR(led_status, S_IRUGO | S_IWUSR, fan_led_status_show, fan_led_status_store);
+static struct switch_attribute fan_vmon_attr = __ATTR(vmon, S_IRUGO, fan_vmon_show, NULL);
 
 static struct attribute *fan_attrs[] = {
     &fan_vendor_attr.attr,
@@ -591,6 +612,7 @@ static struct attribute *fan_attrs[] = {
     &fan_num_motors_attr.attr,
     &fan_status_attr.attr,
     &fan_led_status_attr.attr,
+    &fan_vmon_attr.attr,
     NULL,
 };
 

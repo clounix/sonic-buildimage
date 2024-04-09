@@ -10,10 +10,8 @@
 #define MUX_ADDR_DS410 0x70
 #define MUX_CH_SEL_DS410 0x40
 
-#define SFP_MAX_DS410 48
-#define DSFP_MAX_DS410 8
-#define QSFP_MAX_DS410 0
-#define PORT_MAX_DS410 (SFP_MAX_DS410 + DSFP_MAX_DS410 + QSFP_MAX_DS410)
+#define PORT_MAX_DS410 56
+#define PORT_PLATFORM_DS410 410
 #define PORT_CLK_DIV_DS410 (0x19)
 
 #define FAN_MAX_DS410 5
@@ -28,44 +26,48 @@
 
 #define DS410_VOL_TOTAL_SENSOR_NUM (2)
 #define DS410_CURR_TOTAL_SENSOR_NUM (2)
-
 /*
     [0]:addr
     [1]:location in sensor_arry
     [2]:sensor offset
     [3]:scaling factor
 */
-short ds410_vol_sensor_map[3][SENSOR_DRIVER_INDEX_COL_MAX] = {
+short ds410_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     {0x2B, 0, -3, 1},
     {0x27, 1, -3, 3},
+    {0x0, 0, 0, 0},
     {0x0, 0, 0, 0},
 };
 /*
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds410_vol_index_range_map[3][2] = {
+unsigned char ds410_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
     {1, 0},
     {2, 1},
+    {0, 0},
     {0, 0},
 };
 /*
     [0]:addr
     [1]:location in sensor_arry
     [2]:sensor offse
+    [3]:scaling factor
 */
-short ds410_curr_sensor_map[3][SENSOR_DRIVER_INDEX_COL_MAX] = {
+short ds410_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     {0x2B, 0, -1, 1},
     {0x27, 1, -1, 3},
-    {0x0, 0, 0, 1},
+    {0x0, 0, 0, 0},
+    {0x0, 0, 0, 0},
 };
 /*
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds410_curr_index_range_map[][2] = {
+unsigned char ds410_curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
     {1, 0},
     {2, 1},
+    {0, 0},
     {0, 0},
 };
 struct sensor_descript ds410_sensor_map_index[] = {

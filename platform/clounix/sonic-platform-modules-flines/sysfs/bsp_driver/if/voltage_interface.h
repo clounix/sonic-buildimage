@@ -19,9 +19,9 @@ struct voltage_fn_if {
     ssize_t (*get_main_board_vol_range)(void *driver, unsigned int vol_index, char *buf, size_t count);
     ssize_t (*get_main_board_vol_nominal_value)(void *driver, unsigned int vol_index, char *buf, size_t count);
     ssize_t (*get_main_board_vol_value)(void *driver, unsigned int vol_index, char *buf, size_t count);
-    unsigned char total_sensor_num;
-    short (*psensor_map)[SENSOR_DRIVER_INDEX_COL_MAX];
-    unsigned char (*pvol_index_range_map)[2];    
+    unsigned char real_max_sensor_num;
+    short (*sensor_map)[SENSOR_COL_MAX];
+    unsigned char (*index_range_map)[SENSOR_RANGE_MAX];
 };
 
 #define VOLTAGE_DEV_VALID(dev) \

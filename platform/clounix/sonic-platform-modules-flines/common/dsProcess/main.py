@@ -56,7 +56,7 @@ def platform_load_json():
         with open(prod_file, 'r') as jsonfile:
             json_string = json.load(jsonfile)
     except IOError as e:
-        return NULL, NULL
+        return "", "", ""
 
     return json_string['i2c_topology_dict'], json_string['kernel_module_list']
 
@@ -163,16 +163,16 @@ def doBurnInTest():
 def main():
     args = common.sys.argv[1:]
 
-    doBurnInTest()
     if len(args[0:]) < 1:
         common.sys.exit(0)
 
     if args[0] == 'install':
         common.RUN = True
-        doInstall()
         do_platformApiInit()
+        doInstall()
         do_platformApiInstall()
         device.deviceInit()
+        doBurnInTest()
 
     if args[0] == 'uninstall':
         common.RUN = False

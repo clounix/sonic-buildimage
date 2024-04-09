@@ -13,8 +13,6 @@
 // internal function declaration
 struct drv_curr_sensor_clx drv_sensor;
 
-#define REAL_MAX_SENSOR_NUM (2)
-
 #define CURR_NODE "curr"
 #define CURR_MIN "_min"
 #define CURR_MAX "_max"
@@ -22,20 +20,9 @@ struct drv_curr_sensor_clx drv_sensor;
 #define CURR_VALUE "_input"
 
 static DEFINE_RWLOCK(list_lock);
-/*
-    [0]:addr
-    [1]:location in sensor_arry
-    [2]:sensor offse
-*/
-static short sensor_map[3][SENSOR_DRIVER_INDEX_COL_MAX];
 
-/*
-    [0]: range
-    [1]: location in sensor_arry
-*/
-static unsigned char curr_index_range_map[3][2];
-
-static struct i2c_client *sensor_arry[REAL_MAX_SENSOR_NUM + 1] = {0};
+#define MAX_SENSOR_NUM (16)
+static struct i2c_client *sensor_arry[MAX_SENSOR_NUM] = {0};
 
 int curr_sensor_add(struct i2c_client *client)
 {
@@ -45,14 +32,14 @@ int curr_sensor_add(struct i2c_client *client)
     write_lock(&list_lock);
 
     i = 0;
-    while (sensor_map[i][ADDR_LABEL] != 0)
+    while (drv_sensor.current_if.sensor_map[i][ADDR_LABEL] != 0)
     {
-        if (client->addr == sensor_map[i][ADDR_LABEL])
+        if (client->addr == drv_sensor.current_if.sensor_map[i][ADDR_LABEL])
         {
-            if (sensor_arry[(sensor_map[i][LOCATION_LABEL])] == NULL)
+            if (sensor_arry[(drv_sensor.current_if.sensor_map[i][LOCATION_LABEL])] == NULL)
             {
                 LOG_DBG(CLX_DRIVER_TYPES_CURR, "curr sensor add %s\n", client->name);
-                sensor_arry[(sensor_map[i][LOCATION_LABEL])] = client;
+                sensor_arry[(drv_sensor.current_if.sensor_map[i][LOCATION_LABEL])] = client;
                 ret = 0;
             }
             break;
@@ -71,7 +58,7 @@ void curr_sensor_del(struct i2c_client *client)
     int i;
 
     write_lock(&list_lock);
-    for (i = 0; i < REAL_MAX_SENSOR_NUM; i++)
+    for (i = 0; i < drv_sensor.current_if.real_max_sensor_num; i++)
     {
         if (sensor_arry[i] == client)
         {
@@ -87,8 +74,8 @@ EXPORT_SYMBOL(curr_sensor_del);
 
 static int drv_sensor_get_main_board_curr_number(void *driver)
 {
-    struct current_fn_if *curr_if = driver;
-    return curr_if->total_sensor_num;
+    /* add vendor codes here */
+    return drv_sensor.current_if.real_max_sensor_num;
 }
 
 /*
@@ -103,7 +90,7 @@ static int drv_sensor_get_main_board_curr_number(void *driver)
  */
 static ssize_t drv_sensor_get_main_board_curr_alias(void *driver, unsigned int curr_index, char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -114,7 +101,7 @@ static ssize_t drv_sensor_get_main_board_curr_alias(void *driver, unsigned int c
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_DIR);
         if (get_attr_val_by_name(client, node_name, tmp_buf) > 0)
             ret = sprintf(buf, "%s:%x %s", client->name, client->addr, tmp_buf);
@@ -136,7 +123,7 @@ static ssize_t drv_sensor_get_main_board_curr_alias(void *driver, unsigned int c
  */
 static ssize_t drv_sensor_get_main_board_curr_type(void *driver, unsigned int curr_index, char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     int ret = -1;
 
@@ -164,7 +151,7 @@ static ssize_t drv_sensor_get_main_board_curr_type(void *driver, unsigned int cu
  */
 static ssize_t drv_sensor_get_main_board_curr_max(void *driver, unsigned int curr_index, char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -174,7 +161,7 @@ static ssize_t drv_sensor_get_main_board_curr_max(void *driver, unsigned int cur
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_MAX);
         ret = get_attr_val_by_name(client, node_name, buf);
     }
@@ -195,7 +182,7 @@ static ssize_t drv_sensor_get_main_board_curr_max(void *driver, unsigned int cur
  */
 static int drv_sensor_set_main_board_curr_max(void *driver, unsigned int curr_index, const char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -205,7 +192,7 @@ static int drv_sensor_set_main_board_curr_max(void *driver, unsigned int curr_in
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_MAX);
         ret = set_attr_val_by_name(client, node_name, buf, count);
     }
@@ -227,7 +214,7 @@ static int drv_sensor_set_main_board_curr_max(void *driver, unsigned int curr_in
  */
 static ssize_t drv_sensor_get_main_board_curr_min(void *driver, unsigned int curr_index, char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -237,7 +224,7 @@ static ssize_t drv_sensor_get_main_board_curr_min(void *driver, unsigned int cur
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_MIN);
         ret = get_attr_val_by_name(client, node_name, buf);
     }
@@ -258,7 +245,7 @@ static ssize_t drv_sensor_get_main_board_curr_min(void *driver, unsigned int cur
  */
 static int drv_sensor_set_main_board_curr_min(void *driver, unsigned int curr_index, const char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -268,7 +255,7 @@ static int drv_sensor_set_main_board_curr_min(void *driver, unsigned int curr_in
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_MIN);
         ret = set_attr_val_by_name(client, node_name, buf, count);
     }
@@ -289,7 +276,7 @@ static int drv_sensor_set_main_board_curr_min(void *driver, unsigned int curr_in
  */
 static ssize_t drv_sensor_get_main_board_curr_value(void *driver, unsigned int curr_index, char *buf, size_t count)
 {
-    unsigned char sensor_index = get_psu_sensor_index(curr_index, curr_index_range_map);
+    unsigned char sensor_index = get_psu_sensor_index(curr_index, drv_sensor.current_if.index_range_map);
     struct i2c_client *client = sensor_arry[sensor_index];
     unsigned char curr_sensor_index;
     unsigned char node_name[PMBUS_NAME_SIZE];
@@ -299,7 +286,7 @@ static ssize_t drv_sensor_get_main_board_curr_value(void *driver, unsigned int c
     read_lock(&list_lock);
     if (client != NULL)
     {
-        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, sensor_map);
+        curr_sensor_index = get_sensor_internal_index(sensor_index, curr_index, drv_sensor.current_if.sensor_map);
         sprintf(node_name, "%s%d%s", CURR_NODE, curr_sensor_index, CURR_VALUE);
         ret = get_attr_val_by_name(client, node_name, buf);
     }
@@ -331,8 +318,6 @@ int drv_sensor_current_init(void **current_driver)
     curr->current_if.get_main_board_curr_min = drv_sensor_get_main_board_curr_min;
     curr->current_if.set_main_board_curr_min = drv_sensor_set_main_board_curr_min;
     curr->current_if.get_main_board_curr_value = drv_sensor_get_main_board_curr_value;
-    curr->current_if.psensor_map = sensor_map;
-    curr->current_if.pcurr_index_range_map = curr_index_range_map;    
     *current_driver = curr;
     LOG_INFO(CLX_DRIVER_TYPES_CURR, "CURRENT driver clx8000 initialization done.\r\n");
     return DRIVER_OK;

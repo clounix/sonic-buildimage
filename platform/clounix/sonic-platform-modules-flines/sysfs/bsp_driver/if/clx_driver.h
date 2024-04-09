@@ -75,10 +75,11 @@ struct board_info *clx_driver_get_platform_bd(void);
 #define BOARD_NAME_LEN 32
 #define SENSOR_MAP_INDEX_MAX 64
 
-#define SENSOR_DRIVER_MAP_INDEX_MAX 3
-#define SENSOR_DRIVER_INDEX_RANGE_MAX 2
-#define SENSOR_DRIVER_INDEX_ROW_MAX 3
-#define SENSOR_DRIVER_INDEX_COL_MAX 4
+#define SENSOR_INDEX_MAX 4
+#define SENSOR_COL_MAX 4
+
+#define SENSOR_ROW_MAX 4
+#define SENSOR_RANGE_MAX 2
 
 struct sensor_descript
 {
@@ -130,9 +131,7 @@ struct bd_xcvr
 {
 	char name[BOARD_NAME_LEN];
 	unsigned int port_max;
-	unsigned int sfp_max;
-	unsigned int dsfp_max;
-	unsigned int qsfp_max;
+	unsigned int port_platform_type;
 	unsigned char clk_div;
 };
 
@@ -146,16 +145,16 @@ struct bd_vol
 {
 	char name[BOARD_NAME_LEN];
 	unsigned char total_sensor_num;
-	short vol_sensor_map[SENSOR_DRIVER_MAP_INDEX_MAX][SENSOR_DRIVER_INDEX_COL_MAX];
-	unsigned char vol_index_range_map[SENSOR_DRIVER_INDEX_ROW_MAX][SENSOR_DRIVER_INDEX_RANGE_MAX];
+	short vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX];
+	unsigned char vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX];
 };
 
 struct bd_curr
 {
 	char name[BOARD_NAME_LEN];
 	unsigned char total_sensor_num;
-	short curr_sensor_map[SENSOR_DRIVER_MAP_INDEX_MAX][SENSOR_DRIVER_INDEX_COL_MAX];
-	unsigned char curr_index_range_map[SENSOR_DRIVER_INDEX_ROW_MAX][SENSOR_DRIVER_INDEX_RANGE_MAX];
+	short curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX];
+	unsigned char curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX];
 };
 
 struct bd_i2c_master

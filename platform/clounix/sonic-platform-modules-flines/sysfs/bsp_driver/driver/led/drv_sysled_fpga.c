@@ -409,6 +409,7 @@ int drv_sysled_init(void **sysled_driver)
     sysled->sysled_if.get_id_led_status = drv_get_id_led_status;
     sysled->sysled_if.set_id_led_status = drv_set_id_led_status;
     *sysled_driver = sysled;
+    drv_set_sys_led_status(sysled, USER_SYSLED_GREEN);
     LOG_INFO(CLX_DRIVER_TYPES_SYSLED, "SYSLED driver clx8000 initialization done.\r\n");
     return DRIVER_OK;
 }

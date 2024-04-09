@@ -1,0 +1,10 @@
+{
+    "chassis": {
+        "DS730D-32D": {
+            "component": {
+                "FPGA": {},
+                "BIOS": {}
+            }
+        }
+    }
+}

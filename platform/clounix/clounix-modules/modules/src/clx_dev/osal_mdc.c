@@ -765,12 +765,14 @@ _osal_mdc_tunePciPerf(
     data_16 |= 0x1;
     pci_write_config_word(ptr_rc_dev, ext_cap + 0x4, data_16);
 
+    msleep(500);
+
     /* retrain */
     pci_read_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0x10, &data_16);
     data_16 |= 0x20;
     pci_write_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0x10, data_16);
 
-    msleep(100);
+    msleep(500);
 
     /* clear */
     pci_read_config_word(ptr_rc_dev, ext_cap + 0x4, &data_16);
