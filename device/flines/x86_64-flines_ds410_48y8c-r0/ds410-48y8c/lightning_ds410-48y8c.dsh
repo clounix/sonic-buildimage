@@ -780,6 +780,8 @@ port set property unit=0 portlist=72 fec=rs528
 port set property unit=0 portlist=76 fec=rs528
 port set property unit=0 portlist=257 fec=disable
 port set property unit=0 portlist=258 fec=disable
+port set adver unit=0 portlist=257-258 speed-10g-kr
+port set property unit=0 portlist=257-258 an-lt=enable
 port set property unit=0 portlist=0 admin=enable
 port set property unit=0 portlist=1 admin=enable
 port set property unit=0 portlist=2 admin=enable
