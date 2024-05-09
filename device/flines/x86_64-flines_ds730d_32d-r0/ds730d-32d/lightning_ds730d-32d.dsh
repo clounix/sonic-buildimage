@@ -706,3 +706,5 @@ port set property unit=0 portlist=240 admin=enable
 port set property unit=0 portlist=248 admin=enable
 port set property unit=0 portlist=257 admin=enable
 port set property unit=0 portlist=258 admin=enable
+port set property unit=0 portlist=257 admin=enable
+port set property unit=0 portlist=258 admin=enable

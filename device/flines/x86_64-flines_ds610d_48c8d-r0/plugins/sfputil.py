@@ -70,7 +70,7 @@ class SfpUtil(SfpUtilBase):
         SfpUtilBase.__init__(self)
 
     def get_presence(self, port_num):
-        if port_num not in self.qsfp_ports:
+        if port_num < self.port_start or port_num > self.port_end:
             return False
         presence_path = '/sys/switch/transceiver/eth{}/present'.format(
             port_num + 1)
@@ -90,7 +90,7 @@ class SfpUtil(SfpUtilBase):
         return False
 
     def get_power(self, port_num):
-        if port_num not in self.qsfp_ports:
+        if port_num < self.port_start or port_num > self.port_end:
             return False
         power_path = '/sys/switch/transceiver/eth{}/power_on'.format(
             port_num + 1)
@@ -110,7 +110,7 @@ class SfpUtil(SfpUtilBase):
         return False
 
     def set_power(self, port_num, lpmode):
-        if port_num not in self.qsfp_ports:
+        if port_num < self.port_start or port_num > self.port_end:
             return False
         power_path = '/sys/switch/transceiver/eth{}/power_on'.format(
             port_num + 1)
@@ -134,7 +134,7 @@ class SfpUtil(SfpUtilBase):
         return True
 
     def set_eeprom(self, port_num, page, offset, data):
-        if port_num not in self.qsfp_ports:
+        if port_num < self.port_start or port_num > self.port_end:
             return False
         sysfs_eeprom_path = '/sys/switch/transceiver/eth{}/eeprom'.format(
             port_num + 1)
