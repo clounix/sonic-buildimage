@@ -765,14 +765,12 @@ _osal_mdc_tunePciPerf(
     data_16 |= 0x1;
     pci_write_config_word(ptr_rc_dev, ext_cap + 0x4, data_16);
 
-    msleep(500);
-
     /* retrain */
     pci_read_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0x10, &data_16);
     data_16 |= 0x20;
     pci_write_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0x10, data_16);
 
-    msleep(500);
+    msleep(100);
 
     /* clear */
     pci_read_config_word(ptr_rc_dev, ext_cap + 0x4, &data_16);
@@ -796,11 +794,8 @@ _osal_mdc_maskStatus(
     {
         /* Mask */
         pci_read_config_dword(ptr_rc_dev, ext_cap + 0x8, &data_32);
-        data_32 |= 0x4021;
+        data_32 |= 0x20;
         pci_write_config_dword(ptr_rc_dev, ext_cap + 0x8, data_32);
-        pci_read_config_dword(ptr_rc_dev, ext_cap + 0x14, &data_32);
-        data_32 |= 0x1;
-        pci_write_config_dword(ptr_rc_dev, ext_cap + 0x14, data_32);
     }
 
     return CLX_E_OK;
@@ -821,16 +816,12 @@ _osal_mdc_clearStatus(
         /* Clear */
         pci_write_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0xa, 0x04);
         pci_write_config_word(ptr_rc_dev, ptr_rc_dev->pcie_cap + 0x12, 0x8000);
-        pci_write_config_dword(ptr_rc_dev, ext_cap + 0x4, 0x4021);
-        pci_write_config_dword(ptr_rc_dev, ext_cap + 0x10, 0x1);
+        pci_write_config_dword(ptr_rc_dev, ext_cap + 0x4, 0x20);
 
         /* UnMask */
         pci_read_config_dword(ptr_rc_dev, ext_cap + 0x8, &data_32);
         data_32 &= ~0x20;
         pci_write_config_dword(ptr_rc_dev, ext_cap + 0x8, data_32);
-        pci_read_config_dword(ptr_rc_dev, ext_cap + 0x14, &data_32);
-        data_32 &= ~0x1;
-        pci_write_config_dword(ptr_rc_dev, ext_cap + 0x14, data_32);
     }
 
     return CLX_E_OK;
