@@ -237,16 +237,14 @@ static int fpga_i2c_reinit(struct master_priv_data *priv, unsigned long after)
     };
 
     writeb(IIC_RX_FIFO_DEPTH - 1, priv->mmio + XIIC_RFD_REG_OFFSET);
-
-    // writeb(XIIC_CR_ENABLE_DEVICE_MASK , priv->mmio + XIIC_CR_REG_OFFSET);
-    // writeb(XIIC_CR_ENABLE_DEVICE_MASK | XIIC_CR_TX_FIFO_RESET_MASK, priv->mmio + XIIC_CR_REG_OFFSET);
+    writeb(XIIC_CR_ENABLE_DEVICE_MASK, priv->mmio + XIIC_CR_REG_OFFSET);
+    writeb(XIIC_CR_ENABLE_DEVICE_MASK | XIIC_CR_TX_FIFO_RESET_MASK, priv->mmio + XIIC_CR_REG_OFFSET);
     writeb(XIIC_CR_TX_FIFO_RESET_MASK, priv->mmio + XIIC_CR_REG_OFFSET);
     timeout = jiffies + after;
     while (time_after(jiffies, timeout))
     {
     };
     writeb(0, priv->mmio + XIIC_CR_REG_OFFSET);
-
     timeout = jiffies + after;
     while (rx_fifo_empty(priv) == 0)
     {
@@ -872,6 +870,9 @@ static int clounix_i2c_smbus_xfer_psu1(struct i2c_adapter *adap, unsigned short 
     return 0;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_PSU_MGR_RST | FPGA_PSU_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_PSU_CFG);
     mutex_unlock(&priv->lock);
     return -ETIMEDOUT;
 }
@@ -1065,8 +1066,10 @@ static int clounix_i2c_xfer_psu1(struct i2c_adapter *adap, struct i2c_msg *msgs,
     return num;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_PSU_MGR_RST | FPGA_PSU_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_PSU_CFG);
     mutex_unlock(&priv->lock);
-
     return -ETIMEDOUT;
 }
 
@@ -1338,6 +1341,9 @@ static int clounix_i2c_smbus_xfer_psu0(struct i2c_adapter *adap, unsigned short 
     return 0;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_PSU_MGR_RST | FPGA_PSU_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_PSU0_CFG);
     mutex_unlock(&priv->lock);
     return -ETIMEDOUT;
 }
@@ -1530,8 +1536,10 @@ static int clounix_i2c_xfer_psu0(struct i2c_adapter *adap, struct i2c_msg *msgs,
     return num;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_PSU_MGR_RST | FPGA_PSU_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_PSU0_CFG);
     mutex_unlock(&priv->lock);
-
     return -ETIMEDOUT;
 }
 
@@ -1761,8 +1769,10 @@ static int clounix_i2c_xfer_reboot_eeprom(struct i2c_adapter *adap, struct i2c_m
     return num;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_EEPROM_MGR_RST | FPGA_EEPROM_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_EEPROM_CFG);
     mutex_unlock(&priv->lock);
-
     return -ETIMEDOUT;
 }
 
@@ -2008,6 +2018,9 @@ static int clounix_i2c_smbus_xfer_reboot_eeprom(struct i2c_adapter *adap, unsign
     return 0;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_EEPROM_MGR_RST | FPGA_EEPROM_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + FPGA_EEPROM_CFG);
     mutex_unlock(&priv->lock);
     return -ETIMEDOUT;
 }

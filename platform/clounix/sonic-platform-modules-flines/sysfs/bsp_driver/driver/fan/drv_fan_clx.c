@@ -502,7 +502,7 @@ static ssize_t drv_get_fan_motor_speed(void *fan, unsigned int fan_index, unsign
     clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg2, &data2, 1);
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg2, data2);
 
-    return sprintf(buf, "%d\n", (data1 + data2) * 60);
+    return sprintf(buf, "%d\n", (data1 + data2) * 150);
 }
 
 /*
@@ -547,7 +547,7 @@ static ssize_t drv_get_fan_motor_speed_target(void *fan, unsigned int fan_index,
     clx_i2c_read(dev->fan_if.bus, dev->fan_if.addr, reg, &data, 1);
     LOG_DBG(CLX_DRIVER_TYPES_FAN, "addr: 0x%x, reg: %x, data: %x\r\n", dev->fan_if.addr, reg, data);
 
-    return sprintf(buf, "%d\n", data * 120);
+    return sprintf(buf, "%d\n", data * 300);
 }
 
 /*

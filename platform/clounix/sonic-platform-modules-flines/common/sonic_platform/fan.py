@@ -202,7 +202,7 @@ class Fan(FanBase):
             An integer, the percentage of variance from target speed which is
                  considered tolerable
         """
-        return 20
+        return 15
 
     def set_speed(self, speed):
         """
