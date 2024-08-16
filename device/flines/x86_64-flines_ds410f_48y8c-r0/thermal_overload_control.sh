@@ -6,7 +6,7 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 
-DEVICE='0c:00.0'
+DEVICE='05:00.0'
 # DEVICE=$(lspci | grep "Xilinx Corporation Device 7021" | awk  -F ' '  '{print $1}')
 
 # if [ "$DEVICE" == "" ];then
