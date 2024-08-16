@@ -1,38 +1,39 @@
-#ifndef _BD_INFO_DS610D_H_
-#define _BD_INFO_DS610D_H_
+#ifndef _BD_INFO_DS610F_H_
+#define _BD_INFO_DS610F_H_
 
 #include "clx_driver.h"
 
-#define SYSEEPROM_BUS_DS610D 0
-#define SYSEEPROM_ADDR_DS610D 0x50
-#define SYSEEPROM_SIZE_DS610D 256
+#define SYSEEPROM_BUS_DS610F 0
+#define SYSEEPROM_ADDR_DS610F 0x50
+#define SYSEEPROM_SIZE_DS610F 256
 
-#define MUX_ADDR_DS610D 0x70
-#define MUX_CH_SEL_DS610D 0x40
+#define MUX_ADDR_DS610F 0x70
+#define MUX_CH_SEL_DS610F 0x40
 
-#define PORT_MAX_DS610D 56
-#define PORT_PLATFORM_DS610D 610
-#define PORT_CLK_DIV_DS610D (0x19)
+#define PORT_MAX_DS610F 56
+#define PORT_PLATFORM_DS610F 610
+#define PORT_CLK_DIV_DS610F (0x19)
 
-#define FAN_MAX_DS610D 6
-#define FAN_MAX_SPEED_DS610D 27800
-#define MOTOR_NUM_PER_FAN_DS610D 1
+#define FAN_MAX_DS610F 6
+#define FAN_MAX_SPEED_DS610F 27800
+#define MOTOR_NUM_PER_FAN_DS610F 1
 
-#define FAN_BUS_DS610D 7
-#define FAN_ADDR_DS610D 0x60
+#define FAN_BUS_DS610F 10
+#define FAN_ADDR_DS610F 0x60
 
-#define CLX_DS610D_REBOOT_EEPROM_BUS 11
-#define CLX_DS610D_REBOOT_EEPROM_ADDR 0x50
+#define CLX_DS610F_REBOOT_EEPROM_BUS 14
+#define CLX_DS610F_REBOOT_EEPROM_ADDR 0x50
 
-#define DS610D_VOL_TOTAL_SENSOR_NUM (8)
-#define DS610D_CURR_TOTAL_SENSOR_NUM (4)
+#define DS610F_VOL_TOTAL_SENSOR_NUM (8)
+#define DS610F_CURR_TOTAL_SENSOR_NUM (4)
+
 /*
     [0]:addr
     [1]:location in sensor_arry
     [2]:sensor offset
     [3]:scaling factor
 */
-short ds610d_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
+short ds610f_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     {0x20, 0, -1, 1},
     {0x21, 1, 3, 1},
     {0x0, 0, 0, 0},
@@ -42,7 +43,7 @@ short ds610d_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds610d_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
+unsigned char ds610f_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
     {4, 0},
     {8, 1},
     {0, 0},
@@ -55,7 +56,7 @@ unsigned char ds610d_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
     [2]:sensor offse
     [3]:scaling factor
 */
-short ds610d_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
+short ds610f_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     {0x20, 0, -1, 1},
     {0x21, 1, 1, 1},
     {0x0, 0, 0, 0},
@@ -65,14 +66,14 @@ short ds610d_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds610d_curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
+unsigned char ds610f_curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
     {2, 0},
     {4, 1},
     {0, 0},
     {0, 0},
 };
 
-struct sensor_descript ds610d_sensor_map_index[] = {
+struct sensor_descript ds610f_sensor_map_index[] = {
     {"fpga-tmp", 0x48, "BOARD 0x48"},
     {"fpga-psu0", 0x49, "BOARD 0x49"},
     {"fpga-psu1", 0x4a, "BOARD 0x4a"},
@@ -112,4 +113,4 @@ struct sensor_descript ds610d_sensor_map_index[] = {
     {NULL, 0, 0},
 };
 
-#endif //_BD_INFO_CLX8000_H_
+#endif

@@ -1,79 +1,76 @@
-#ifndef _BD_INFO_DS730D_H_
-#define _BD_INFO_DS730D_H_
+#ifndef _BD_INFO_DS410F_H_
+#define _BD_INFO_DS410F_H_
 
 #include "clx_driver.h"
 
-#define SYSEEPROM_BUS_DS730D 0
-#define SYSEEPROM_ADDR_DS730D 0x50
-#define SYSEEPROM_SIZE_DS730D 256
+#define SYSEEPROM_BUS_DS410F 0
+#define SYSEEPROM_ADDR_DS410F 0x50
+#define SYSEEPROM_SIZE_DS410F 256
 
-#define MUX_ADDR_DS730D 0x70
-#define MUX_CH_SEL_DS730D 0x40
+#define MUX_ADDR_DS410F 0x70
+#define MUX_CH_SEL_DS410F 0x40
 
-#define PORT_MAX_DS730D 34
-#define PORT_PLATFORM_DS730D 730
-#define PORT_CLK_DIV_DS730D (0x19)
+#define PORT_MAX_DS410F 56
+#define PORT_PLATFORM_DS410F 410
+#define PORT_CLK_DIV_DS410F (0x19)
 
-#define FAN_MAX_DS730D 6
-#define FAN_MAX_SPEED_DS730D 31500
-#define MOTOR_NUM_PER_FAN_DS730D 1
+#define FAN_MAX_DS410F 5
+#define FAN_MAX_SPEED_DS410F 20000
+#define MOTOR_NUM_PER_FAN_DS410F 1
 
-#define FAN_BUS_DS730D 7
-#define FAN_ADDR_DS730D 0x60
+#define FAN_BUS_DS410F 10
+#define FAN_ADDR_DS410F 0x60
 
-#define CLX_DS730D_REBOOT_EEPROM_BUS 11
-#define CLX_DS730D_REBOOT_EEPROM_ADDR 0x50
+#define CLX_DS410F_REBOOT_EEPROM_BUS 14
+#define CLX_DS410F_REBOOT_EEPROM_ADDR 0x50
 
-#define DS730D_VOL_TOTAL_SENSOR_NUM (12)
-#define DS730D_CURR_TOTAL_SENSOR_NUM (6)
-
+#define DS410F_VOL_TOTAL_SENSOR_NUM (2)
+#define DS410F_CURR_TOTAL_SENSOR_NUM (2)
 /*
     [0]:addr
     [1]:location in sensor_arry
     [2]:sensor offset
     [3]:scaling factor
 */
-short ds730d_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
-    {0x20, 0, -1, 1},
-    {0x21, 1, 3, 1},
-    {0x22, 2, 7, 1},
+short ds410f_vol_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
+    {0x2B, 0, -3, 1},
+    {0x27, 1, -3, 3},
+    {0x0, 0, 0, 0},
     {0x0, 0, 0, 0},
 };
 /*
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds730d_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
-    {4, 0},
-    {8, 1},
-    {12, 2},
+unsigned char ds410f_vol_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
+    {1, 0},
+    {2, 1},
+    {0, 0},
     {0, 0},
 };
-
 /*
     [0]:addr
     [1]:location in sensor_arry
     [2]:sensor offse
     [3]:scaling factor
 */
-short ds730d_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
-    {0x20, 0, -1, 1},
-    {0x21, 1, 1, 1},
-    {0x22, 2, 3, 1},
+short ds410f_curr_sensor_map[SENSOR_INDEX_MAX][SENSOR_COL_MAX] = {
+    {0x2B, 0, -1, 1},
+    {0x27, 1, -1, 3},
+    {0x0, 0, 0, 0},
     {0x0, 0, 0, 0},
 };
 /*
     [0]: range
     [1]: location in sensor_arry
 */
-unsigned char ds730d_curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
-    {2, 0},
-    {4, 1},
-    {6, 2},
+unsigned char ds410f_curr_index_range_map[SENSOR_ROW_MAX][SENSOR_RANGE_MAX] = {
+    {1, 0},
+    {2, 1},
+    {0, 0},
     {0, 0},
 };
-
-struct sensor_descript ds730d_sensor_map_index[] = {
+struct sensor_descript ds410f_sensor_map_index[] = {
     {"fpga-tmp", 0x48, "BOARD 0x48"},
     {"fpga-psu0", 0x49, "BOARD 0x49"},
     {"fpga-psu1", 0x4a, "BOARD 0x4a"},
@@ -113,4 +110,4 @@ struct sensor_descript ds730d_sensor_map_index[] = {
     {NULL, 0, 0},
 };
 
-#endif //_BD_INFO_CLX8000_H_
+#endif

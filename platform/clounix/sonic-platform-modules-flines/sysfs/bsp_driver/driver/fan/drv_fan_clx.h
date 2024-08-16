@@ -80,7 +80,7 @@ enum dev_fan_led_state
 };
 
 #define FAN_LED_REG_MAX 2
-#define FAN_EEPROM_SIZE 128
+#define FAN_EEPROM_SIZE 256
 #define FAN_EEPROM_I2C_TIMEOUT (msecs_to_jiffies(500))
 #define FAN_EEPROM_TX_FINISH_MASK (0x80)
 #define FAN_EEPROM_TX_ERROR_MASK (0x40)

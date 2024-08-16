@@ -48,12 +48,31 @@ class Thermal(ThermalBase):
             of one degree Celsius, e.g. 30.125
         """
         temperature = 0.0
+        path = 'NA'
 
         attr_rv = self.__api_helper.read_one_line_file(
             self.__attr_path_prefix + 'temp_input')
-        if ((attr_rv != None) and (attr_rv != 'NA')):
-            attr_rv = int(attr_rv, 10)
-            temperature = float(attr_rv/1000)
+
+        if (self.__conf[self.__index]['position'] == "CPU" and attr_rv == 'NA'):
+            if 0 <= self.__index < len(self.__conf):
+                thermal_dict = self.__conf[self.__index]
+                path = thermal_dict.get('path', 'NA')
+
+                if path != 'NA':
+                    file_to_read = path + \
+                        'temp{}_input'.format(self.__index - 3)
+                    attr_rv_alt = self.__api_helper.read_one_line_file(
+                        file_to_read)
+                    if attr_rv_alt != 'NA' and attr_rv_alt is not None:
+                        attr_rv = attr_rv_alt
+
+        if attr_rv is not None and attr_rv != 'NA':
+            try:
+                attr_rv = int(attr_rv, 10)
+                temperature = float(attr_rv / 1000)
+            except ValueError:
+                pass
+
         return temperature
 
     def get_high_threshold(self):

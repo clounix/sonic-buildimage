@@ -5,9 +5,9 @@
 #include "bd_info_ds610.h"
 #include "bd_info_ds410.h"
 #include "bd_info_ds730.h"
-#include "bd_info_ds610d.h"
-#include "bd_info_ds410d.h"
-#include "bd_info_ds730d.h"
+#include "bd_info_ds610f.h"
+#include "bd_info_ds410f.h"
+#include "bd_info_ds730f.h"
 
 extern int clx_driver_common_init(char *hw_platform);
 
@@ -373,7 +373,7 @@ static int flks_driver_ds730_board(void)
     return DRIVER_OK;
 }
 
-static int flks_driver_ds610d_board(void)
+static int flks_driver_ds610f_board(void)
 {
     struct board_info *bd = clx_driver_get_platform_bd();
     char syse2p_name[] = "drv_syseeprom";
@@ -391,32 +391,32 @@ static int flks_driver_ds610d_board(void)
 
     // syseeprom info
     memcpy(bd->syse2p.name, syse2p_name, sizeof(syse2p_name));
-    bd->syse2p.bus = SYSEEPROM_BUS_DS610D;
-    bd->syse2p.addr = SYSEEPROM_ADDR_DS610D;
-    bd->syse2p.size = SYSEEPROM_SIZE_DS610D;
-    bd->syse2p.mux_addr = MUX_ADDR_DS610D;
-    bd->syse2p.mux_channel = MUX_CH_SEL_DS610D;
+    bd->syse2p.bus = SYSEEPROM_BUS_DS610F;
+    bd->syse2p.addr = SYSEEPROM_ADDR_DS610F;
+    bd->syse2p.size = SYSEEPROM_SIZE_DS610F;
+    bd->syse2p.mux_addr = MUX_ADDR_DS610F;
+    bd->syse2p.mux_channel = MUX_CH_SEL_DS610F;
 
     // CPLD info
     memcpy(bd->cpld.name, cpld_name, sizeof(cpld_name));
     // FPGA info
     memcpy(bd->fpga.name, fpga_name, sizeof(fpga_name));
-    bd->fpga.reboot_eeprom_bus = CLX_DS610D_REBOOT_EEPROM_BUS;
-    bd->fpga.reboot_eeprom_addr = CLX_DS610D_REBOOT_EEPROM_ADDR;
+    bd->fpga.reboot_eeprom_bus = CLX_DS610F_REBOOT_EEPROM_BUS;
+    bd->fpga.reboot_eeprom_addr = CLX_DS610F_REBOOT_EEPROM_ADDR;
     // i2c master info
     memcpy(bd->i2c_master.name, i2c_master_name, sizeof(i2c_master_name));
     // transceiver info
     memcpy(bd->xcvr.name, xcvr_name, sizeof(xcvr_name));
-    bd->xcvr.port_max = PORT_MAX_DS610D;
-    bd->xcvr.port_platform_type = PORT_PLATFORM_DS610D;
-    bd->xcvr.clk_div = PORT_CLK_DIV_DS610D;
+    bd->xcvr.port_max = PORT_MAX_DS610F;
+    bd->xcvr.port_platform_type = PORT_PLATFORM_DS610F;
+    bd->xcvr.clk_div = PORT_CLK_DIV_DS610F;
     // fan info
     memcpy(bd->fan.name, fan_name, sizeof(fan_name));
-    bd->fan.fan_num = FAN_MAX_DS610D;
-    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS610D;
-    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS610D;
-    bd->fan.bus = FAN_BUS_DS610D;
-    bd->fan.addr = FAN_ADDR_DS610D;
+    bd->fan.fan_num = FAN_MAX_DS610F;
+    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS610F;
+    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS610F;
+    bd->fan.bus = FAN_BUS_DS610F;
+    bd->fan.addr = FAN_ADDR_DS610F;
     // watchdog info
     memcpy(bd->watchdog.name, watchdog_name, sizeof(watchdog_name));
     // sysled info
@@ -425,24 +425,24 @@ static int flks_driver_ds610d_board(void)
     memcpy(bd->psu.name, psu_name, sizeof(psu_name));
     // temp info
     memcpy(bd->temp.name, temp_name, sizeof(temp_name));
-    memcpy(bd->temp.sensor_map_index, ds610d_sensor_map_index, sizeof(ds610d_sensor_map_index));
+    memcpy(bd->temp.sensor_map_index, ds610f_sensor_map_index, sizeof(ds610f_sensor_map_index));
     // curr info
     memcpy(bd->curr.name, curr_name, sizeof(curr_name));
-    bd->curr.total_sensor_num = DS610D_CURR_TOTAL_SENSOR_NUM;
-    memcpy(bd->curr.curr_sensor_map, ds610d_curr_sensor_map, sizeof(ds610d_curr_sensor_map));
-    memcpy(bd->curr.curr_index_range_map, ds610d_curr_index_range_map, sizeof(ds610d_curr_index_range_map));
+    bd->curr.total_sensor_num = DS610F_CURR_TOTAL_SENSOR_NUM;
+    memcpy(bd->curr.curr_sensor_map, ds610f_curr_sensor_map, sizeof(ds610f_curr_sensor_map));
+    memcpy(bd->curr.curr_index_range_map, ds610f_curr_index_range_map, sizeof(ds610f_curr_index_range_map));
     // vol info
     memcpy(bd->vol.name, vol_name, sizeof(vol_name));
-    bd->vol.total_sensor_num = DS610D_VOL_TOTAL_SENSOR_NUM;
-    memcpy(bd->vol.vol_sensor_map, ds610d_vol_sensor_map, sizeof(ds610d_vol_sensor_map));
-    memcpy(bd->vol.vol_index_range_map, ds610d_vol_index_range_map, sizeof(ds610d_vol_index_range_map));
+    bd->vol.total_sensor_num = DS610F_VOL_TOTAL_SENSOR_NUM;
+    memcpy(bd->vol.vol_sensor_map, ds610f_vol_sensor_map, sizeof(ds610f_vol_sensor_map));
+    memcpy(bd->vol.vol_index_range_map, ds610f_vol_index_range_map, sizeof(ds610f_vol_index_range_map));
 
     LOG_INFO(CLX_DRIVER_TYPES_PLT, "syseeprom_if_create_driver\n");
 
     return DRIVER_OK;
 }
 
-static int flks_driver_ds410d_board(void)
+static int flks_driver_ds410f_board(void)
 {
     struct board_info *bd = clx_driver_get_platform_bd();
     char syse2p_name[] = "drv_syseeprom";
@@ -460,32 +460,32 @@ static int flks_driver_ds410d_board(void)
 
     // syseeprom info
     memcpy(bd->syse2p.name, syse2p_name, sizeof(syse2p_name));
-    bd->syse2p.bus = SYSEEPROM_BUS_DS410D;
-    bd->syse2p.addr = SYSEEPROM_ADDR_DS410D;
-    bd->syse2p.size = SYSEEPROM_SIZE_DS410D;
-    bd->syse2p.mux_addr = MUX_ADDR_DS410D;
-    bd->syse2p.mux_channel = MUX_CH_SEL_DS410D;
+    bd->syse2p.bus = SYSEEPROM_BUS_DS410F;
+    bd->syse2p.addr = SYSEEPROM_ADDR_DS410F;
+    bd->syse2p.size = SYSEEPROM_SIZE_DS410F;
+    bd->syse2p.mux_addr = MUX_ADDR_DS410F;
+    bd->syse2p.mux_channel = MUX_CH_SEL_DS410F;
 
     // CPLD info
     memcpy(bd->cpld.name, cpld_name, sizeof(cpld_name));
     // FPGA info
     memcpy(bd->fpga.name, fpga_name, sizeof(fpga_name));
-    bd->fpga.reboot_eeprom_bus = CLX_DS410D_REBOOT_EEPROM_BUS;
-    bd->fpga.reboot_eeprom_addr = CLX_DS410D_REBOOT_EEPROM_ADDR;
+    bd->fpga.reboot_eeprom_bus = CLX_DS410F_REBOOT_EEPROM_BUS;
+    bd->fpga.reboot_eeprom_addr = CLX_DS410F_REBOOT_EEPROM_ADDR;
     // i2c master info
     memcpy(bd->i2c_master.name, i2c_master_name, sizeof(i2c_master_name));
     // transceiver info
     memcpy(bd->xcvr.name, xcvr_name, sizeof(xcvr_name));
-    bd->xcvr.port_max = PORT_MAX_DS410D;
-    bd->xcvr.port_platform_type = PORT_PLATFORM_DS410D;
-    bd->xcvr.clk_div = PORT_CLK_DIV_DS410D;
+    bd->xcvr.port_max = PORT_MAX_DS410F;
+    bd->xcvr.port_platform_type = PORT_PLATFORM_DS410F;
+    bd->xcvr.clk_div = PORT_CLK_DIV_DS410F;
     // fan info
     memcpy(bd->fan.name, fan_name, sizeof(fan_name));
-    bd->fan.fan_num = FAN_MAX_DS410D;
-    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS410D;
-    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS410D;
-    bd->fan.bus = FAN_BUS_DS410D;
-    bd->fan.addr = FAN_ADDR_DS410D;
+    bd->fan.fan_num = FAN_MAX_DS410F;
+    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS410F;
+    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS410F;
+    bd->fan.bus = FAN_BUS_DS410F;
+    bd->fan.addr = FAN_ADDR_DS410F;
     // watchdog info
     memcpy(bd->watchdog.name, watchdog_name, sizeof(watchdog_name));
     // sysled info
@@ -494,24 +494,24 @@ static int flks_driver_ds410d_board(void)
     memcpy(bd->psu.name, psu_name, sizeof(psu_name));
     // temp info
     memcpy(bd->temp.name, temp_name, sizeof(temp_name));
-    memcpy(bd->temp.sensor_map_index, ds410d_sensor_map_index, sizeof(ds410d_sensor_map_index));
+    memcpy(bd->temp.sensor_map_index, ds410f_sensor_map_index, sizeof(ds410f_sensor_map_index));
     // curr info
     memcpy(bd->curr.name, curr_name, sizeof(curr_name));
-    bd->curr.total_sensor_num = DS410D_CURR_TOTAL_SENSOR_NUM;
-    memcpy(bd->curr.curr_sensor_map, ds410d_curr_sensor_map, sizeof(ds410d_curr_sensor_map));
-    memcpy(bd->curr.curr_index_range_map, ds410d_curr_index_range_map, sizeof(ds410d_curr_index_range_map));
+    bd->curr.total_sensor_num = DS410F_CURR_TOTAL_SENSOR_NUM;
+    memcpy(bd->curr.curr_sensor_map, ds410f_curr_sensor_map, sizeof(ds410f_curr_sensor_map));
+    memcpy(bd->curr.curr_index_range_map, ds410f_curr_index_range_map, sizeof(ds410f_curr_index_range_map));
     // vol info
     memcpy(bd->vol.name, vol_name, sizeof(vol_name));
-    bd->vol.total_sensor_num = DS410D_VOL_TOTAL_SENSOR_NUM;
-    memcpy(bd->vol.vol_sensor_map, ds410d_vol_sensor_map, sizeof(ds410d_vol_sensor_map));
-    memcpy(bd->vol.vol_index_range_map, ds410d_vol_index_range_map, sizeof(ds410d_vol_index_range_map));
+    bd->vol.total_sensor_num = DS410F_VOL_TOTAL_SENSOR_NUM;
+    memcpy(bd->vol.vol_sensor_map, ds410f_vol_sensor_map, sizeof(ds410f_vol_sensor_map));
+    memcpy(bd->vol.vol_index_range_map, ds410f_vol_index_range_map, sizeof(ds410f_vol_index_range_map));
 
     LOG_INFO(CLX_DRIVER_TYPES_PLT, "syseeprom_if_create_driver\n");
 
     return DRIVER_OK;
 }
 
-static int flks_driver_ds730d_board(void)
+static int flks_driver_ds730f_board(void)
 {
     struct board_info *bd = clx_driver_get_platform_bd();
     char syse2p_name[] = "drv_syseeprom";
@@ -529,32 +529,32 @@ static int flks_driver_ds730d_board(void)
 
     // syseeprom info
     memcpy(bd->syse2p.name, syse2p_name, sizeof(syse2p_name));
-    bd->syse2p.bus = SYSEEPROM_BUS_DS730D;
-    bd->syse2p.addr = SYSEEPROM_ADDR_DS730D;
-    bd->syse2p.size = SYSEEPROM_SIZE_DS730D;
-    bd->syse2p.mux_addr = MUX_ADDR_DS730D;
-    bd->syse2p.mux_channel = MUX_CH_SEL_DS730D;
+    bd->syse2p.bus = SYSEEPROM_BUS_DS730F;
+    bd->syse2p.addr = SYSEEPROM_ADDR_DS730F;
+    bd->syse2p.size = SYSEEPROM_SIZE_DS730F;
+    bd->syse2p.mux_addr = MUX_ADDR_DS730F;
+    bd->syse2p.mux_channel = MUX_CH_SEL_DS730F;
 
     // CPLD info
     memcpy(bd->cpld.name, cpld_name, sizeof(cpld_name));
     // FPGA info
     memcpy(bd->fpga.name, fpga_name, sizeof(fpga_name));
-    bd->fpga.reboot_eeprom_bus = CLX_DS730D_REBOOT_EEPROM_BUS;
-    bd->fpga.reboot_eeprom_addr = CLX_DS730D_REBOOT_EEPROM_ADDR;
+    bd->fpga.reboot_eeprom_bus = CLX_DS730F_REBOOT_EEPROM_BUS;
+    bd->fpga.reboot_eeprom_addr = CLX_DS730F_REBOOT_EEPROM_ADDR;
     // i2c master info
     memcpy(bd->i2c_master.name, i2c_master_name, sizeof(i2c_master_name));
     // transceiver info
     memcpy(bd->xcvr.name, xcvr_name, sizeof(xcvr_name));
-    bd->xcvr.port_max = PORT_MAX_DS730D;
-    bd->xcvr.port_platform_type = PORT_PLATFORM_DS730D;
-    bd->xcvr.clk_div = PORT_CLK_DIV_DS730D;
+    bd->xcvr.port_max = PORT_MAX_DS730F;
+    bd->xcvr.port_platform_type = PORT_PLATFORM_DS730F;
+    bd->xcvr.clk_div = PORT_CLK_DIV_DS730F;
     // fan info
     memcpy(bd->fan.name, fan_name, sizeof(fan_name));
-    bd->fan.fan_num = FAN_MAX_DS730D;
-    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS730D;
-    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS730D;
-    bd->fan.bus = FAN_BUS_DS730D;
-    bd->fan.addr = FAN_ADDR_DS730D;
+    bd->fan.fan_num = FAN_MAX_DS730F;
+    bd->fan.fan_max_speed = FAN_MAX_SPEED_DS730F;
+    bd->fan.motor_per_fan = MOTOR_NUM_PER_FAN_DS730F;
+    bd->fan.bus = FAN_BUS_DS730F;
+    bd->fan.addr = FAN_ADDR_DS730F;
     // watchdog info
     memcpy(bd->watchdog.name, watchdog_name, sizeof(watchdog_name));
     // sysled info
@@ -563,17 +563,17 @@ static int flks_driver_ds730d_board(void)
     memcpy(bd->psu.name, psu_name, sizeof(psu_name));
     // temp info
     memcpy(bd->temp.name, temp_name, sizeof(temp_name));
-    memcpy(bd->temp.sensor_map_index, ds730d_sensor_map_index, sizeof(ds730d_sensor_map_index));
+    memcpy(bd->temp.sensor_map_index, ds730f_sensor_map_index, sizeof(ds730f_sensor_map_index));
     // curr info
     memcpy(bd->curr.name, curr_name, sizeof(curr_name));
-    bd->curr.total_sensor_num = DS730D_CURR_TOTAL_SENSOR_NUM;
-    memcpy(bd->curr.curr_sensor_map, ds730d_curr_sensor_map, sizeof(ds730d_curr_sensor_map));
-    memcpy(bd->curr.curr_index_range_map, ds730d_curr_index_range_map, sizeof(ds730d_curr_index_range_map));
+    bd->curr.total_sensor_num = DS730F_CURR_TOTAL_SENSOR_NUM;
+    memcpy(bd->curr.curr_sensor_map, ds730f_curr_sensor_map, sizeof(ds730f_curr_sensor_map));
+    memcpy(bd->curr.curr_index_range_map, ds730f_curr_index_range_map, sizeof(ds730f_curr_index_range_map));
     // vol info
     memcpy(bd->vol.name, vol_name, sizeof(vol_name));
-    bd->vol.total_sensor_num = DS730D_VOL_TOTAL_SENSOR_NUM;
-    memcpy(bd->vol.vol_sensor_map, ds730d_vol_sensor_map, sizeof(ds730d_vol_sensor_map));
-    memcpy(bd->vol.vol_index_range_map, ds730d_vol_index_range_map, sizeof(ds730d_vol_index_range_map));
+    bd->vol.total_sensor_num = DS730F_VOL_TOTAL_SENSOR_NUM;
+    memcpy(bd->vol.vol_sensor_map, ds730f_vol_sensor_map, sizeof(ds730f_vol_sensor_map));
+    memcpy(bd->vol.vol_index_range_map, ds730f_vol_index_range_map, sizeof(ds730f_vol_index_range_map));
 
     LOG_INFO(CLX_DRIVER_TYPES_PLT, "syseeprom_if_create_driver\n");
 
@@ -583,10 +583,10 @@ static int flks_driver_ds730d_board(void)
 static struct hw_platform_map platform_map[] = {
     {"x86_64-flines_ds610_48c8d-r0", flks_driver_ds610_board},
     {"x86_64-flines_ds410_48y8c-r0", flks_driver_ds410_board},
-    {"x86_64-flines_ds610d_48c8d-r0", flks_driver_ds610d_board},
-    {"x86_64-flines_ds410d_48y8c-r0", flks_driver_ds410d_board},
+    {"x86_64-flines_ds610f_48c8d-r0", flks_driver_ds610f_board},
+    {"x86_64-flines_ds410f_48y8c-r0", flks_driver_ds410f_board},
+    {"x86_64-flines_ds730f_32d-r0", flks_driver_ds730f_board},
     {"x86_64-flines_ds730_32d-r0", flks_driver_ds730_board},
-    {"x86_64-flines_ds730d_32d-r0", flks_driver_ds730d_board},
 };
 int clx_platform_check(char *platform)
 {
