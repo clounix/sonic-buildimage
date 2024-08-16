@@ -18,6 +18,7 @@ struct s3ip_sysfs_fan_drivers_s {
     ssize_t (*get_fan_status)(unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_led_status)(unsigned int fan_index, char *buf, size_t count);
     int (*set_fan_led_status)(unsigned int fan_index, int status);
+    ssize_t (*get_fan_vmon)(unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_direction)(unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_motor_speed)(unsigned int fan_index, unsigned int motor_index, char *buf, size_t count);
     ssize_t (*get_fan_motor_speed_tolerance)(unsigned int fan_index, unsigned int motor_index, char *buf, size_t count);

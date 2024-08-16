@@ -3,16 +3,17 @@
 
 #include "fan_interface.h"
 
-struct fan_driver_clx {
+struct fan_driver_clx
+{
     struct fan_fn_if fan_if;
-    //private
+    // private
     void __iomem *fan_base;
 };
 
-#define FAN_BASE_ADDRESS           (0x0300)
+#define FAN_BASE_ADDRESS (0x0300)
 
-//register define
-#define FAN_VERSION_ADDR           (0x4)
+// register define
+#define FAN_VERSION_ADDR (0x4)
 
 enum hwmon_fan_offset
 {
@@ -43,7 +44,7 @@ enum hwmon_fan_offset
     FAN_AIR_DIRECTION_OFFSET = 0x14,
     FAN_LED1_CONTROL_OFFSET = 0x15,
     FAN_LED2_CONTROL_OFFSET = 0x16,
-    FAN_USB_EN_OFFSET =0x17,
+    FAN_USB_EN_OFFSET = 0x17,
     FAN_EEPROM_SELECT_OFFSET = 0x20,
     FAN_EEPROM_IIC_SPEED_OFFSET,
     FAN_EEPROM_IIC_REG_OFFSET,
@@ -55,7 +56,8 @@ enum hwmon_fan_offset
     FAN_EEPROM_IIC_STATUS_OFFSET
 };
 
-enum user_fan_led_state {
+enum user_fan_led_state
+{
     USER_FAN_LED_DARK,
     USER_FAN_LED_GREEN,
     USER_FAN_LED_YELLOW,
@@ -63,13 +65,14 @@ enum user_fan_led_state {
     USER_FAN_LED_NOT_SUPPORT
 };
 /*
-*extract the value from FAN_LED2_CONTROL_OFFSET FAN_LED1_CONTROL_OFFSET, and mapping is as below
-* 00 DARK
-* 01 GREEN
-* 10 RED
-* 11 YELLOW
-*/
-enum dev_fan_led_state {
+ *extract the value from FAN_LED2_CONTROL_OFFSET FAN_LED1_CONTROL_OFFSET, and mapping is as below
+ * 00 DARK
+ * 01 GREEN
+ * 10 RED
+ * 11 YELLOW
+ */
+enum dev_fan_led_state
+{
     DEV_FAN_LED_DARK,
     DEV_FAN_LED_GREEN,
     DEV_FAN_LED_RED,
@@ -81,5 +84,17 @@ enum dev_fan_led_state {
 #define FAN_EEPROM_I2C_TIMEOUT (msecs_to_jiffies(500))
 #define FAN_EEPROM_TX_FINISH_MASK (0x80)
 #define FAN_EEPROM_TX_ERROR_MASK (0x40)
+
+#define FAN_VMON_CHIP_ADDR 0x30
+#define FAN_VMON_VENDOR_ID_REG 0x00
+#define FAN_VMON_STAT_REG 0x30
+#define FAN_VMON_BANK_SEL_REG 0xf0
+#define FAN_VMON_CTL_REG 0x10
+#define FAN_VMON_MISC_REG 0x11
+#define FAN_VMON_VIN_CH_EN_REG 0x1e
+#define FAN_VMON_VRANGE_MULT_REG 0x1f
+#define FAN_VMON_OFF_STAT_REG 0x32
+#define FAN_VMON_VIN_LVL_BASE_REG 0x40
+#define FAN_VMON_ACT_CPLD_REG 0x11
 
 #endif //_DRV_FAN_CLX_H_

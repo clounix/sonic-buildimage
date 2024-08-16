@@ -33,6 +33,7 @@ int temp_if_create_driver(void)
 	    if(strcmp((const char*)driver_type, (const char*)it->name) == 0)
 	    {
 		    rc = it->driver_init((void *)&temp_driver);
+			break;
 	    }
     }
 

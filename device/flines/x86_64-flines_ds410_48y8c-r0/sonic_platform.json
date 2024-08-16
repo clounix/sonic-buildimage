@@ -40,7 +40,6 @@
     "curr_sensor_dev_driver",
     "adm1275",
     "clx_psu_dev",
-    "mp2882",
     "mp2886",
     "tps546b24a",
     "tmp75",

@@ -139,11 +139,9 @@ SENSOR_DEVICE_ATTR(led_status, S_IRUGO, led_status_show, NULL, 0);
 SENSOR_DEVICE_ATTR(mfr_id, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_ID);
 SENSOR_DEVICE_ATTR(mfr_model, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_MODEL);
 SENSOR_DEVICE_ATTR(mfr_revision, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_REVISION);
-//SENSOR_DEVICE_ATTR(mfr_location, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_LOCATION);
-SENSOR_DEVICE_ATTR(mfr_location, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_FWID);
+SENSOR_DEVICE_ATTR(mfr_location, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_LOCATION);
 SENSOR_DEVICE_ATTR(mfr_date, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_DATE);
-//SENSOR_DEVICE_ATTR(mfr_serial, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_SERIAL);
-SENSOR_DEVICE_ATTR(mfr_serial, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_FWVERSION);
+SENSOR_DEVICE_ATTR(mfr_serial, S_IRUGO, mfr_info_show, NULL, PMBUS_MFR_SERIAL);
 
 static struct attribute *fpga_psu_attrs[] = {
     &fpga_dev_attr_psu_1_acok.dev_attr.attr,

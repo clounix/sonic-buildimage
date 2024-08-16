@@ -13,7 +13,6 @@
 #include "device_driver_common.h"
 #include "fan_sysfs.h"
 #include "fan_interface.h"
-
 /********************************************fan**********************************************/
 static ssize_t clx_get_fan_loglevel(char *buf, size_t count)
 {
@@ -25,13 +24,16 @@ static ssize_t clx_set_fan_loglevel(const char *buf, size_t count)
     int loglevel = 0;
     unsigned int base = 16;
 
-    if (buf[1] == 'x') {
+    if (buf[1] == 'x')
+    {
         base = 16;
     }
-    else {
+    else
+    {
         base = 10;
     }
-    if (kstrtouint(buf, base, &loglevel)) {
+    if (kstrtouint(buf, base, &loglevel))
+    {
         return -EINVAL;
     }
     g_dev_loglevel[CLX_DRIVER_TYPES_FAN] = loglevel;
@@ -77,7 +79,6 @@ static int clx_get_fan_number(void)
     FAN_DEV_VALID(fan_dev->get_fan_number);
     return fan_dev->get_fan_number(fan_dev);
 }
-
 
 static int clx_get_fan_motor_number(unsigned int fan_index)
 {
@@ -272,6 +273,16 @@ static int clx_set_fan_led_status(unsigned int fan_index, int status)
     return fan_dev->set_fan_led_status(fan_dev, fan_index, status);
 }
 
+static ssize_t clx_get_fan_vmon(unsigned int fan_index, char *buf, size_t count)
+{
+    struct fan_fn_if *fan_dev = get_fan();
+
+    FAN_DEV_VALID(fan_dev);
+    FAN_DEV_VALID(fan_dev->get_fan_vmon);
+    FAN_INDEX_MAPPING(fan_index);
+    return fan_dev->get_fan_vmon(fan_dev, fan_index, buf, count);
+}
+
 /*
  * clx_get_fan_direction - Used to get fan air flow direction,
  * filled the value to buf, air flow direction define as below:
@@ -309,14 +320,14 @@ static ssize_t clx_get_fan_direction(unsigned int fan_index, char *buf, size_t c
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_speed(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                       char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
     FAN_DEV_VALID(fan_dev);
     FAN_DEV_VALID(fan_dev->get_fan_motor_speed);
     FAN_INDEX_MAPPING(fan_index);
-    return fan_dev->get_fan_motor_speed(fan_dev,fan_index, motor_index, buf, count);
+    return fan_dev->get_fan_motor_speed(fan_dev, fan_index, motor_index, buf, count);
 }
 
 /*
@@ -332,14 +343,14 @@ static ssize_t clx_get_fan_motor_speed(unsigned int fan_index, unsigned int moto
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_speed_tolerance(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                                 char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
     FAN_DEV_VALID(fan_dev);
     FAN_DEV_VALID(fan_dev->get_fan_motor_speed_tolerance);
     FAN_INDEX_MAPPING(fan_index);
-    return fan_dev->get_fan_motor_speed_tolerance(fan_dev,fan_index, motor_index, buf, count);
+    return fan_dev->get_fan_motor_speed_tolerance(fan_dev, fan_index, motor_index, buf, count);
 }
 
 /*
@@ -355,14 +366,14 @@ static ssize_t clx_get_fan_motor_speed_tolerance(unsigned int fan_index, unsigne
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_speed_target(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                              char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
     FAN_DEV_VALID(fan_dev);
     FAN_DEV_VALID(fan_dev->get_fan_motor_speed_target);
     FAN_INDEX_MAPPING(fan_index);
-    return fan_dev->get_fan_motor_speed_target(fan_dev,fan_index, motor_index, buf, count);
+    return fan_dev->get_fan_motor_speed_target(fan_dev, fan_index, motor_index, buf, count);
 }
 
 /*
@@ -378,7 +389,7 @@ static ssize_t clx_get_fan_motor_speed_target(unsigned int fan_index, unsigned i
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_speed_max(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                           char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
@@ -401,7 +412,7 @@ static ssize_t clx_get_fan_motor_speed_max(unsigned int fan_index, unsigned int 
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_speed_min(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                           char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
@@ -424,7 +435,7 @@ static ssize_t clx_get_fan_motor_speed_min(unsigned int fan_index, unsigned int 
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_get_fan_motor_ratio(unsigned int fan_index, unsigned int motor_index,
-                   char *buf, size_t count)
+                                       char *buf, size_t count)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
@@ -444,7 +455,7 @@ static ssize_t clx_get_fan_motor_ratio(unsigned int fan_index, unsigned int moto
  * otherwise it returns a negative value on failed.
  */
 static int clx_set_fan_motor_ratio(unsigned int fan_index, unsigned int motor_index,
-                   int ratio)
+                                   int ratio)
 {
     struct fan_fn_if *fan_dev = get_fan();
 
@@ -488,7 +499,7 @@ static int clx_get_fan_eeprom_size(unsigned int fan_index)
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_read_fan_eeprom_data(unsigned int fan_index, char *buf, loff_t offset,
-                   size_t count)
+                                        size_t count)
 {
     int ret;
     struct fan_fn_if *fan_dev = get_fan();
@@ -516,7 +527,7 @@ static ssize_t clx_read_fan_eeprom_data(unsigned int fan_index, char *buf, loff_
  * otherwise it returns a negative value on failed.
  */
 static ssize_t clx_write_fan_eeprom_data(unsigned int fan_index, char *buf, loff_t offset,
-                   size_t count)
+                                         size_t count)
 {
     int ret;
     struct fan_fn_if *fan_dev = get_fan();
@@ -544,7 +555,7 @@ static struct s3ip_sysfs_fan_drivers_s drivers = {
     .get_debug = clx_get_fan_debug,
     .set_debug = clx_set_fan_debug,
     .get_fan_eeprom_wp = clx_get_fan_eeprom_wp,
-    .set_fan_eeprom_wp = clx_set_fan_eeprom_wp,    
+    .set_fan_eeprom_wp = clx_set_fan_eeprom_wp,
     .get_fan_number = clx_get_fan_number,
     .get_fan_motor_number = clx_get_fan_motor_number,
     .get_fan_vendor_name = clx_get_fan_vendor_name,
@@ -555,6 +566,7 @@ static struct s3ip_sysfs_fan_drivers_s drivers = {
     .get_fan_status = clx_get_fan_status,
     .get_fan_led_status = clx_get_fan_led_status,
     .set_fan_led_status = clx_set_fan_led_status,
+    .get_fan_vmon = clx_get_fan_vmon,
     .get_fan_direction = clx_get_fan_direction,
     .get_fan_motor_speed = clx_get_fan_motor_speed,
     .get_fan_motor_speed_tolerance = clx_get_fan_motor_speed_tolerance,
@@ -574,13 +586,15 @@ static int __init fan_dev_drv_init(void)
 
     LOG_INFO(CLX_DRIVER_TYPES_FAN, "fan_init...\n");
     ret = fan_if_create_driver();
-    if (ret != 0) {
+    if (ret != 0)
+    {
         LOG_ERR(CLX_DRIVER_TYPES_FAN, "fan if create err, ret %d.\n", ret);
         return ret;
     }
 
     ret = s3ip_sysfs_fan_drivers_register(&drivers);
-    if (ret < 0) {
+    if (ret < 0)
+    {
         LOG_ERR(CLX_DRIVER_TYPES_FAN, "fan drivers register err, ret %d.\n", ret);
         return ret;
     }

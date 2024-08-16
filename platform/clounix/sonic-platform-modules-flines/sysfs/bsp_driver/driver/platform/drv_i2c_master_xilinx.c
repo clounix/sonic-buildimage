@@ -149,7 +149,7 @@ static int clounix_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msg
 
         r_addr = (addr | 0x01);
 
-        if(p->flags & I2C_M_RD)
+        if (p->flags & I2C_M_RD)
         {
             tmp_value = readl(priv->mmio + priv->reg_base_addr + FPGA_I2C_MASTER_CTRL_ADDR);
 
@@ -345,6 +345,12 @@ static int clounix_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msg
     return num;
 
 out:
+
+    tmp_value = 0;
+
+    tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE);
+
+    writel(tmp_value, priv->mmio + priv->reg_base_addr + FPGA_I2C_MASTER_CFG_ADDR);
 
     mutex_unlock(&priv->lock);
 
@@ -628,6 +634,12 @@ static int clounix_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msg
     return num;
 
 out:
+    tmp_value = 0;
+
+    tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE);
+
+    writel(tmp_value, priv->mmio + priv->reg_base_addr + FPGA_I2C_MASTER_CFG_ADDR);
+    
     mutex_unlock(&priv->lock);
 
     LOG_DBG(CLX_DRIVER_TYPES_I2C_MASTER, "go out ETIMEDOUT ETIMEDOUT ETIMEDOUTE TIMEDOUT\r\n");
@@ -880,6 +892,9 @@ static int clounix_i2c_master_smbus_xfer(struct i2c_adapter *adap, unsigned shor
     return 0;
 
 out:
+    tmp_value = 0;
+    tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE);
+    writel(tmp_value, priv->mmio + priv->reg_base_addr + FPGA_I2C_MASTER_CFG_ADDR);
     mutex_unlock(&priv->lock);
     return -ETIMEDOUT;
 }

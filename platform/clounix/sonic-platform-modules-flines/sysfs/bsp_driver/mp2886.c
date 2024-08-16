@@ -16,27 +16,28 @@
 #include "clounix/pmbus_dev_common.h"
 /* Vendor specific registers. */
 
-#define MP2888_MFR_SYS_CONFIG   0x44
-#define MP2888_MFR_READ_CS1_2   0x73
-#define MP2888_MFR_READ_CS3_4   0x74
-#define MP2888_MFR_READ_CS5_6   0x75
-#define MP2888_MFR_READ_CS7_8   0x76
-#define MP2888_MFR_READ_CS9_10  0x77
-#define MP2888_MFR_VR_CONFIG1   0xe1
+#define MP2888_MFR_SYS_CONFIG 0x44
+#define MP2888_MFR_READ_CS1_2 0x73
+#define MP2888_MFR_READ_CS3_4 0x74
+#define MP2888_MFR_READ_CS5_6 0x75
+#define MP2888_MFR_READ_CS7_8 0x76
+#define MP2888_MFR_READ_CS9_10 0x77
+#define MP2888_MFR_VR_CONFIG1 0xe1
 
 #define MP2888_TOTAL_CURRENT_RESOLUTION BIT(3)
 #define MP2888_PHASE_CURRENT_RESOLUTION BIT(4)
-#define MP2888_DRMOS_KCS        GENMASK(2, 0)
-#define MP2888_TEMP_UNIT        10
-#define MP2888_MAX_PHASE        10
+#define MP2888_DRMOS_KCS GENMASK(2, 0)
+#define MP2888_TEMP_UNIT 10
+#define MP2888_MAX_PHASE 10
 
-struct mp2886_data {
+struct mp2886_data
+{
     struct pmbus_driver_info info;
     struct pmbus_sensor *sensor;
     int total_curr_resolution;
     int phase_curr_resolution;
     int curr_sense_gain;
-    int vol_scal_factor;    
+    int vol_scal_factor;
 };
 extern struct voltage_fn_if *get_vol_sensor_if(void);
 /*
@@ -66,7 +67,7 @@ struct range not_allow_range[] = {
     {0x0, 0x0},
 };
 */
-#define to_mp2886_data(x)  container_of(x, struct mp2886_data, info)
+#define to_mp2886_data(x) container_of(x, struct mp2886_data, info)
 
 static int mp2886_read_byte_data(struct i2c_client *client, int page, int reg)
 {
@@ -77,7 +78,7 @@ static int mp2886_read_byte_data(struct i2c_client *client, int page, int reg)
 #define mfr_vr_cfg1 0xb7
 static unsigned short process_vout(struct i2c_client *client, int page, int reg)
 {
-    unsigned short vout ;
+    unsigned short vout;
     int vscale_factor;
     const struct pmbus_driver_info *info = pmbus_get_driver_info(client);
     struct mp2886_data *data = to_mp2886_data(info);
@@ -85,7 +86,7 @@ static unsigned short process_vout(struct i2c_client *client, int page, int reg)
     vscale_factor = data->vol_scal_factor;
     /*LOG_ERR(CLX_DRIVER_TYPES_VOL, "%s, addr=0x%x, vscale_factor = %d.\n",client->name,client->addr,vscale_factor);*/
     vout = pmbus_read_word_data(client, page, reg);
-    vout = (vout & 0xfff)*vscale_factor;
+    vout = (vout & 0xfff) * vscale_factor;
     return vout;
 }
 
@@ -93,12 +94,12 @@ static unsigned short process_power(struct i2c_client *client, int page, int reg
 {
     unsigned short mfr_sys_cfg;
     unsigned short power;
-    unsigned short resloution ;
+    unsigned short resloution;
 
     mfr_sys_cfg = pmbus_read_word_data(client, 0, MP2888_MFR_SYS_CONFIG);
     resloution = (mfr_sys_cfg >> 3) & 0x1;
     power = pmbus_read_word_data(client, page, reg);
-    if(!resloution)
+    if (!resloution)
         power = power >> 1;
 
     return power;
@@ -126,18 +127,19 @@ static unsigned int process_iout(struct i2c_client *client, int page, int reg)
 
 static int mp2886_read_word_data(struct i2c_client *client, int page, int reg)
 {
-    switch (reg) {
-        case PMBUS_READ_IOUT:
-            return process_iout(client, page, reg);
+    switch (reg)
+    {
+    case PMBUS_READ_IOUT:
+        return process_iout(client, page, reg);
 
-        case PMBUS_READ_VOUT:
-            return process_vout(client, page, reg);
+    case PMBUS_READ_VOUT:
+        return process_vout(client, page, reg);
 
-        case PMBUS_READ_POUT:
-            return process_power(client, page, reg);
+    case PMBUS_READ_POUT:
+        return process_power(client, page, reg);
 
-        default:
-            break;
+    default:
+        break;
     }
     return -ENODATA;
 }
@@ -436,14 +438,17 @@ static int mp2886_probe(struct i2c_client *client, const struct i2c_device_id *i
     if (!data)
         return -ENOMEM;
 
-    data->vol_scal_factor = 1;     
+    data->vol_scal_factor = 1;
     voltage_if = get_vol_sensor_if();
-    if(voltage_if->psensor_map == NULL ){
-        LOG_ERR(CLX_DRIVER_TYPES_VOL, "ERROR:voltage_if->psensor_map = NULL.\n");
+    if (voltage_if->sensor_map == NULL)
+    {
+        LOG_ERR(CLX_DRIVER_TYPES_VOL, "ERROR:voltage_if->sensor_map = NULL.\n");
     }
-    while(voltage_if->psensor_map[i][ADDR_LABEL] != 0){
-        if(client->addr == voltage_if->psensor_map[i][ADDR_LABEL]){
-           data->vol_scal_factor = voltage_if->psensor_map[i][SCALE_FACTOR_LABEL];
+    while (voltage_if->sensor_map[i][ADDR_LABEL] != 0)
+    {
+        if (client->addr == voltage_if->sensor_map[i][ADDR_LABEL])
+        {
+            data->vol_scal_factor = voltage_if->sensor_map[i][SCALE_FACTOR_LABEL];
         }
         i++;
     }
@@ -474,14 +479,15 @@ static int mp2886_probe(struct i2c_client *client, const struct i2c_device_id *i
 
     info->func[0] = PMBUS_HAVE_VIN | PMBUS_HAVE_VOUT | PMBUS_HAVE_IOUT | PMBUS_HAVE_POUT | PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_VOUT |
                     PMBUS_HAVE_STATUS_IOUT | PMBUS_HAVE_STATUS_INPUT | PMBUS_HAVE_STATUS_TEMP;
-    
+
     info->func[1] = PMBUS_HAVE_VIN | PMBUS_HAVE_VOUT | PMBUS_HAVE_IOUT | PMBUS_HAVE_POUT | PMBUS_HAVE_TEMP | PMBUS_HAVE_STATUS_VOUT |
                     PMBUS_HAVE_STATUS_IOUT | PMBUS_HAVE_STATUS_INPUT | PMBUS_HAVE_STATUS_TEMP;
 
-    info->read_byte_data  = mp2886_read_byte_data;
-    info->read_word_data  = mp2886_read_word_data;
+    info->read_byte_data = mp2886_read_byte_data;
+    info->read_word_data = mp2886_read_word_data;
 
-    if (pmbus_do_probe(client, id, info) == 0) {
+    if (pmbus_do_probe(client, id, info) == 0)
+    {
         vol_sensor_add(client);
         curr_sensor_add(client);
         return 0;
@@ -501,15 +507,13 @@ int mp2886_remove(struct i2c_client *client)
 
 static const struct i2c_device_id mp2886_id[] = {
     {"mp2886", 0},
-    {}
-};
+    {}};
 
 MODULE_DEVICE_TABLE(i2c, mp2886_id);
 
 static const struct of_device_id __maybe_unused mp2886_of_match[] = {
     {.compatible = "mps,mp2886"},
-    {}
-};
+    {}};
 MODULE_DEVICE_TABLE(of, mp2886_of_match);
 
 static struct i2c_driver mp2886_driver = {

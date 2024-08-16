@@ -30,7 +30,7 @@ CONF_DIR := conf
 PROCESS_DIR := dsProcess
 MODPROBE_DIR := modprobe.d
 IXGBE_VERSION := 5.9.4
-PLATFORM_STRING_LIST:= x86_64-flines_ds410_48y8c-r0 x86_64-flines_ds610_48c8d-r0
+PLATFORM_STRING_LIST:= x86_64-flines_ds410_48y8c-r0 x86_64-flines_ds610_48c8d-r0 x86_64-flines_ds410f_48y8c-r0 x86_64-flines_ds610f_48c8d-r0 x86_64-flines_ds730_32d-r0 x86_64-flines_ds730f_32d-r0
 XILINX_PLATFORM_TOOLS_LIST:= x86_64-flines_ds610_48c8d-r0
 
 

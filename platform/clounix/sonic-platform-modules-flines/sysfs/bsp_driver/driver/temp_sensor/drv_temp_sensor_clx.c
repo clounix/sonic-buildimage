@@ -13,10 +13,7 @@
 #define MAX_SENSOR_NUM (4)
 #define SENSOR_NUM_PER_DIE (5)
 
-#define MAX_CPU_DIE_NUM (1)
-#define CPU_SENSOR_BASE (1)
-
-#define DEFAULT_CPU_TEMP_MAX (86*1000)
+#define DEFAULT_CPU_TEMP_MAX (86 * 1000)
 
 #define TEMP_NODE "temp1"
 #define CPU_TEMP_NODE "temp"
@@ -43,8 +40,10 @@ int s3ip_cpu_temp_sensor_add(struct device *dev, struct attribute **attrs, int a
     int ret = -ENOMEM;
 
     write_lock(&list_lock);
-    for (i=0; i< MAX_CORE_DATA; i++) {
-        if (cpu_temp_data_list[i].dev == 0) {
+    for (i = 0; i < MAX_CORE_DATA; i++)
+    {
+        if (cpu_temp_data_list[i].dev == 0)
+        {
             LOG_DBG(CLX_DRIVER_TYPES_TEMP, "cpu temp add %s\n", dev->init_name);
             cpu_temp_data_list[i].dev = dev;
             cpu_temp_data_list[i].attrs = attrs;
@@ -63,7 +62,8 @@ void s3ip_cpu_temp_sensor_del(struct device *dev, struct attribute **attrs)
 {
     int i;
     write_lock(&list_lock);
-    for (i=0; i< MAX_CORE_DATA; i++) {
+    for (i = 0; i < MAX_CORE_DATA; i++)
+    {
         if (cpu_temp_data_list[i].dev != dev)
             continue;
 
@@ -95,7 +95,8 @@ int hwmon_sensor_add(struct device *dev)
         return i;
 
     write_lock(&list_lock);
-    if (sensor_arry[i] == NULL) {
+    if (sensor_arry[i] == NULL)
+    {
         LOG_DBG(CLX_DRIVER_TYPES_TEMP, "temp add %s\n", dev->init_name);
         sensor_arry[i] = dev;
     }
@@ -109,8 +110,10 @@ void hwmon_sensor_del(struct device *dev)
     int i;
 
     write_lock(&list_lock);
-    for (i=0; i<MAX_SENSOR_NUM+SENSOR_NUM_PER_DIE; i++) {
-        if (sensor_arry[i] == dev) {
+    for (i = 0; i < MAX_SENSOR_NUM + SENSOR_NUM_PER_DIE; i++)
+    {
+        if (sensor_arry[i] == dev)
+        {
             LOG_DBG(CLX_DRIVER_TYPES_TEMP, "temp del %s\n", dev->init_name);
             sensor_arry[i] = NULL;
         }
@@ -145,23 +148,29 @@ static ssize_t drv_sensor_get_main_board_temp_alias(void *driver, unsigned int t
     int ret;
 
     /* add vendor codes here */
-    if (temp_index >= MAX_SENSOR_NUM) {
+    if (temp_index >= MAX_SENSOR_NUM)
+    {
         read_lock(&list_lock);
-        data = &cpu_temp_data_list[temp_index -MAX_SENSOR_NUM];
-        if (data->dev != NULL) {
+        data = &cpu_temp_data_list[temp_index - MAX_SENSOR_NUM];
+        if (data->dev != NULL)
+        {
             if (data->auto_inc != 0)
-                sprintf(node_name, "%s%d%s", CPU_TEMP_NODE, temp_index-MAX_SENSOR_NUM+1, TEMP_LABEL);
+                sprintf(node_name, "%s%d%s", CPU_TEMP_NODE, temp_index - MAX_SENSOR_NUM + 1, TEMP_LABEL);
             else
                 sprintf(node_name, "%s1%s", CPU_TEMP_NODE, TEMP_LABEL);
 
             ret = get_cpu_hwmon_attr_by_name(data, node_name, buf);
-        } else {
+        }
+        else
+        {
             ret = -ENXIO;
         }
         read_unlock(&list_lock);
 
         return ret;
-    } else {
+    }
+    else
+    {
         return sprintf(buf, "%s\n", sensor_map_index[temp_index].alias);
     }
 }
@@ -209,8 +218,11 @@ static ssize_t drv_sensor_get_main_board_temp_max(void *driver, unsigned int tem
     /* add vendor codes here */
 
     read_lock(&list_lock);
+
     if (temp_index >= MAX_SENSOR_NUM)
     {
+        ret = sprintf(buf, "%d\n", 96000);
+#if 0
         data = &cpu_temp_data_list[temp_index - MAX_SENSOR_NUM];
         if (data->dev != NULL)
         {
@@ -229,6 +241,7 @@ static ssize_t drv_sensor_get_main_board_temp_max(void *driver, unsigned int tem
         {
             ret = -ENXIO;
         }
+#endif
     }
     else
     {
@@ -236,7 +249,22 @@ static ssize_t drv_sensor_get_main_board_temp_max(void *driver, unsigned int tem
         // dev = sensor_arry[temp_index];
         // ret = get_hwmon_attr_by_name(dev, node_name, buf);
 
-        ret = (ssize_t)snprintf(buf, count, "%d\n", 75000);
+        if (temp_index == 0) // 0x48
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 73000);
+        }
+        else if (temp_index == 1) // 0x49
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 64000);
+        }
+        else if (temp_index == 2) // 0x4a
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 70000);
+        }
+        else // 0x4b
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 71000);
+        }
     }
     read_unlock(&list_lock);
 
@@ -260,9 +288,12 @@ static int drv_sensor_set_main_board_temp_max(void *driver, unsigned int temp_in
     struct device *dev;
 
     read_lock(&list_lock);
-    if (temp_index >= MAX_SENSOR_NUM) {
+    if (temp_index >= MAX_SENSOR_NUM)
+    {
         return count;
-    } else {
+    }
+    else
+    {
         sprintf(node_name, "%s%s", TEMP_NODE, TEMP_MAX);
         dev = sensor_arry[temp_index];
         ret = set_hwmon_attr_by_name(dev, node_name, buf, count);
@@ -285,7 +316,7 @@ static int drv_sensor_set_main_board_temp_max(void *driver, unsigned int temp_in
  * if not support this attributes filled "NA" to buf,
  * otherwise it returns a negative value on failed.
  */
-static ssize_t  drv_sensor_get_main_board_temp_min(void *driver, unsigned int temp_index, char *buf, size_t count)
+static ssize_t drv_sensor_get_main_board_temp_min(void *driver, unsigned int temp_index, char *buf, size_t count)
 {
     /* add vendor codes here */
     return -1;
@@ -301,7 +332,7 @@ static ssize_t  drv_sensor_get_main_board_temp_min(void *driver, unsigned int te
  * This function returns 0 on success,
  * otherwise it returns a negative value on failed.
  */
-static int  drv_sensor_set_main_board_temp_min(void *driver, unsigned int temp_index, const char *buf, size_t count)
+static int drv_sensor_set_main_board_temp_min(void *driver, unsigned int temp_index, const char *buf, size_t count)
 {
     /* add vendor codes here */
     return -1;
@@ -317,7 +348,7 @@ static int  drv_sensor_set_main_board_temp_min(void *driver, unsigned int temp_i
  * This function returns the length of the filled buffer,
  * otherwise it returns a negative value on failed.
  */
-static ssize_t  drv_sensor_get_main_board_temp_value(void *driver, unsigned int temp_index, char *buf, size_t count)
+static ssize_t drv_sensor_get_main_board_temp_value(void *driver, unsigned int temp_index, char *buf, size_t count)
 {
     struct s3ip_cpu_temp_data *data;
     unsigned char node_name[MAX_SYSFS_ATTR_NAME_LENGTH];
@@ -326,19 +357,25 @@ static ssize_t  drv_sensor_get_main_board_temp_value(void *driver, unsigned int 
     /* add vendor codes here */
 
     read_lock(&list_lock);
-    if (temp_index >= MAX_SENSOR_NUM) {
+    if (temp_index >= MAX_SENSOR_NUM)
+    {
         data = &cpu_temp_data_list[temp_index - MAX_SENSOR_NUM];
-        if (data->dev != NULL) {
+        if (data->dev != NULL)
+        {
             if (data->auto_inc != 0)
-                sprintf(node_name, "%s%d%s", CPU_TEMP_NODE, temp_index-MAX_SENSOR_NUM+1, TEMP_OUT);
+                sprintf(node_name, "%s%d%s", CPU_TEMP_NODE, temp_index - MAX_SENSOR_NUM + 1, TEMP_OUT);
             else
                 sprintf(node_name, "%s1%s", CPU_TEMP_NODE, TEMP_OUT);
 
             ret = get_cpu_hwmon_attr_by_name(data, node_name, buf);
-        } else {
+        }
+        else
+        {
             ret = -ENXIO;
         }
-    } else {
+    }
+    else
+    {
         sprintf(node_name, "%s%s", TEMP_NODE, TEMP_OUT);
         dev = sensor_arry[temp_index];
         ret = get_hwmon_attr_by_name(sensor_arry[temp_index], node_name, buf);
@@ -383,9 +420,12 @@ static ssize_t drv_sensor_get_main_board_temp_max_hyst(void *driver, unsigned in
 
     if (temp_index >= MAX_SENSOR_NUM)
     {
+        ret = sprintf(buf, "%d\n", 90000);
+#if 0
         data = &cpu_temp_data_list[temp_index - MAX_SENSOR_NUM];
         if (data->dev != NULL)
         {
+
             if (data->auto_inc != 0)
                 sprintf(node_name, "%s%d%s", CPU_TEMP_NODE, temp_index - MAX_SENSOR_NUM + 1, CPU_TEMP_MAX_HYST);
             else
@@ -397,18 +437,35 @@ static ssize_t drv_sensor_get_main_board_temp_max_hyst(void *driver, unsigned in
             {
                 ret = sprintf(buf, "%d\n", DEFAULT_CPU_TEMP_MAX);
             }
+
         }
         else
         {
             ret = -ENXIO;
         }
+#endif
     }
     else
     {
         // sprintf(node_name, "%s%s", TEMP_NODE, TEMP_MAX_HYST);
         // dev = sensor_arry[temp_index];
         // ret = get_hwmon_attr_by_name(dev, node_name, buf);
-        ret = (ssize_t)snprintf(buf, count, "%d\n", 70000);
+        if (temp_index == 0) // 0x48
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 68000);
+        }
+        else if (temp_index == 1) // 0x49
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 59000);
+        }
+        else if (temp_index == 2) // 0x4a
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 65000);
+        }
+        else // 0x4b
+        {
+            ret = (ssize_t)snprintf(buf, count, "%d\n", 66000);
+        }
     }
 
     read_unlock(&list_lock);
@@ -422,7 +479,6 @@ static int drv_sensor_temp_dev_init(struct drv_temp_sensor_clx *temp)
     sensor_map_index = dev->temp_if.sensor_map_index;
     return DRIVER_OK;
 }
-
 
 int drv_sensor_temp_init(void **temp_driver)
 {
@@ -452,4 +508,4 @@ int drv_sensor_temp_init(void **temp_driver)
     LOG_INFO(CLX_DRIVER_TYPES_TEMP, "TEMP driver clx initialization done.\r\n");
     return DRIVER_OK;
 }
-//clx_driver_define_initcall(drv_sensor_temp_init);
+

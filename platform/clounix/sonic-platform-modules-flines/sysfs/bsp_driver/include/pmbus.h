@@ -129,8 +129,6 @@ enum pmbus_regs {
 	PMBUS_MFR_LOCATION		= 0x9C,
 	PMBUS_MFR_DATE			= 0xD4,
 	PMBUS_MFR_SERIAL		= 0x9E,
-    PMBUS_MFR_FWID          = 0xD1,
-    PMBUS_MFR_FWVERSION     = 0xD2,
 
 /*
  * Virtual registers.

@@ -1,1 +1,1 @@
-platform drivers of Flines DS610 products for the SONiC project
+platform drivers of Flines products for the SONiC project
