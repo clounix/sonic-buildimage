@@ -271,7 +271,7 @@ ssize_t set_status_led(struct device_attribute *da)
         return (-1);
     }
 
-    pddf_dbg(LED, KERN_ERR "%s: Set [%s;%d] color[%s]\n", __func__,
+    pddf_dbg(LED, KERN_INFO "%s: Set [%s;%d] color[%s]\n", __func__,
         temp_data_ptr->device_name, temp_data_ptr->index,
         temp_data_ptr->cur_state.color);
     cur_state = find_state_index(_buf);

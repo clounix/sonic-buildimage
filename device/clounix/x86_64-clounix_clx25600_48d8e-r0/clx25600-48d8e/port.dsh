@@ -255,8 +255,8 @@ init set port-map unit=0 port=252 eth-macro=3 lane=4 max-speed=400g active=false
 init set port-map unit=0 port=253 eth-macro=3 lane=5 max-speed=100g active=false
 init set port-map unit=0 port=254 eth-macro=3 lane=6 max-speed=200g active=false
 init set port-map unit=0 port=255 eth-macro=3 lane=7 max-speed=100g active=false
-init set port-map unit=0 port=257 eth-macro=32 lane=0 max-speed=100g active=true guarantee=true cpi=true
-init set port-map unit=0 port=258 eth-macro=32 lane=2 max-speed=100g active=true guarantee=true cpi=true init-done=true
+init set port-map unit=0 port=257 eth-macro=32 lane=0 max-speed=200g active=true guarantee=true cpi=true
+init set port-map unit=0 port=258 eth-macro=32 lane=2 max-speed=200g active=true guarantee=true cpi=true init-done=true
 init start stage unit=0 task-rsrc
 init start stage unit=0 module
 init start stage unit=0 task
@@ -891,8 +891,8 @@ port set property unit=0 portlist=224 medium-type=CR8
 port set property unit=0 portlist=232 medium-type=CR8
 port set property unit=0 portlist=240 medium-type=CR8
 port set property unit=0 portlist=248 medium-type=CR8
-port set property unit=0 portlist=257 medium-type=KR2
-port set property unit=0 portlist=258 medium-type=KR2
+port set property unit=0 portlist=257 medium-type=CR2
+port set property unit=0 portlist=258 medium-type=CR2
 port set property unit=0 portlist=0 fec=rs544
 port set property unit=0 portlist=4 fec=rs544
 port set property unit=0 portlist=8 fec=rs544
@@ -949,8 +949,8 @@ port set property unit=0 portlist=224 fec=rs544
 port set property unit=0 portlist=232 fec=rs544
 port set property unit=0 portlist=240 fec=rs544
 port set property unit=0 portlist=248 fec=rs544
-port set property unit=0 portlist=257 fec=rs528
-port set property unit=0 portlist=258 fec=rs528
+port set property unit=0 portlist=257 fec=rs544
+port set property unit=0 portlist=258 fec=rs544
 port set property unit=0 portlist=0 admin=enable
 port set property unit=0 portlist=4 admin=enable
 port set property unit=0 portlist=8 admin=enable

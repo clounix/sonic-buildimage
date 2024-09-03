@@ -1,37 +1,37 @@
 /*******************************************************************************
-*  Copyright Statement:
-*  --------------------
-*  This software and the information contained therein are protected by
-*  copyright and other intellectual property laws and terms herein is
-*  confidential. The software may not be copied and the information
-*  contained herein may not be used or disclosed except with the written
-*  permission of Hangzhou Clounix Technology Limited. (C) 2020-2023
-*
-*  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
-*  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
-*  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
-*  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
-*  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-*  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
-*  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
-*  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
-*  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
-*  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
-*  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
-*  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
-*
-*  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
-*  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
-*  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
-*  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
-*  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
-*
-*  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
-*  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
-*  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
-*  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN HANGZHOU,CHINA UNDER.
-*
-*******************************************************************************/
+ *  Copyright Statement:
+ *  --------------------
+ *  This software and the information contained therein are protected by
+ *  copyright and other intellectual property laws and terms herein is
+ *  confidential. The software may not be copied and the information
+ *  contained herein may not be used or disclosed except with the written
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2023
+ *
+ *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+ *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+ *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+ *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+ *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+ *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+ *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+ *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+ *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+ *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+ *
+ *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+ *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+ *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+ *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+ *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+ *
+ *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+ *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+ *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+ *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
+ *
+ *******************************************************************************/
 
 /* FILE NAME:  netif_osal.c
  * PURPOSE:
@@ -59,53 +59,44 @@
 #endif
 #include <netif_osal.h>
 
-/* ----------------------------------------------------------------------------------- macro value */
-/* ----------------------------------------------------------------------------------- macro function */
-#define OSAL_LOG_ERR(msg, ...) \
-    osal_printf("\033[31m<osal:%d>\033[0m"msg, __LINE__, ##__VA_ARGS__)
+/* ----------------------------------------------------------------------------------- macro value
+ */
+/* ----------------------------------------------------------------------------------- macro
+ * function */
+#define OSAL_LOG_ERR(msg, ...) osal_printf("\033[31m<osal:%d>\033[0m" msg, __LINE__, ##__VA_ARGS__)
 
 /* ----------------------------------------------------------------------------------- struct */
-extern struct pci_dev       *_ptr_ext_pci_dev;
+extern struct pci_dev *_ptr_ext_pci_dev;
 
-static linux_thread_t       _osal_thread_head = {{0}};
+static linux_thread_t _osal_thread_head = {{0}};
 
 /* ----------------------------------------------------------------------------------- function */
 /* general */
 void *
-osal_memset(
-    void                    *ptr_mem,
-    const I32_T             value,
-    const UI32_T            num)
+osal_memset(void *ptr_mem, const I32_T value, const UI32_T num)
 {
     return memset(ptr_mem, value, num);
 }
 
 void *
-osal_memcpy(
-    void                    *ptr_dst,
-    const void              *ptr_src,
-    const UI32_T            num)
+osal_memcpy(void *ptr_dst, const void *ptr_src, const UI32_T num)
 {
     return memcpy(ptr_dst, ptr_src, num);
 }
 
 UI32_T
-osal_strlen(
-    const C8_T              *ptr_str)
+osal_strlen(const C8_T *ptr_str)
 {
     return strlen(ptr_str);
 }
 
 void
-osal_printf(
-    const C8_T              *ptr_fmt,
-    ...)
+osal_printf(const C8_T *ptr_fmt, ...)
 {
-    va_list                 ap;
-    char                    buf[OSAL_PRN_BUF_SZ];
+    va_list ap;
+    char buf[OSAL_PRN_BUF_SZ];
 
-    if (NULL != ptr_fmt)
-    {
+    if (NULL != ptr_fmt) {
         va_start(ap, ptr_fmt);
         vsnprintf(buf, OSAL_PRN_BUF_SZ, ptr_fmt, ap);
         va_end(ap);
@@ -115,15 +106,13 @@ osal_printf(
 }
 
 void *
-osal_alloc(
-    const UI32_T            size)
+osal_alloc(const UI32_T size)
 {
     return kmalloc(size, GFP_ATOMIC);
 }
 
 void
-osal_free(
-    const void              *ptr_mem)
+osal_free(const void *ptr_mem)
 {
     kfree(ptr_mem);
 }
@@ -132,7 +121,7 @@ osal_free(
 CLX_ERROR_NO_T
 osal_init(void)
 {
-    linux_thread_t          *ptr_thread_head = &_osal_thread_head;
+    linux_thread_t *ptr_thread_head = &_osal_thread_head;
 
     memset(ptr_thread_head, 0x0, sizeof(linux_thread_t));
 
@@ -150,25 +139,25 @@ osal_deinit(void)
 }
 
 CLX_ERROR_NO_T
-osal_createThread(
-    const C8_T              *ptr_thread_name,
-    const UI32_T            stack_size,
-    const UI32_T            priority,
-    void                    (function)(void*),
-    void                    *ptr_arg,
-    CLX_THREAD_ID_T         *ptr_thread_id)
+osal_createThread(const C8_T *ptr_thread_name,
+                  const UI32_T stack_size,
+                  const UI32_T priority,
+                  void(function)(void *),
+                  void *ptr_arg,
+                  CLX_THREAD_ID_T *ptr_thread_id)
 {
-    char                    dft_name[OSAL_THREAD_NAME_LEN + 1] = OSAL_THREAD_DFT_NAME;
-    linux_thread_t          *ptr_thread_head = &_osal_thread_head;
-    linux_thread_t          *ptr_thread_node = osal_alloc(sizeof(linux_thread_t));
+    char dft_name[OSAL_THREAD_NAME_LEN + 1] = OSAL_THREAD_DFT_NAME;
+    linux_thread_t *ptr_thread_head = &_osal_thread_head;
+    linux_thread_t *ptr_thread_node = osal_alloc(sizeof(linux_thread_t));
 
     /* process name */
-    osal_memcpy(ptr_thread_node->name, (0 == osal_strlen(ptr_thread_name))?
-        dft_name : ptr_thread_name, OSAL_THREAD_NAME_LEN);
+    osal_memcpy(ptr_thread_node->name,
+                (0 == osal_strlen(ptr_thread_name)) ? dft_name : ptr_thread_name,
+                OSAL_THREAD_NAME_LEN);
     ptr_thread_node->name[OSAL_THREAD_NAME_LEN] = '\0';
 
     /* init */
-    ptr_thread_node->ptr_task = kthread_create((int(*)(void *))function, ptr_arg, ptr_thread_name);
+    ptr_thread_node->ptr_task = kthread_create((int (*)(void *))function, ptr_arg, ptr_thread_name);
     ptr_thread_node->ptr_task->policy = SCHED_RR;
     ptr_thread_node->ptr_task->rt_priority = priority;
     ptr_thread_node->is_stop = FALSE;
@@ -178,19 +167,18 @@ osal_createThread(
     wake_up_process(ptr_thread_node->ptr_task);
 
     /* append the thread_node */
-    ptr_thread_node->ptr_prev           = ptr_thread_head->ptr_prev;
+    ptr_thread_node->ptr_prev = ptr_thread_head->ptr_prev;
     ptr_thread_head->ptr_prev->ptr_next = ptr_thread_node;
-    ptr_thread_node->ptr_next           = ptr_thread_head;
-    ptr_thread_head->ptr_prev           = ptr_thread_node;
+    ptr_thread_node->ptr_next = ptr_thread_head;
+    ptr_thread_head->ptr_prev = ptr_thread_node;
 
     return (CLX_E_OK);
 }
 
 CLX_ERROR_NO_T
-osal_stopThread(
-    CLX_THREAD_ID_T         *ptr_thread_id)
+osal_stopThread(CLX_THREAD_ID_T *ptr_thread_id)
 {
-    linux_thread_t          *ptr_thread_node = (linux_thread_t *)(*ptr_thread_id);
+    linux_thread_t *ptr_thread_node = (linux_thread_t *)(*ptr_thread_id);
 
     ptr_thread_node->is_stop = TRUE;
 
@@ -198,10 +186,9 @@ osal_stopThread(
 }
 
 CLX_ERROR_NO_T
-osal_destroyThread(
-    CLX_THREAD_ID_T         *ptr_thread_id)
+osal_destroyThread(CLX_THREAD_ID_T *ptr_thread_id)
 {
-    linux_thread_t          *ptr_thread_node = (linux_thread_t *)(*ptr_thread_id);
+    linux_thread_t *ptr_thread_node = (linux_thread_t *)(*ptr_thread_id);
 
     kthread_stop(ptr_thread_node->ptr_task);
 
@@ -225,24 +212,20 @@ osal_initRunThread(void)
 CLX_ERROR_NO_T
 osal_isRunThread(void)
 {
-    linux_thread_t          *ptr_thread_node = _osal_thread_head.ptr_next;
+    linux_thread_t *ptr_thread_node = _osal_thread_head.ptr_next;
 
-    while (1)
-    {
-        if (ptr_thread_node == &_osal_thread_head)
-        {
+    while (1) {
+        if (ptr_thread_node == &_osal_thread_head) {
             OSAL_LOG_ERR("Cannot find task %p.\n", current);
             break;
         }
-        if (ptr_thread_node->ptr_task == current)
-        {
+        if (ptr_thread_node->ptr_task == current) {
             break;
         }
         ptr_thread_node = ptr_thread_node->ptr_next;
     }
 
-    if ((TRUE == ptr_thread_node->is_stop) || (signal_pending(current)))
-    {
+    if ((TRUE == ptr_thread_node->is_stop) || (signal_pending(current))) {
         return (CLX_E_OTHERS);
     }
 
@@ -252,25 +235,23 @@ osal_isRunThread(void)
 void
 osal_exitRunThread(void)
 {
-    while (!kthread_should_stop() && !signal_pending(current))
-    {
+    while (!kthread_should_stop() && !signal_pending(current)) {
         osal_sleepThread(OSAL_NS_PER_USECOND);
     }
 }
 
 /* semaphore */
 CLX_ERROR_NO_T
-osal_createSemaphore(
-    const C8_T              *ptr_sema_name,
-    const UI32_T            sema_count,
-    CLX_SEMAPHORE_ID_T      *ptr_semaphore_id)
+osal_createSemaphore(const C8_T *ptr_sema_name,
+                     const UI32_T sema_count,
+                     CLX_SEMAPHORE_ID_T *ptr_semaphore_id)
 {
-    char                    dft_name[OSAL_SEMA_NAME_LEN + 1] = OSAL_SEMA_DFT_NAME;
-    linux_sema_t            *ptr_sema = osal_alloc(sizeof(linux_sema_t));
+    char dft_name[OSAL_SEMA_NAME_LEN + 1] = OSAL_SEMA_DFT_NAME;
+    linux_sema_t *ptr_sema = osal_alloc(sizeof(linux_sema_t));
 
     /* process name */
-    osal_memcpy(ptr_sema->name, (0 == osal_strlen(ptr_sema_name))?
-        dft_name : ptr_sema_name, OSAL_SEMA_NAME_LEN);
+    osal_memcpy(ptr_sema->name, (0 == osal_strlen(ptr_sema_name)) ? dft_name : ptr_sema_name,
+                OSAL_SEMA_NAME_LEN);
     ptr_sema->name[OSAL_SEMA_NAME_LEN] = '\0';
 
     /* init */
@@ -282,19 +263,15 @@ osal_createSemaphore(
 }
 
 CLX_ERROR_NO_T
-osal_takeSemaphore(
-    CLX_SEMAPHORE_ID_T      *ptr_semaphore_id,
-    UI32_T                  time_out)
+osal_takeSemaphore(CLX_SEMAPHORE_ID_T *ptr_semaphore_id, UI32_T time_out)
 {
-    linux_sema_t            *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
+    linux_sema_t *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
 
-    if (in_interrupt())
-    {
+    if (in_interrupt()) {
         return (CLX_E_OTHERS);
     }
 
-    if (!down_interruptible(&ptr_sema->lock))
-    {
+    if (!down_interruptible(&ptr_sema->lock)) {
         return (CLX_E_OK);
     }
 
@@ -302,10 +279,9 @@ osal_takeSemaphore(
 }
 
 CLX_ERROR_NO_T
-osal_giveSemaphore(
-    CLX_SEMAPHORE_ID_T      *ptr_semaphore_id)
+osal_giveSemaphore(CLX_SEMAPHORE_ID_T *ptr_semaphore_id)
 {
-    linux_sema_t            *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
+    linux_sema_t *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
 
     up(&ptr_sema->lock);
 
@@ -313,10 +289,9 @@ osal_giveSemaphore(
 }
 
 CLX_ERROR_NO_T
-osal_destroySemaphore(
-    CLX_SEMAPHORE_ID_T      *ptr_semaphore_id)
+osal_destroySemaphore(CLX_SEMAPHORE_ID_T *ptr_semaphore_id)
 {
-    linux_sema_t            *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
+    linux_sema_t *ptr_sema = (linux_sema_t *)(*ptr_semaphore_id);
 
     osal_free(ptr_sema);
     *ptr_semaphore_id = 0;
@@ -326,16 +301,14 @@ osal_destroySemaphore(
 
 /* event */
 CLX_ERROR_NO_T
-osal_createEvent(
-    const C8_T              *ptr_event_name,
-    CLX_SEMAPHORE_ID_T      *ptr_event_id)
+osal_createEvent(const C8_T *ptr_event_name, CLX_SEMAPHORE_ID_T *ptr_event_id)
 {
-    char                    dft_name[OSAL_EVENT_NAME_LEN + 1] = OSAL_EVENT_DFT_NAME;
-    linux_event_t           *ptr_event = osal_alloc(sizeof(linux_event_t));
+    char dft_name[OSAL_EVENT_NAME_LEN + 1] = OSAL_EVENT_DFT_NAME;
+    linux_event_t *ptr_event = osal_alloc(sizeof(linux_event_t));
 
     /* process name */
-    osal_memcpy(ptr_event->name, (0 == osal_strlen(ptr_event_name))?
-        dft_name : ptr_event_name, OSAL_EVENT_NAME_LEN);
+    osal_memcpy(ptr_event->name, (0 == osal_strlen(ptr_event_name)) ? dft_name : ptr_event_name,
+                OSAL_EVENT_NAME_LEN);
     ptr_event->name[OSAL_EVENT_NAME_LEN] = '\0';
 
     /* init */
@@ -348,13 +321,11 @@ osal_createEvent(
 }
 
 CLX_ERROR_NO_T
-osal_waitEvent(
-    CLX_SEMAPHORE_ID_T      *ptr_event_id)
+osal_waitEvent(CLX_SEMAPHORE_ID_T *ptr_event_id)
 {
-    linux_event_t           *ptr_event = (linux_event_t *)(*ptr_event_id);
+    linux_event_t *ptr_event = (linux_event_t *)(*ptr_event_id);
 
-    if (!wait_event_interruptible(ptr_event->wait_que, ptr_event->condition))
-    {
+    if (!wait_event_interruptible(ptr_event->wait_que, ptr_event->condition)) {
         ptr_event->condition = FALSE;
 
         return (CLX_E_OK);
@@ -364,10 +335,9 @@ osal_waitEvent(
 }
 
 CLX_ERROR_NO_T
-osal_triggerEvent(
-    CLX_SEMAPHORE_ID_T      *ptr_event_id)
+osal_triggerEvent(CLX_SEMAPHORE_ID_T *ptr_event_id)
 {
-    linux_event_t           *ptr_event = (linux_event_t *)(*ptr_event_id);
+    linux_event_t *ptr_event = (linux_event_t *)(*ptr_event_id);
 
     ptr_event->condition = TRUE;
     wake_up_interruptible(&ptr_event->wait_que);
@@ -376,10 +346,9 @@ osal_triggerEvent(
 }
 
 CLX_ERROR_NO_T
-osal_destroyEvent(
-    CLX_SEMAPHORE_ID_T      *ptr_event_id)
+osal_destroyEvent(CLX_SEMAPHORE_ID_T *ptr_event_id)
 {
-    linux_event_t           *ptr_event = (linux_event_t *)(*ptr_event_id);
+    linux_event_t *ptr_event = (linux_event_t *)(*ptr_event_id);
 
     osal_free(ptr_event);
     *ptr_event_id = 0;
@@ -389,16 +358,15 @@ osal_destroyEvent(
 
 /* isr_lock */
 CLX_ERROR_NO_T
-osal_createIsrLock(
-    const C8_T              *ptr_isrlock_name,
-    CLX_ISRLOCK_ID_T        *ptr_isrlock_id)
+osal_createIsrLock(const C8_T *ptr_isrlock_name, CLX_ISRLOCK_ID_T *ptr_isrlock_id)
 {
-    char                    dft_name[OSAL_SPIN_NAME_LEN + 1] = OSAL_SPIN_DFT_NAME;
-    linux_isrlock_t         *ptr_isrlock = osal_alloc(sizeof(linux_isrlock_t));
+    char dft_name[OSAL_SPIN_NAME_LEN + 1] = OSAL_SPIN_DFT_NAME;
+    linux_isrlock_t *ptr_isrlock = osal_alloc(sizeof(linux_isrlock_t));
 
     /* process name */
-    osal_memcpy(ptr_isrlock->name, (0 == osal_strlen(ptr_isrlock_name))?
-        dft_name : ptr_isrlock_name, OSAL_SPIN_NAME_LEN);
+    osal_memcpy(ptr_isrlock->name,
+                (0 == osal_strlen(ptr_isrlock_name)) ? dft_name : ptr_isrlock_name,
+                OSAL_SPIN_NAME_LEN);
     ptr_isrlock->name[OSAL_SPIN_NAME_LEN] = '\0';
 
     /* init */
@@ -410,12 +378,10 @@ osal_createIsrLock(
 }
 
 CLX_ERROR_NO_T
-osal_takeIsrLock(
-    CLX_ISRLOCK_ID_T        *ptr_isrlock_id,
-    CLX_IRQ_FLAGS_T         *ptr_irq_flags)
+osal_takeIsrLock(CLX_ISRLOCK_ID_T *ptr_isrlock_id, CLX_IRQ_FLAGS_T *ptr_irq_flags)
 {
-    linux_isrlock_t         *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
-    unsigned long           flags = 0;
+    linux_isrlock_t *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
+    unsigned long flags = 0;
 
     spin_lock_irqsave(&ptr_isrlock->spinlock, flags);
     *ptr_irq_flags = (CLX_IRQ_FLAGS_T)flags;
@@ -424,12 +390,10 @@ osal_takeIsrLock(
 }
 
 CLX_ERROR_NO_T
-osal_giveIsrLock(
-    CLX_ISRLOCK_ID_T        *ptr_isrlock_id,
-    CLX_IRQ_FLAGS_T         *ptr_irq_flags)
+osal_giveIsrLock(CLX_ISRLOCK_ID_T *ptr_isrlock_id, CLX_IRQ_FLAGS_T *ptr_irq_flags)
 {
-    linux_isrlock_t         *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
-    unsigned long           flags = 0;
+    linux_isrlock_t *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
+    unsigned long flags = 0;
 
     flags = (unsigned long)(*ptr_irq_flags);
     spin_unlock_irqrestore(&ptr_isrlock->spinlock, flags);
@@ -438,10 +402,9 @@ osal_giveIsrLock(
 }
 
 CLX_ERROR_NO_T
-osal_destroyIsrLock(
-    CLX_ISRLOCK_ID_T        *ptr_isrlock_id)
+osal_destroyIsrLock(CLX_ISRLOCK_ID_T *ptr_isrlock_id)
 {
-    linux_isrlock_t         *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
+    linux_isrlock_t *ptr_isrlock = (linux_isrlock_t *)(*ptr_isrlock_id);
 
     osal_free(ptr_isrlock);
     *ptr_isrlock_id = 0;
@@ -451,26 +414,20 @@ osal_destroyIsrLock(
 
 /* time */
 CLX_ERROR_NO_T
-osal_sleepThread(
-    const UI64_T            usecond)
+osal_sleepThread(const UI64_T usecond)
 {
-    UI64_T                  jiffies;
+    UI64_T jiffies;
 
     /* should not sleep in interrupt */
-    if (in_interrupt())
-    {
+    if (in_interrupt()) {
         return (CLX_E_OP_INVALID);
     }
-    if(usecond < OSAL_USEC_PER_TICK)
-    {
+    if (usecond < OSAL_USEC_PER_TICK) {
         usleep_range(usecond, usecond);
-        if(signal_pending(current) )
-        {
+        if (signal_pending(current)) {
             return CLX_E_OTHERS;
         }
-    }
-    else
-    {
+    } else {
         DECLARE_WAIT_QUEUE_HEAD(suspend_queue);
 
         jiffies = usecs_to_jiffies(usecond);
@@ -481,31 +438,28 @@ osal_sleepThread(
 }
 
 CLX_ERROR_NO_T
-osal_getTime(
-    CLX_TIME_T              *ptr_time)
+osal_getTime(CLX_TIME_T *ptr_time)
 {
-    struct timespec64          usec_time;
+    struct timespec64 usec_time;
 
     ktime_get_real_ts64(&usec_time);
-    *(CLX_TIME_T *)ptr_time = ((usec_time.tv_sec * OSAL_US_PER_SECOND)
-                              + (usec_time.tv_nsec / OSAL_NS_PER_USECOND));
+    *(CLX_TIME_T *)ptr_time =
+        ((usec_time.tv_sec * OSAL_US_PER_SECOND) + (usec_time.tv_nsec / OSAL_NS_PER_USECOND));
 
     return (CLX_E_OK);
 }
 
 /* queue */
 CLX_ERROR_NO_T
-osal_que_create(
-    CLX_HUGE_T              *ptr_queue_id,
-    UI32_T                  capacity)
+osal_que_create(CLX_HUGE_T *ptr_queue_id, UI32_T capacity)
 {
-    linux_queue_t           *ptr_queue = osal_alloc(sizeof(linux_queue_t));
+    linux_queue_t *ptr_queue = osal_alloc(sizeof(linux_queue_t));
 
-    ptr_queue->head      = 0;
-    ptr_queue->tail      = 0;
-    ptr_queue->wr_cnt    = 0;
-    ptr_queue->rd_cnt    = 0;
-    ptr_queue->capacity  = capacity;
+    ptr_queue->head = 0;
+    ptr_queue->tail = 0;
+    ptr_queue->wr_cnt = 0;
+    ptr_queue->rd_cnt = 0;
+    ptr_queue->capacity = capacity;
     ptr_queue->ptr_entry = osal_alloc(sizeof(linux_queue_entry_t) * capacity);
     memset(ptr_queue->ptr_entry, 0x0, sizeof(linux_queue_entry_t) * capacity);
 
@@ -515,14 +469,11 @@ osal_que_create(
 }
 
 CLX_ERROR_NO_T
-osal_que_enque(
-    CLX_HUGE_T              *ptr_queue_id,
-    void                    *ptr_data)
+osal_que_enque(CLX_HUGE_T *ptr_queue_id, void *ptr_data)
 {
-    linux_queue_t           *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
+    linux_queue_t *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
 
-    if (ptr_queue->wr_cnt - ptr_queue->rd_cnt >= ptr_queue->capacity)
-    {
+    if (ptr_queue->wr_cnt - ptr_queue->rd_cnt >= ptr_queue->capacity) {
         return (CLX_E_OTHERS);
     }
 
@@ -531,8 +482,7 @@ osal_que_enque(
 
     /* calculate tail and wr_cnt */
     ptr_queue->tail++;
-    if (ptr_queue->tail >= ptr_queue->capacity)
-    {
+    if (ptr_queue->tail >= ptr_queue->capacity) {
         ptr_queue->tail = 0;
     }
 
@@ -542,14 +492,11 @@ osal_que_enque(
 }
 
 CLX_ERROR_NO_T
-osal_que_deque(
-    CLX_HUGE_T              *ptr_queue_id,
-    void                    **pptr_data)
+osal_que_deque(CLX_HUGE_T *ptr_queue_id, void **pptr_data)
 {
-    linux_queue_t           *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
+    linux_queue_t *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
 
-    if (ptr_queue->wr_cnt == ptr_queue->rd_cnt)
-    {
+    if (ptr_queue->wr_cnt == ptr_queue->rd_cnt) {
         return (CLX_E_OTHERS);
     }
 
@@ -559,8 +506,7 @@ osal_que_deque(
 
     /* calculate head and rd_cnt */
     ptr_queue->head++;
-    if (ptr_queue->head >= ptr_queue->capacity)
-    {
+    if (ptr_queue->head >= ptr_queue->capacity) {
         ptr_queue->head = 0;
     }
 
@@ -570,10 +516,9 @@ osal_que_deque(
 }
 
 CLX_ERROR_NO_T
-osal_que_destroy(
-    CLX_HUGE_T              *ptr_queue_id)
+osal_que_destroy(CLX_HUGE_T *ptr_queue_id)
 {
-    linux_queue_t           *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
+    linux_queue_t *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
 
     osal_free(ptr_queue->ptr_entry);
     osal_free(ptr_queue);
@@ -583,11 +528,9 @@ osal_que_destroy(
 }
 
 CLX_ERROR_NO_T
-osal_que_getCount(
-    CLX_HUGE_T              *ptr_queue_id,
-    unsigned int            *ptr_count)
+osal_que_getCount(CLX_HUGE_T *ptr_queue_id, unsigned int *ptr_count)
 {
-    linux_queue_t           *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
+    linux_queue_t *ptr_queue = (linux_queue_t *)(*ptr_queue_id);
 
     *ptr_count = ptr_queue->wr_cnt - ptr_queue->rd_cnt;
 
@@ -596,12 +539,11 @@ osal_que_getCount(
 
 /* dma */
 void *
-osal_dma_alloc(
-    const UI32_T            size)
+osal_dma_alloc(const UI32_T size)
 {
-    struct device           *ptr_dev = &_ptr_ext_pci_dev->dev;
-    linux_dma_t             *ptr_dma_node = NULL;
-    dma_addr_t              bus_addr = 0x0;
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
+    linux_dma_t *ptr_dma_node = NULL;
+    dma_addr_t bus_addr = 0x0;
 
     ptr_dma_node = dma_alloc_coherent(ptr_dev, sizeof(linux_dma_t) + size, &bus_addr, GFP_ATOMIC);
     ptr_dma_node->size = sizeof(linux_dma_t) + size;
@@ -611,11 +553,10 @@ osal_dma_alloc(
 }
 
 CLX_ERROR_NO_T
-osal_dma_free(
-    void                    *ptr_dma_mem)
+osal_dma_free(void *ptr_dma_mem)
 {
-    struct device           *ptr_dev = &_ptr_ext_pci_dev->dev;
-    linux_dma_t             *ptr_dma_node = (linux_dma_t *)(ptr_dma_mem - sizeof(linux_dma_t));
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
+    linux_dma_t *ptr_dma_node = (linux_dma_t *)(ptr_dma_mem - sizeof(linux_dma_t));
 
     dma_free_coherent(ptr_dev, ptr_dma_node->size, ptr_dma_node, ptr_dma_node->phy_addr);
 
@@ -623,23 +564,19 @@ osal_dma_free(
 }
 
 dma_addr_t
-osal_dma_convertVirtToPhy(
-    void                    *ptr_virt_addr)
+osal_dma_convertVirtToPhy(void *ptr_virt_addr)
 {
     return virt_to_phys(ptr_virt_addr);
 }
 
 void *
-osal_dma_convertPhyToVirt(
-    const dma_addr_t        phy_addr)
+osal_dma_convertPhyToVirt(const dma_addr_t phy_addr)
 {
     return phys_to_virt(phy_addr);
 }
 
 int
-osal_dma_flushCache(
-    void                    *ptr_virt_addr,
-    const unsigned int      size)
+osal_dma_flushCache(void *ptr_virt_addr, const unsigned int size)
 {
 #if defined(CONFIG_NOT_COHERENT_CACHE) || defined(CONFIG_DMA_NONCOHERENT)
 #if defined(dma_cache_wback_inv)
@@ -648,13 +585,12 @@ osal_dma_flushCache(
     dma_cache_sync(NULL, ptr_virt_addr, size, DMA_TO_DEVICE);
 #endif
 #endif
+
     return (0);
 }
 
 int
-osal_dma_invalidateCache(
-    void                    *ptr_virt_addr,
-    const unsigned int      size)
+osal_dma_invalidateCache(void *ptr_virt_addr, const unsigned int size)
 {
 #if defined(CONFIG_NOT_COHERENT_CACHE) || defined(CONFIG_DMA_NONCOHERENT)
 #if defined(dma_cache_wback_inv)
@@ -668,10 +604,9 @@ osal_dma_invalidateCache(
 
 /* skb */
 struct sk_buff *
-osal_skb_alloc(
-    UI32_T                  size)
+osal_skb_alloc(UI32_T size)
 {
-    struct sk_buff          *ptr_skb = NULL;
+    struct sk_buff *ptr_skb = NULL;
 
     /* <skbuff.h>
      * 1. alloc_skb                 (len, flag) : GFP_KERNEL
@@ -682,15 +617,16 @@ osal_skb_alloc(
      * note: Eth header is 14-bytes, we reservd 2-bytes to alignment Ip header
      */
     ptr_skb = dev_alloc_skb(size + NET_IP_ALIGN);
-    skb_reserve(ptr_skb, NET_IP_ALIGN);
-    skb_put(ptr_skb, size);
+    if (NULL != ptr_skb) {
+        skb_reserve(ptr_skb, NET_IP_ALIGN);
+        skb_put(ptr_skb, size);
+    }
 
     return (ptr_skb);
 }
 
 void
-osal_skb_free(
-    struct sk_buff          *ptr_skb)
+osal_skb_free(struct sk_buff *ptr_skb)
 {
     /* <skbuff.h>
      * 1. dev_kfree_skb     (*skb) : release in process context
@@ -701,16 +637,13 @@ osal_skb_free(
 }
 
 dma_addr_t
-osal_skb_mapDma(
-    struct sk_buff              *ptr_skb,
-    enum dma_data_direction     dir)
+osal_skb_mapDma(struct sk_buff *ptr_skb, enum dma_data_direction dir)
 {
-    struct device           *ptr_dev = &_ptr_ext_pci_dev->dev;
-    dma_addr_t              phy_addr = 0x0;
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
+    dma_addr_t phy_addr = 0x0;
 
     phy_addr = dma_map_single(ptr_dev, ptr_skb->data, ptr_skb->len, dir);
-    if (dma_mapping_error(ptr_dev, phy_addr))
-    {
+    if (dma_mapping_error(ptr_dev, phy_addr)) {
         phy_addr = 0x0;
     }
 
@@ -718,26 +651,21 @@ osal_skb_mapDma(
 }
 
 void
-osal_skb_unmapDma(
-    const dma_addr_t            phy_addr,
-    UI32_T                      size,
-    enum dma_data_direction     dir)
+osal_skb_unmapDma(const dma_addr_t phy_addr, UI32_T size, enum dma_data_direction dir)
 {
-    struct device           *ptr_dev = &_ptr_ext_pci_dev->dev;
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
 
     dma_unmap_single(ptr_dev, phy_addr, size, dir);
 }
 
 void
-osal_skb_send(
-    struct sk_buff          *ptr_skb)
+osal_skb_send(struct sk_buff *ptr_skb)
 {
     dev_queue_xmit(ptr_skb);
 }
 
 void
-osal_skb_recv(
-    struct sk_buff          *ptr_skb)
+osal_skb_recv(struct sk_buff *ptr_skb)
 {
     /* 1. netif_rx()          : handle skb in process context
      * 2. netif_rx_ni()       : handle skb in interrupt context
@@ -746,3 +674,18 @@ osal_skb_recv(
     netif_rx(ptr_skb);
 }
 
+void
+osal_skb_syncCpuDma(const dma_addr_t phy_addr, UI32_T size, enum dma_data_direction dir)
+{
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
+
+    dma_sync_single_for_cpu(ptr_dev, phy_addr, size, dir);
+}
+
+void
+osal_skb_syncDeviceDma(const dma_addr_t phy_addr, UI32_T size, enum dma_data_direction dir)
+{
+    struct device *ptr_dev = &_ptr_ext_pci_dev->dev;
+
+    dma_sync_single_for_device(ptr_dev, phy_addr, size, dir);
+}

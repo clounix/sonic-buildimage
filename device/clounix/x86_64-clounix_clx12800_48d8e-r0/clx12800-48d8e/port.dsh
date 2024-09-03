@@ -255,7 +255,7 @@ init set port-map unit=0 port=252 eth-macro=3 lane=4 max-speed=200g active=false
 init set port-map unit=0 port=253 eth-macro=3 lane=5 max-speed=50g active=false
 init set port-map unit=0 port=254 eth-macro=3 lane=6 max-speed=100g active=false
 init set port-map unit=0 port=255 eth-macro=3 lane=7 max-speed=50g active=false
-init set port-map unit=0 port=257 eth-macro=32 lane=0 max-speed=100g active=true guarantee=true cpi=true init-done=true
+init set port-map unit=0 port=257 eth-macro=32 lane=0 max-speed=400g active=true guarantee=true cpi=true init-done=true
 init start stage unit=0 task-rsrc
 init start stage unit=0 module
 init start stage unit=0 task
