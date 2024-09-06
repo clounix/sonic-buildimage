@@ -1,0 +1,35 @@
+Source: sonic-clounix-platform-modules
+Section: main
+Priority: extra
+Maintainer: Clounix <lufq@clounix.com>
+Build-Depends: debhelper (>= 8.0.0), bzip2
+Standards-Version: 3.9.3
+
+Package: sonic-platform-clounix-clx8000-48c8d
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx12800-32d
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx12800-48d8e
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx25600-48d8e
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx25600-brb
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx25600-slt
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+
+Package: sonic-platform-clounix-pit-sysdiag
+Architecture: any
+Description: Platform Integration Test System, dedicated to be used in switch system
