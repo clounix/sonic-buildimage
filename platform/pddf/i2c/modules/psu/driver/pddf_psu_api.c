@@ -43,6 +43,7 @@
 
 void get_psu_duplicate_sysfs(int idx, char *str)
 {
+    char temp_str[32] = "\0";
     switch (idx)
     {
         case PSU_V_OUT:
@@ -58,7 +59,25 @@ void get_psu_duplicate_sysfs(int idx, char *str)
             strcpy(str, "fan1_input");
             break;
         case PSU_TEMP1_INPUT:
-            strcpy(str, "temp1_input");
+        case PSU_TEMP2_INPUT:
+        case PSU_TEMP3_INPUT:
+            /* strcpy(str, "temp1_input"); */
+            sprintf(temp_str, "temp%d_input", (idx - PSU_TEMP1_INPUT + 1));
+            strcpy(str, temp_str);
+            break;
+        case PSU_TEMP1_HIGH_THRESHOLD:
+        case PSU_TEMP2_HIGH_THRESHOLD:
+        case PSU_TEMP3_HIGH_THRESHOLD:
+            /* strcpy(str, "temp1_high_threshold"); */
+            sprintf(temp_str, "temp%d_high_threshold", (idx - PSU_TEMP1_HIGH_THRESHOLD + 1));
+            strcpy(str, temp_str);
+            break;
+        case PSU_TEMP1_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP2_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP3_HIGH_CRIT_THRESHOLD:
+            /* strcpy(str, "temp1_high_crit_threshold"); */
+            sprintf(temp_str, "temp%d_high_crit_threshold", (idx - PSU_TEMP1_HIGH_CRIT_THRESHOLD + 1));
+            strcpy(str, temp_str);
             break;
         default:
             break;
@@ -206,7 +225,6 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
         case PSU_I_OUT:
         case PSU_V_IN:
         case PSU_I_IN:
-        case PSU_P_OUT_MAX:
             multiplier = 1000;
             value = sysfs_attr_info->val.shortval;
             exponent = two_complement_to_int(value >> 11, 5, 0x1f);
@@ -219,6 +237,7 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
             break;
         case PSU_P_IN:
         case PSU_P_OUT:
+        case PSU_P_OUT_MAX:
             multiplier = 1000000;
             value = sysfs_attr_info->val.shortval;
             exponent = two_complement_to_int(value >> 11, 5, 0x1f);
@@ -240,7 +259,14 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
 
             break;
         case PSU_TEMP1_INPUT:
+        case PSU_TEMP2_INPUT:
+        case PSU_TEMP3_INPUT:
         case PSU_TEMP1_HIGH_THRESHOLD:
+        case PSU_TEMP2_HIGH_THRESHOLD:
+        case PSU_TEMP3_HIGH_THRESHOLD:
+        case PSU_TEMP1_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP2_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP3_HIGH_CRIT_THRESHOLD:
             multiplier = 1000;
             value = sysfs_attr_info->val.shortval;
             exponent = two_complement_to_int(value >> 11, 5, 0x1f);
@@ -311,7 +337,23 @@ int sonic_i2c_get_psu_byte_default(void *client, PSU_DATA_ATTR *adata, void *dat
         if (val < 0)
             return val;
         padata->val.intval =  ((val & adata->mask) == adata->cmpval);
-        psu_dbg(KERN_ERR "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+        psu_dbg(KERN_INFO "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+    }
+    if (strncmp(adata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(adata->devaddr);
+        if (val < 0)
+            return val;
+        padata->val.intval =  (((val >> adata->offset) & adata->mask) == adata->cmpval);
+        psu_dbg(KERN_INFO "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+    }
+    if (strncmp(adata->devtype, "lpc", strlen("lpc")) == 0)
+    {
+        val = lpc_cpld_read_reg(adata->devaddr);
+        if (val < 0)
+            return val;
+        padata->val.intval =  (((val >> adata->offset) & adata->mask) == adata->cmpval);
+        psu_dbg(KERN_INFO "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
     }
 
     return status;
@@ -327,7 +369,7 @@ int sonic_i2c_get_psu_block_default(void *client, PSU_DATA_ATTR *adata, void *da
 
     while (retry)
     {
-        status = i2c_smbus_read_i2c_block_data((struct i2c_client *)client, offset, data_len-1, buf);
+        status = i2c_smbus_read_block_data((struct i2c_client *)client, offset, buf);
         if (unlikely(status<0))
         {
             msleep(60);
@@ -344,13 +386,11 @@ int sonic_i2c_get_psu_block_default(void *client, PSU_DATA_ATTR *adata, void *da
     }
     else
     {
-        buf[data_len-1] = '\0';
+        buf[data_len] = '\0';
     }
 
-    if (strncmp(adata->devtype, "pmbus", strlen("pmbus")) == 0)
-        strncpy(padata->val.strval, buf+1, data_len-1);
-    else
-        strncpy(padata->val.strval, buf, data_len);
+    strncpy(padata->val.strval, buf, data_len);
+
 
     psu_dbg(KERN_ERR "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
     return 0;

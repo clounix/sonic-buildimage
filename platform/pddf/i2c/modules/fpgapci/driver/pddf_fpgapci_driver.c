@@ -91,6 +91,11 @@ static int pddf_pci_add_adapter(struct pci_dev *dev)
 	int i;
 
     total_i2c_pci_bus = pddf_fpga_ops_data.virt_i2c_ch;
+	if(total_i2c_pci_bus  > I2C_PCI_MAX_BUS)
+	{
+		printk(KERN_ERR "[%s]   total_i2c_pci_bus %d Error!!!\n", __FUNCTION__,total_i2c_pci_bus);
+		return -EPERM;
+	}
     pddf_dbg(FPGA, KERN_INFO "[%s] total_i2c_pci_bus=%d\n", __FUNCTION__, total_i2c_pci_bus);
 #ifdef __STDC_LIB_EXT1__
     memset_s(&i2c_pci_adap, sizeof(i2c_pci_adap), 0, sizeof(i2c_pci_adap));
@@ -101,7 +106,7 @@ static int pddf_pci_add_adapter(struct pci_dev *dev)
 	for (i = 0 ; i < total_i2c_pci_bus; i ++) {
 
 		i2c_pci_adap[i].owner = THIS_MODULE;
-		i2c_pci_adap[i].class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+		i2c_pci_adap[i].class = I2C_CLASS_DEPRECATED;
 
 		/* /dev/i2c-xxx for FPGA LOGIC I2C channel  controller 1-7  */
 		i2c_pci_adap[i].nr = i + pddf_fpga_ops_data.virt_bus ;
@@ -130,7 +135,63 @@ static void pddf_pci_del_adapter(void)
 		i2c_del_adapter(&i2c_pci_adap[i]);
 	}
 }
+/*start for poer mgr iic songqh20230728*/
+static int clounix_port_mgr_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+{
+	return num;
+}
+static unsigned int clounix_port_mgr_i2c_func(struct i2c_adapter *a)
+{
+    return I2C_FUNC_I2C | I2C_FUNC_SMBUS_I2C_BLOCK ;
+}
+static struct i2c_algorithm port_mgr_i2c_algo = {
+    .master_xfer = clounix_port_mgr_i2c_xfer,
+	.functionality = clounix_port_mgr_i2c_func,
+};
+static struct i2c_adapter *i2c_port_mgr_adap = NULL;
+static int pddf_pci_add_port_mgr_adapter(struct pci_dev *dev)
+{
+	int i = 0;
+		/*add virtual adpater for port mgr*/
+	i2c_port_mgr_adap = (struct i2c_adapter *)kmalloc((pddf_fpga_ops_data.port_mgr_port_num) *sizeof(struct i2c_adapter),GFP_KERNEL);
+	if(NULL != i2c_port_mgr_adap)
+	{
+		memset(i2c_port_mgr_adap,0,(pddf_fpga_ops_data.port_mgr_port_num)*sizeof(struct i2c_adapter));
+		for (i = 0 ; i < pddf_fpga_ops_data.port_mgr_port_num; i ++) {
+			i2c_port_mgr_adap[i].owner = THIS_MODULE;
+			i2c_port_mgr_adap[i].class = I2C_CLASS_DEPRECATED;
 
+			/* /dev/i2c-xxx for Port MGR virtual I2C channel  controller  */
+			i2c_port_mgr_adap[i].nr = i + pddf_fpga_ops_data.port_mgr_virt_bus;
+			sprintf( i2c_port_mgr_adap[i].name, "i2c-port-mgr%d", i+1 );
+            i2c_port_mgr_adap[i].algo = &port_mgr_i2c_algo;
+
+			/* set up the sysfs linkage to our parent device */
+			i2c_port_mgr_adap[i].dev.parent = &dev->dev;
+
+			i2c_add_numbered_adapter(&i2c_port_mgr_adap[i]);
+		}
+	}else
+	{
+        printk("Cannot allocate i2c_port_mgr_adap data, aborting\n");
+        return -ENOMEM;
+
+	}
+	return 0;
+}
+static void pddf_pci_del_port_mgr_adapter(void)
+{
+	int i;
+	if(NULL != i2c_port_mgr_adap)
+	{
+		for( i = 0; i < pddf_fpga_ops_data.port_mgr_port_num; i++ ){
+		    i2c_del_adapter(&i2c_port_mgr_adap[i]);
+	    }
+		kfree(i2c_port_mgr_adap);
+    }
+	return ;
+}
+/*start for poer mgr iic  songqh20230728*/
 static int map_bars(struct fpgapci_devdata *pci_privdata, struct pci_dev *dev)
 {
 	unsigned long barFlags, barStart, barEnd, barLen;
@@ -152,11 +213,10 @@ static int map_bars(struct fpgapci_devdata *pci_privdata, struct pci_dev *dev)
 	if (FPGAPCI_BAR_INDEX != -1) {
 	    pci_privdata->bar_length = barLen;
         pci_privdata->fpga_data_base_addr = ioremap_cache (barStart + pddf_fpga_ops_data.data_base_offset,
-                 pddf_fpga_ops_data.data_size);
+                 barLen);
         fpga_ctl_addr = pci_privdata->fpga_data_base_addr;
 
-        pci_privdata->fpga_i2c_ch_base_addr = ioremap_cache (barStart + pddf_fpga_ops_data.i2c_ch_base_offset,
-                 I2C_PCI_MAX_BUS * pddf_fpga_ops_data.i2c_ch_size);
+        pci_privdata->fpga_i2c_ch_base_addr =  pci_privdata->fpga_data_base_addr + pddf_fpga_ops_data.i2c_ch_base_offset;
         pci_privdata->max_fpga_i2c_ch = pddf_fpga_ops_data.virt_i2c_ch;
         pci_privdata->fpga_i2c_ch_size = pddf_fpga_ops_data.i2c_ch_size;
 	} else {
@@ -246,6 +306,7 @@ static int pddf_fpgapci_probe(struct pci_dev *dev, const struct pci_device_id *i
         goto error_map_bars;
     }
     pddf_pci_add_adapter(dev);
+	pddf_pci_add_port_mgr_adapter(dev);
 	return (0);
 
 /* ERROR HANDLING */
@@ -274,6 +335,7 @@ static void pddf_fpgapci_remove(struct pci_dev *dev)
 	}
 
 	pddf_pci_del_adapter();
+	pddf_pci_del_port_mgr_adapter();
 	free_bars (pci_privdata, dev);
 	pci_disable_device(dev);
 	pci_release_regions(dev);

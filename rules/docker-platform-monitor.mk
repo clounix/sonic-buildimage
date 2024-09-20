@@ -52,6 +52,8 @@ $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += --privileged -t
 $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /etc/sonic:/etc/sonic:ro
 $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /var/run/platform_cache:/var/run/platform_cache:ro
 $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /usr/share/sonic/device/pddf:/usr/share/sonic/device/pddf:ro
+$(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /sys_switch:/sys_switch:ro
+$(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /var/cache/sonic/decode-syseeprom/:/var/cache/sonic/decode-syseeprom/:rw
 
 # Mount Arista python library on Aboot images to be used by plugins
 $(DOCKER_PLATFORM_MONITOR)_aboot_RUN_OPT += -v /usr/lib/libsfp-eeprom.so:/usr/lib/libsfp-eeprom.so:ro

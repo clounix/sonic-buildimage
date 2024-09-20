@@ -97,6 +97,7 @@ enum fan_sysfs_attributes {
     FAN_SERIAL_NUM,
     FAN_PART_NUM,
     FAN_HW_VERSION,
+    FAN_EEPROMWP,
 	FAN_MAX_ATTR 
 };
 /* Each client has this additional data */
