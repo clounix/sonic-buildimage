@@ -291,6 +291,8 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
 		case FAN11_FAULT:
 		case FAN12_FAULT:
 		case FAN_DUTY_CYCLE:
+        case FAN_HW_VERSION:
+        case FAN_EEPROMWP:
             status = attr_info->val.intval;
 			break;
 		default:
@@ -359,6 +361,7 @@ ssize_t fan_store_default(struct device *dev, struct device_attribute *da, const
 		case FAN10_PWM:
 		case FAN11_PWM:
 		case FAN12_PWM:
+        case FAN_EEPROMWP:
 			ret = kstrtoint(buf, 10, &val);
 			if (ret)
 			{
@@ -528,6 +531,11 @@ int sonic_i2c_get_fan_present_default(void *client, FAN_DATA_ATTR *udata, void *
     {
         val = fan_fpgai2c_client_read(udata);
     }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
+    }
     else
     {
 	    val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
@@ -555,6 +563,11 @@ int sonic_i2c_get_fan_rpm_default(void *client, FAN_DATA_ATTR *udata, void *info
     else if (strcmp(udata->devtype, "fpgai2c") == 0)
     {
         val = fan_fpgai2c_client_read(udata);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset) & udata->mask;
     }
     else
     {
@@ -597,6 +610,11 @@ int sonic_i2c_get_fan_direction_default(void *client, FAN_DATA_ATTR *udata, void
     {
         val = fan_fpgai2c_client_read(udata);
     }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
+    }
     else
     {
 	    val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
@@ -615,15 +633,20 @@ int sonic_i2c_set_fan_pwm_default(struct i2c_client *client, FAN_DATA_ATTR *udat
 {
     int status = 0;
 	int val = 0;
+    int reg_val = 0;
     struct fan_attr_info *painfo = (struct fan_attr_info *)info;
 
 	val = painfo->val.intval & udata->mask;
 
 	if (val > 255)
 	{
-	  return -EINVAL;
+	    return -EINVAL;
 	}
-
+    /*clounix EVB max PWM is 100*/
+    if(val > 100)
+    {
+        val = 100;
+    }   
     if (strcmp(udata->devtype, "cpld") == 0)
     {
         status = fan_cpld_client_write(udata, val);
@@ -631,6 +654,13 @@ int sonic_i2c_set_fan_pwm_default(struct i2c_client *client, FAN_DATA_ATTR *udat
     else if (strcmp(udata->devtype, "fpgai2c") == 0)
     {
         status = fan_fpgai2c_client_write(udata, val);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        reg_val = ptr_fpgapci_read(udata->devaddr);
+        reg_val &= ~(udata->mask << udata->offset);
+        reg_val |= (val << udata->offset);
+        status = ptr_fpgapci_write(udata->devaddr,reg_val);
     }
     else
     {
@@ -667,6 +697,11 @@ int sonic_i2c_get_fan_pwm_default(void *client, FAN_DATA_ATTR *udata, void *info
     else if (strcmp(udata->devtype, "fpgai2c") == 0)
     {
         val = fan_fpgai2c_client_read(udata);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
     }
     else
     {
@@ -705,6 +740,11 @@ int sonic_i2c_get_fan_fault_default(void *client, FAN_DATA_ATTR *udata, void *in
     else if (strcmp(udata->devtype, "fpgai2c") == 0)
     {
         val = fan_fpgai2c_client_read(udata);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
     }
     else
     {
@@ -812,6 +852,11 @@ int sonic_i2c_get_fan_dc_default(void *client, FAN_DATA_ATTR *udata, void *info)
     {
         val = fan_fpgai2c_client_read(udata);
     }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
+    }
     else
     {
         if (udata->len == 1)
@@ -877,6 +922,13 @@ int sonic_i2c_set_fan_dc_default(void *client, FAN_DATA_ATTR *udata, void *info)
     else if (strcmp(udata->devtype, "fpgai2c") == 0)
     {
         status = fan_fpgai2c_client_write(udata, reg_val);
+    }
+       else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        reg_val = ptr_fpgapci_read(udata->devaddr);
+        reg_val &= ~(udata->mask << udata->offset);
+        reg_val |= (val << udata->offset);
+        status = ptr_fpgapci_write(udata->devaddr,reg_val);
     }
     else
     {
@@ -989,4 +1041,104 @@ int pddf_fan_post_probe_default(struct i2c_client *client, const struct i2c_devi
 
 	/*Dummy func for now - check the respective platform modules*/
     return 0;
+}
+
+int sonic_i2c_get_fan_eepromwp_default(void *client, FAN_DATA_ATTR *udata, void *info)
+{
+    int status = 0;
+	int val = 0;
+    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
+
+    if (strcmp(udata->devtype, "cpld") == 0)
+    {
+        val = fan_cpld_client_read(udata);
+    }
+    else if (strcmp(udata->devtype, "fpgai2c") == 0)
+    {
+        val = fan_fpgai2c_client_read(udata);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
+    }
+    else
+    {
+	    val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+    }
+
+	if (val < 0)
+		status = val;
+	else
+		painfo->val.intval = ((val & udata->mask) == udata->cmpval);
+    return status;
+}
+
+int sonic_i2c_set_fan_eepromwp_default(struct i2c_client *client, FAN_DATA_ATTR *udata, void *info)
+{
+    int status = 0;
+	int val = 0;
+    int reg_val = 0;
+    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
+
+	val = painfo->val.intval & udata->mask;
+
+	if (val > 255)
+	{
+	  return -EINVAL;
+	}
+
+    if (strcmp(udata->devtype, "cpld") == 0)
+    {
+        status = fan_cpld_client_write(udata, val);
+    }
+    else if (strcmp(udata->devtype, "fpgai2c") == 0)
+    {
+        status = fan_fpgai2c_client_write(udata, val);
+    }
+       else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        reg_val = ptr_fpgapci_read(udata->devaddr);
+        reg_val &= ~(udata->mask << udata->offset);
+        reg_val |= (val << udata->offset);
+        status = ptr_fpgapci_write(udata->devaddr,reg_val);
+    }
+    else
+    {
+        status = i2c_smbus_write_byte_data(client, udata->offset, val);
+        
+    }
+
+    return status;
+}
+
+int sonic_i2c_get_fan_hw_version_default(void *client, FAN_DATA_ATTR *udata, void *info)
+{
+    int status = 0;
+	int val = 0;
+    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
+
+    if (strcmp(udata->devtype, "cpld") == 0)
+    {
+        val = fan_cpld_client_read(udata);
+    }
+    else if (strcmp(udata->devtype, "fpgai2c") == 0)
+    {
+        val = fan_fpgai2c_client_read(udata);
+    }
+    else if (strncmp(udata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(udata->devaddr);
+        val = (val >> udata->offset);
+    }
+    else
+    {
+	    val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+    }
+
+	if (val < 0)
+		status = val;
+	else
+		painfo->val.intval = val & udata->mask;
+    return status;
 }

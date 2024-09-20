@@ -214,6 +214,15 @@ class PddfParse():
 
         return create_ret.append(ret)
 
+    def create_volt_curr_sensor_device(self, dev, ops):
+        create_ret = []
+        ret = 0
+        # NO PDDF driver for temp_sensors device
+        cmd = "echo %s 0x%x > /sys/bus/i2c/devices/i2c-%d/new_device" % (dev['i2c']['topo_info']['dev_type'],
+                int(dev['i2c']['topo_info']['dev_addr'], 0), int(dev['i2c']['topo_info']['parent_bus'], 0))
+        ret = self.runcmd(cmd)
+        return create_ret.append(ret)
+    
     def create_temp_sensor_device(self, dev, ops):
         create_ret = []
         ret = 0
@@ -392,6 +401,17 @@ class PddfParse():
             # print("\n")
             if ret != 0:
                 return create_ret.append(ret)
+            # Add port index
+            port_index_sysfs = '/sys/bus/i2c/devices/{}-00{:02x}/port_index'.format(
+                int(dev['i2c']['topo_info']['parent_bus'], 0), int(dev['i2c']['topo_info']['dev_addr'], 0))
+
+            if os.path.exists(port_index_sysfs):
+                cmd = "echo {} > /sys/bus/i2c/devices/{}-00{:02x}/port_index".format(
+                    int(self.get_dev_idx(dev, ops)), int(dev['i2c']['topo_info']['parent_bus'], 0),
+                    int(dev['i2c']['topo_info']['dev_addr'], 0))
+            ret = self.runcmd(cmd)
+            if ret != 0:
+                return create_ret.append(ret)
             # Add port name
             port_name_sysfs = '/sys/bus/i2c/devices/{}-00{:02x}/port_name'.format(
                 int(dev['i2c']['topo_info']['parent_bus'], 0), int(dev['i2c']['topo_info']['dev_addr'], 0))
@@ -533,6 +553,12 @@ class PddfParse():
             self.runcmd(cmd)
             cmd = "echo 'delete' > /sys/kernel/pddf/devices/cpldmux/dev_ops"
             self.runcmd(cmd)
+
+    def delete_volt_curr_sensor_device(self, dev, ops):
+        # NO PDDF driver for volt_curr_sensors device
+        cmd = "echo 0x%x > /sys/bus/i2c/devices/i2c-%d/delete_device" % (
+                int(dev['i2c']['topo_info']['dev_addr'], 0), int(dev['i2c']['topo_info']['parent_bus'], 0))
+        self.runcmd(cmd)
 
     def delete_temp_sensor_device(self, dev, ops):
         # NO PDDF driver for temp_sensors device
@@ -727,7 +753,35 @@ class PddfParse():
                         self.data_sysfs_obj[KEY].append(dsysfs_path)
                     ret.append(dsysfs_path)
         return ret
+    # This is only valid for ADM1166 MP2882 tps
+    def show_attr_volt_curr_sensor_device(self, dev, ops):
+        ret = []
+        attr_name = ops['attr']
+        attr_list = dev['i2c']['attr_list'] if 'i2c' in dev else []
+        KEY = "volt-curr-sensors"
+        dsysfs_path = ""
 
+        if KEY not in self.data_sysfs_obj:
+            self.data_sysfs_obj[KEY] = []
+
+        for attr in attr_list:
+            if attr_name == attr['attr_name'] or attr_name == 'all':
+                path = self.show_device_sysfs(dev, ops) + \
+                    "/%d-00%x/" % (int(dev['i2c']['topo_info']['parent_bus'], 0),
+                                   int(dev['i2c']['topo_info']['dev_addr'], 0))
+                if 'drv_attr_name' in attr.keys():
+                    real_name = attr['drv_attr_name']
+                else:
+                    real_name = attr['attr_name']
+
+                if (os.path.exists(path)):
+                    full_path = glob.glob(path + 'hwmon/hwmon*/' + real_name)[0]
+                    dsysfs_path = full_path
+                    if dsysfs_path not in self.data_sysfs_obj[KEY]:
+                        self.data_sysfs_obj[KEY].append(dsysfs_path)
+                    ret.append(full_path)
+        return ret
+    
     # This is only valid for LM75
     def show_attr_temp_sensor_device(self, dev, ops):
         ret = []
@@ -977,6 +1031,9 @@ class PddfParse():
                         '/sys/kernel/pddf/devices/fan/i2c/dev_ops']
                 self.add_list_sysfs_obj(self.sysfs_obj, KEY, extra_list)
 
+    def show_volt_curr_sensor_device(self, dev, ops):
+        return
+    
     def show_temp_sensor_device(self, dev, ops):
         return
 
@@ -1390,7 +1447,18 @@ class PddfParse():
                     print("{}_fan_device failed for {}".format(ops['cmd'], dev['dev_info']['device_name']))
 
         return ret
+    
+    def volt_curr_sensor_parse(self, dev, ops):
+        ret = []
+        ret = getattr(self, ops['cmd']+"_volt_curr_sensor_device")(dev, ops)
+        if ret:
+            if str(ret[0]).isdigit():
+                if ret[0] != 0:
+                    # in case if 'create' functions
+                    print("{}_volt_curr_sensor_device failed for {}".format(ops['cmd'], dev['dev_info']['device_name']))
 
+        return ret
+    
     def temp_sensor_parse(self, dev, ops):
         ret = []
         ret = getattr(self, ops['cmd']+"_temp_sensor_device")(dev, ops)
@@ -1623,6 +1691,16 @@ class PddfParse():
                            return ret
                  else:
                       val.extend(ret)
+        for bus in dev['i2c']['port_mgr']:
+            ret = self.dev_parse(self.data[bus['dev']], ops)
+            if ret:
+                 if str(ret[0]).isdigit():
+                      if ret[0]!=0:
+                            # in case if 'create' functions
+                           return ret
+                 else:
+                      val.extend(ret)
+
         return val
 
     # 'create' and 'show_attr' ops returns an array
@@ -1656,12 +1734,15 @@ class PddfParse():
         if attr['device_type'] == 'FAN':
             return self.fan_parse(dev, ops)
 
+        if attr['device_type'] == 'VOL_CURR_SENSOR':
+            return self.volt_curr_sensor_parse(dev, ops)
+        
         if attr['device_type'] == 'TEMP_SENSOR':
             return self.temp_sensor_parse(dev, ops)
 
         if attr['device_type'] == 'SFP' or attr['device_type'] == 'SFP+' or attr['device_type'] == 'SFP28' or \
                 attr['device_type'] == 'QSFP' or attr['device_type'] == 'QSFP+' or attr['device_type'] == 'QSFP28' or \
-                attr['device_type'] == 'QSFP-DD':
+                attr['device_type'] == 'QSFP-DD' or attr['device_type'] == 'DSFP':
             return self.optic_parse(dev, ops)
 
         if attr['device_type'] == 'FPGAI2C':

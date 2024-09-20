@@ -97,4 +97,7 @@ extern int board_i2c_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 
 extern int board_i2c_fpga_read(unsigned short cpld_addr, u8 reg);
 extern int board_i2c_fpga_write(unsigned short cpld_addr, u8 reg, u8 value);
+
+extern int (*ptr_fpgapci_read)(uint32_t);
+extern int (*ptr_fpgapci_write)(uint32_t, uint32_t);
 #endif
