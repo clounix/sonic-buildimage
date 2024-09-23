@@ -95,8 +95,29 @@ EXPORT_SYMBOL(access_psu_fan1_speed_rpm);
 PSU_SYSFS_ATTR_DATA access_psu_temp1_input = {PSU_TEMP1_INPUT, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(access_psu_temp1_input);
 
+PSU_SYSFS_ATTR_DATA access_psu_temp2_input = {PSU_TEMP2_INPUT, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp2_input);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp3_input = {PSU_TEMP3_INPUT, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp3_input);
+
 PSU_SYSFS_ATTR_DATA access_psu_temp1_high_threshold = {PSU_TEMP1_HIGH_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(access_psu_temp1_high_threshold);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp2_high_threshold = {PSU_TEMP2_HIGH_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp2_high_threshold);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp3_high_threshold = {PSU_TEMP3_HIGH_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp3_high_threshold);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp1_high_crit_threshold = {PSU_TEMP1_HIGH_CRIT_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp1_high_crit_threshold);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp2_high_crit_threshold = {PSU_TEMP2_HIGH_CRIT_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp2_high_crit_threshold);
+
+PSU_SYSFS_ATTR_DATA access_psu_temp3_high_crit_threshold = {PSU_TEMP3_HIGH_CRIT_THRESHOLD, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_temp3_high_crit_threshold);
 
 PSU_SYSFS_ATTR_DATA access_psu_v_in = {PSU_V_IN, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(access_psu_v_in);
@@ -123,7 +144,14 @@ PSU_SYSFS_ATTR_DATA_ENTRY psu_sysfs_attr_data_tbl[]=
 	{ "psu_p_out_max" , &access_psu_p_out_max},
 	{ "psu_fan1_speed_rpm" , &access_psu_fan1_speed_rpm},
 	{ "psu_temp1_input" , &access_psu_temp1_input},
+	{ "psu_temp2_input" , &access_psu_temp2_input},
+	{ "psu_temp3_input" , &access_psu_temp3_input},
 	{ "psu_temp1_high_threshold" , &access_psu_temp1_high_threshold},
+	{ "psu_temp2_high_threshold" , &access_psu_temp2_high_threshold},
+	{ "psu_temp3_high_threshold" , &access_psu_temp3_high_threshold},
+	{ "psu_temp1_high_crit_threshold" , &access_psu_temp1_high_crit_threshold},
+	{ "psu_temp2_high_crit_threshold" , &access_psu_temp2_high_crit_threshold},
+	{ "psu_temp3_high_crit_threshold" , &access_psu_temp3_high_crit_threshold},
 	{ "psu_v_in" , &access_psu_v_in},
 	{ "psu_i_in" , &access_psu_i_in},
 	{ "psu_p_in" , &access_psu_p_in}
@@ -168,7 +196,7 @@ static int psu_probe(struct i2c_client *client,
             goto exit;
     }
 
-    if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_I2C_BLOCK)) {
+    if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BLOCK_DATA)) {
         status = -EIO;
         goto exit;
     }
