@@ -128,7 +128,7 @@ else
 TARGET_BOOTLOADER = uboot
 endif
 
-SAI_HEADER_VERSION ?= 1.11.0
+SAI_HEADER_VERSION ?= 1.12.0
 SAI_CHIP_ID ?= namchabarwa
 SAI_DEB_URL ?= yes
 SAI_COMMIT_ID ?= c749df
