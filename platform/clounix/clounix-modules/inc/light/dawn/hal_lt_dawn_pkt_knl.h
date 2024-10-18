@@ -1312,7 +1312,7 @@ typedef struct {
 /**
  * @brief To send a packet to the C-model.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully send the packet to the C-model.
@@ -1326,7 +1326,7 @@ hal_lt_dawn_pkt_sendGpdToCmodel(const UI32_T unit,
 /**
  * @brief To perform the packet transmission form CPU to the switch.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the transferring.
@@ -1342,7 +1342,7 @@ hal_lt_dawn_pkt_sendGpd(const UI32_T unit,
 /**
  * @brief To de-initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data    - Pointer of the data
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
@@ -1354,7 +1354,7 @@ hal_lt_dawn_pkt_deinitTask(const UI32_T unit, void *ptr_data);
  * @brief To invoke the functions to de-initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data - The pointer to the data
  * @return         CLX_E_OK        - Successfully de-initialize the control blocks.
  * @return         CLX_E_OTHERS    - De-initialize the control blocks failed.
@@ -1366,7 +1366,7 @@ hal_lt_dawn_pkt_deinitPktDrv(const UI32_T unit, void *ptr_data);
 /**
  * @brief To initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data - The data pointer
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
@@ -1378,7 +1378,7 @@ hal_lt_dawn_pkt_initTask(const UI32_T unit, void *ptr_data);
  * @brief To invoke the functions to initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data - The pointer to the data
  * @return         CLX_E_OK        - Successfully initialize the control blocks.
  * @return         CLX_E_OTHERS    - Initialize the control blocks failed.

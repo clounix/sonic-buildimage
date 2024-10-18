@@ -103,6 +103,9 @@ typedef struct {
     UI32_T vendor;
     UI32_T device;
     UI32_T revision;
+    UI32_T config_model;
+    UI32_T package_type;
+    UI32_T slice_info;
 } AML_DEV_ID_T;
 
 typedef struct {
@@ -180,17 +183,12 @@ aml_disconnectIsr(const UI32_T unit);
  * @brief To get the vendor/device/revision ID of the specified chip unit.
  *
  * @param [in]     unit               - the device unit
- * @param [out]    ptr_vendor_id      - pointer for the vendor ID
  * @param [out]    ptr_device_id      - pointer for the device ID
- * @param [out]    ptr_revision_id    - pointer for the revision ID
  * @return         CLX_E_OK        - Successfully get the IDs.
  * @return         CLX_E_OTHERS    - Failed to get the IDs.
  */
 CLX_ERROR_NO_T
-aml_getDeviceId(const UI32_T unit,
-                UI32_T *ptr_vendor_id,
-                UI32_T *ptr_device_id,
-                UI32_T *ptr_revision_id);
+aml_getDeviceId(const UI32_T unit, AML_DEV_ID_T *ptr_device_id);
 
 /**
  * @brief To read data from the register of the specified chip unit.
@@ -235,7 +233,7 @@ aml_convertVirtToPhy(void *ptr_virt_addr, CLX_ADDR_T *ptr_phy_addr);
  * @brief To get the virtual address of the corresponding physical
  *        address input.
  *
- * @param [in]     ptr_virt_addr     - pointer for the physical address
+ * @param [in]     phy_addr          - pointer for the physical address
  * @param [out]    pptr_virt_addr    - pointer for the virtual address pointer
  * @return         CLX_E_OK        - Successfully convert the address.
  * @return         CLX_E_OTHERS    - Failed to convert the address.
