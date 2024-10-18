@@ -53,11 +53,28 @@ typedef enum {
     NETIF_NL_INTF_PROPERTY_LAST
 } NETIF_NL_INTF_PROPERTY_T;
 
+typedef enum {
+    NETIF_NL_PKT_PSAMPLE_INVALID = 0,
+    NETIF_NL_PKT_PSAMPLE_INGRESS,
+    NETIF_NL_PKT_PSAMPLE_EGRESS
+} NETIF_NL_PKT_PSAMPLE_DIR_T;
+
 /* must be the same with CLX_NETIF_RX_DST_NETLINK_T */
 typedef struct {
     C8_T name[NETIF_NL_NETLINK_NAME_LEN];
     C8_T mc_group_name[NETIF_NL_NETLINK_NAME_LEN];
 } NETIF_NL_RX_DST_NETLINK_T;
+
+typedef struct {
+    UI16_T egr_intf_idx;
+    UI16_T egr_intf_id;
+    UI16_T psample_dir;
+} NETIF_NL_RX_PKT_EXTRA_T;
+
+typedef struct {
+    NETIF_NL_RX_DST_NETLINK_T *nl;
+    NETIF_NL_RX_PKT_EXTRA_T pkt;
+} NETIF_NL_RX_COOKIES_T;
 
 /* must be the same with CLX_NETIF_NETLINK_MC_GROUP_T */
 typedef struct {
