@@ -477,7 +477,7 @@ _hal_lt_lightning_pkt_dispatcher(void *ptr_cookie)
 /**
  * @brief To issue "START" command to the target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @param [in]     gpd_num    - The GPD ring length of the channel
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -507,7 +507,7 @@ _hal_lt_lightning_pkt_startTxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "START" command to the target RX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_num    - The GPD ring length of the channel
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -537,7 +537,7 @@ _hal_lt_lightning_pkt_startRxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "RESUME" command to the target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @param [in]     gpd_num    - The GPD ring length of the channel
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -567,7 +567,7 @@ _hal_lt_lightning_pkt_resumeTxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "RESUME" command to the target RX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_num    - The GPD ring length of the channel
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -597,7 +597,7 @@ _hal_lt_lightning_pkt_resumeRxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "STOP" command to the target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -623,7 +623,7 @@ _hal_lt_lightning_pkt_stopTxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "STOP" command to the target RX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -651,7 +651,7 @@ _hal_lt_lightning_pkt_stopRxChannelReg(const UI32_T unit,
 /**
  * @brief To configure the start address and the length of target GPD ring of TX channel.
  *
- * @param [in]     unit              - The unit ID
+ * @param [in]     unit              - Device unit number
  * @param [in]     channel           - The target TX channel
  * @param [in]     gpd_start_addr    - The start address of the GPD ring
  * @param [in]     gpd_ring_sz       - The size of the GPD ring
@@ -709,7 +709,7 @@ _hal_lt_lightning_pkt_setTxGpdStartAddrReg(const UI32_T unit,
 /**
  * @brief To configure the start address and the length of target GPD ring of RX channel.
  *
- * @param [in]     unit              - The unit ID
+ * @param [in]     unit              - Device unit number
  * @param [in]     channel           - The target RX channel
  * @param [in]     gpd_start_addr    - The start address of the GPD ring
  * @param [in]     gpd_ring_sz       - The size of the GPD ring
@@ -769,7 +769,7 @@ _hal_lt_lightning_pkt_setRxGpdStartAddrReg(const UI32_T unit,
 /**
  * @brief To mask all the TX L2 interrupts for the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully mask all the TX L2 interrupts.
  */
@@ -809,7 +809,7 @@ _hal_lt_lightning_pkt_maskAllTxL2IsrReg(const UI32_T unit,
 /**
  * @brief To mask all the L2 interrupts for the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully mask all the L2 interrupts.
  */
@@ -847,7 +847,7 @@ _hal_lt_lightning_pkt_maskAllRxL2IsrReg(const UI32_T unit,
 /**
  * @brief To unmask all the TX L2 interrupts for the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully unmask all the TX L2 interrupts.
  */
@@ -887,7 +887,7 @@ _hal_lt_lightning_pkt_unmaskAllTxL2IsrReg(const UI32_T unit,
 /**
  * @brief To unmask all the L2 interrupts for the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully unmask all the L2 interrupts.
  */
@@ -925,7 +925,7 @@ _hal_lt_lightning_pkt_unmaskAllRxL2IsrReg(const UI32_T unit,
 /**
  * @brief To clear the status of TX L2 interrupts for the specified channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     isr_bitmap    - The bitmap used to specify the target ISRs
  * @return         CLX_E_OK    - Successfully clear L1 ISR status.
@@ -952,7 +952,7 @@ _hal_lt_lightning_pkt_clearTxL2IsrStatusReg(
 /**
  * @brief To clear the status of RX L2 interrupts for the specified channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target RX channel
  * @param [in]     isr_bitmap    - The bitmap used to specify the target ISRs
  * @return         CLX_E_OK    - Successfully clear RX L2 ISR status.
@@ -979,7 +979,7 @@ _hal_lt_lightning_pkt_clearRxL2IsrStatusReg(
 /**
  * @brief To get the PDMA TX interrupt counters of the target channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [out]    ptr_intr_cnt    - intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -994,7 +994,7 @@ hal_lt_lightning_pkt_getTxIntrCnt(const UI32_T unit, const UI32_T channel, UI32_
 /**
  * @brief To get the PDMA RX interrupt counters of the target channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [out]    ptr_intr_cnt    - intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -1009,7 +1009,7 @@ hal_lt_lightning_pkt_getRxIntrCnt(const UI32_T unit, const UI32_T channel, UI32_
 /**
  * @brief To get the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the TX cookie
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1026,7 +1026,7 @@ hal_lt_lightning_pkt_getTxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1043,7 +1043,7 @@ hal_lt_lightning_pkt_getRxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To clear the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the TX cookie
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1059,7 +1059,7 @@ hal_lt_lightning_pkt_clearTxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To clear the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1075,7 +1075,7 @@ hal_lt_lightning_pkt_clearRxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To set the port attributes such as status or speeds.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the Port cookie
  * @return         CLX_E_OK    - Successfully set the attributes.
  */
@@ -1120,7 +1120,7 @@ hal_lt_lightning_pkt_setPortAttr(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the port attributes such as status or speeds.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the Port cookie
  * @return         CLX_E_OK    - Successfully set the attributes.
  */
@@ -1409,7 +1409,7 @@ _hal_lt_lightning_pkt_getQueueCount(HAL_LT_LIGHTNING_PKT_SW_QUEUE_T *ptr_que, UI
 /**
  * @brief To allocate the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_idx    - The current GPD index
  * @return         CLX_E_OK           - Successfully allocate the buffer.
@@ -1457,7 +1457,7 @@ _hal_lt_lightning_pkt_allocRxPayloadBuf(const UI32_T unit,
 /**
  * @brief To free the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_idx    - The current GPD index
  * @return         CLX_E_OK    - Successfully free the buffer.
@@ -1496,7 +1496,7 @@ _hal_lt_lightning_pkt_freeRxPayloadBuf(const UI32_T unit,
 /**
  * @brief To free the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_sw_gpd    - The pointer of RX SW GPD
  * @return         CLX_E_OK    - Successfully free the buffer.
  */
@@ -1523,7 +1523,7 @@ _hal_lt_lightning_pkt_freeRxPayloadBufGpd(const UI32_T unit,
 /**
  * @brief To initialize the GPD ring of target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully initialize the GPD ring.
  */
@@ -1588,7 +1588,7 @@ _hal_lt_lightning_pkt_initRxPdmaRing(const UI32_T unit,
 /**
  * @brief To de-init the Rx PDMA ring configuration.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA ring.
  */
@@ -1628,7 +1628,7 @@ _hal_lt_lightning_pkt_initRxPdmaRingBuf(const UI32_T unit,
 /**
  * @brief To de-init the Rx PDMA ring configuration.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA ring.
  */
@@ -1656,7 +1656,7 @@ _hal_lt_lightning_pkt_deinitRxPdmaRingBuf(const UI32_T unit,
 /**
  * @brief To recover the PDMA status to the initial state.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully recover PDMA.
  */
@@ -1684,7 +1684,7 @@ _hal_lt_lightning_pkt_recoverTxPdma(const UI32_T unit,
 /**
  * @brief To recover the RX PDMA from the error state.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully recovery the PDMA.
  */
@@ -1720,7 +1720,7 @@ _hal_lt_lightning_pkt_recoverRxPdma(const UI32_T unit,
 /**
  * @brief To free the TX SW GPD link list.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_sw_gpd    - The pointer of TX SW GPD
  * @return         CLX_E_OK    - Successfully free the GPD list.
  */
@@ -1739,7 +1739,7 @@ _hal_lt_lightning_pkt_freeTxGpdList(UI32_T unit, HAL_LT_LIGHTNING_PKT_TX_SW_GPD_
 /**
  * @brief To free the RX SW GPD link list.
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     ptr_sw_gpd      - The pointer of RX SW GPD
  * @param [in]     free_payload    - TRUE: To free the buf in SDK, FALSE: in user process.
  * @return         CLX_E_OK    - Successfully recovery the PDMA.
@@ -1876,7 +1876,7 @@ _hal_lt_lightning_pkt_showPdmaPph(const volatile HAL_LT_LIGHTNING_PKT_PPH_L2_T *
  * PURPOSE:
  *      To dump the values of fields for the specified TX GPD.
  * INPUT:
- *      unit        --  The unit ID
+ *      unit        --  Device unit number
  *      ptr_tx_gpd  --  Pointer for the TX GPD
  * OUTPUT:
  *      None
@@ -1927,7 +1927,7 @@ hal_lightning_pkt_showTxPdmaGpd(const UI32_T unit,
  * PURPOSE:
  *      To dump the values of fields for the specified RX GPD.
  * INPUT:
- *      unit        --  The unit ID
+ *      unit        --  Device unit number
  *      ptr_rx_gpd  --  Pointer for the RX GPD
  * OUTPUT:
  *      None
@@ -1980,7 +1980,7 @@ hal_lightning_pkt_showRxPdmaGpd(const UI32_T unit,
 /**
  * @brief To enqueue numbers of packet in the bulk buffer
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [in]     number     - The number of packet to be enqueue
  */
@@ -2004,7 +2004,7 @@ _hal_lt_lightning_pkt_txEnQueueBulk(const UI32_T unit, const UI32_T channel, con
 /**
  * @brief To dequeue the packets based on the strict algorithm.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the TX cookie
  * @return         CLX_E_OK    - Successfully dequeue the packets.
  */
@@ -2304,7 +2304,7 @@ _hal_lt_lightning_pkt_getPacketDest(volatile HAL_LT_LIGHTNING_PKT_RX_GPD_T *ptr_
 /**
  * @brief To enqueue the packets to multiple queues.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Rx GPD link list
  * @return         CLX_E_OK    - Successfully enqueue the packets.
@@ -2521,7 +2521,7 @@ _hal_lt_lightning_pkt_flushRxQueue(const UI32_T unit, HAL_LT_LIGHTNING_PKT_SW_QU
 /**
  * @brief To dequeue the packets based on the configured algorithm.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK    - Successfully dequeue the packets.
  */
@@ -2647,7 +2647,7 @@ _hal_lt_lightning_pkt_schedRxDeQueue(const UI32_T unit, void *ptr_data)
 /**
  * @brief To determine the next action after transfer the packet to HW.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the target action.
@@ -2754,7 +2754,7 @@ _hal_lt_lightning_pkt_stopAllIntf(const UI32_T unit)
 /**
  * @brief To perform the packet transmission form CPU to the switch.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the transferring.
@@ -2943,7 +2943,7 @@ _hal_lt_lightning_pkt_rxStart(const UI32_T unit)
  *        2. To init the Rx subsystem and start the Rx channel.
  *        3. To restart the Rx subsystem
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.
@@ -2980,7 +2980,7 @@ hal_lt_lightning_pkt_setRxKnlConfig(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the Rx subsystem configuration.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.
@@ -3000,8 +3000,8 @@ hal_lt_lightning_pkt_getRxKnlConfig(const UI32_T unit, void *ptr_data)
 /**
  * @brief To de-initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
  */
@@ -3072,7 +3072,7 @@ hal_lt_lightning_pkt_deinitTask(const UI32_T unit, void *ptr_data)
 /**
  * @brief To de-initialize the Tx PDMA configuration of the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Tx channel
  * @return         CLX_E_OK        - Successfully de-init the Tx PDMA.
  * @return         CLX_E_OTHERS    - De-init the Tx PDMA failed.
@@ -3105,7 +3105,7 @@ _hal_lt_lightning_pkt_deinitTxPdma(const UI32_T unit,
 /**
  * @brief To de-initialize the Rx PDMA configuration of the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Rx channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA.
  */
@@ -3128,7 +3128,7 @@ _hal_lt_lightning_pkt_deinitRxPdma(const UI32_T unit,
 /**
  * @brief To de-init the control block of Drv.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3153,7 +3153,7 @@ _hal_lt_lightning_pkt_deinitPktCb(const UI32_T unit)
 /**
  * @brief To de-init the control block of Tx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3183,7 +3183,7 @@ _hal_lt_lightning_pkt_deinitPktTxCb(const UI32_T unit)
 /**
  * @brief To de-init the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3214,7 +3214,7 @@ _hal_lt_lightning_pkt_deinitPktRxCb(const UI32_T unit)
 /**
  * @brief To de-initialize the PDMA L1 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-initialize for the L1 ISR.
  */
 static CLX_ERROR_NO_T
@@ -3234,7 +3234,7 @@ _hal_lt_lightning_pkt_deinitL1Isr(const UI32_T unit)
 /**
  * @brief To initialize the PDMA L2 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully configure for the L2 ISR.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -3269,8 +3269,8 @@ _hal_lt_lightning_pkt_deinitL2Isr(const UI32_T unit)
  * @brief To invoke the functions to de-initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully de-initialize the control blocks.
  * @return         CLX_E_OTHERS    - De-initialize the control blocks failed.
  */
@@ -3311,7 +3311,7 @@ hal_lt_lightning_pkt_deinitPktDrv(const UI32_T unit, void *ptr_data)
 /**
  * @brief To handle the TX flow control ISR.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @return         CLX_E_OK    - Successfully handle the interrpt.
  */
@@ -3343,7 +3343,7 @@ _hal_lt_lightning_pkt_handleTxErrStat(const UI32_T unit,
 /**
  * @brief To handle the error which occurs in RX channels.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel where the error occurs
  * @return         CLX_E_OK    - Successfully handle the error situation.
  */
@@ -3367,7 +3367,7 @@ _hal_lt_lightning_pkt_handleRxErrStat(const UI32_T unit,
 /**
  * @brief To handle the TX L2 interrupt according to the ISR status.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel where the interrupt occurs
  * @return         CLX_E_OK    - Successfully handle the L2 interrupt.
  */
@@ -3505,7 +3505,7 @@ _hal_lt_lightning_pkt_handleTxL2Isr(const UI32_T unit,
 /**
  * @brief To handle the RX L2 interrupt according to the ISR status.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel where the interrupt occurs
  * @return         CLX_E_OK    - Successfully handle the L2 interrupt.
  */
@@ -3631,7 +3631,7 @@ _hal_lt_lightning_pkt_handleRxL2Isr(const UI32_T unit,
 /**
  * @brief To invoke the corresponding handler for the L2 interrupts.
  *
- * @param [in]     ptr_argv    - The unit ID
+ * @param [in]     ptr_argv    - Device unit number
  */
 static void
 _hal_lt_lightning_pkt_handleErrorTask(void *ptr_argv)
@@ -3715,7 +3715,7 @@ _hal_lt_lightning_pkt_handleErrorTask(void *ptr_argv)
 /**
  * @brief To handle the TX done interrupt for the specified TX channel.
  *
- * @param [in]     ptr_argv    - The unit ID and channel ID
+ * @param [in]     ptr_argv    - Device unit number and channel ID
  */
 static void
 _hal_lt_lightning_pkt_handleTxDoneTask(void *ptr_argv)
@@ -3846,7 +3846,7 @@ _hal_lt_lightning_pkt_handleTxDoneTask(void *ptr_argv)
 /**
  * @brief To handle the RX done interrupt for the specified RX channel.
  *
- * @param [in]     ptr_argv    - The unit ID and channel ID
+ * @param [in]     ptr_argv    - Device unit number and channel ID
  */
 static void
 _hal_lt_lightning_pkt_handleRxDoneTask(void *ptr_argv)
@@ -4028,8 +4028,8 @@ _hal_lt_lightning_pkt_net_dev_tx_callback(const UI32_T unit,
 /**
  * @brief To initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
  */
@@ -4102,7 +4102,7 @@ hal_lt_lightning_pkt_initTask(const UI32_T unit, void *ptr_data)
 /**
  * @brief To initialize the TX PDMA.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Tx channel
  * @return         CLX_E_OK    - Successfully initialize the TX PDMA.
  */
@@ -4195,7 +4195,7 @@ _hal_lt_lightning_pkt_initTxPdma(const UI32_T unit, const HAL_LT_LIGHTNING_PKT_T
 /**
  * @brief To initialize the RX PDMA.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Rx channel
  * @return         CLX_E_OK    - Successfully initialize the RX PDMA.
  */
@@ -4260,7 +4260,7 @@ _hal_lt_lightning_pkt_initRxPdma(const UI32_T unit, const HAL_LT_LIGHTNING_PKT_R
 /**
  * @brief To initialize the control block of Drv.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully initialize the control block.
  */
 static CLX_ERROR_NO_T
@@ -4287,7 +4287,7 @@ _hal_lt_lightning_pkt_initPktCb(const UI32_T unit)
 /**
  * @brief To initialize the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the control block.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4331,7 +4331,7 @@ _hal_lt_lightning_pkt_initPktTxCb(const UI32_T unit)
 /**
  * @brief To initialize the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the control block.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4371,7 +4371,7 @@ _hal_lt_lightning_pkt_initPktRxCb(const UI32_T unit)
 /**
  * @brief To initialize the PDMA L1 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the L1 ISR.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4392,7 +4392,7 @@ _hal_lt_lightning_pkt_initL1Isr(const UI32_T unit)
 /**
  * @brief To initialize the PDMA L2 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully configure for the L2 ISR.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4726,8 +4726,8 @@ _hal_lt_lightning_pkt_destroyAllProfile(const UI32_T unit)
  * @brief To invoke the functions to initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully initialize the control blocks.
  * @return         CLX_E_OTHERS    - Initialize the control blocks failed.
  */

@@ -57,6 +57,16 @@ EXTRA_CFLAGS += -DCLX_EN_HOST_32_BIT_LITTLE_ENDIAN
 endif
 endif
 
+COMPILE_TIME := $(shell date -u +'%Y-%m-%d_%H:%M:%S-%Z')
+EXTRA_CFLAGS += -DCLX_DEV_MAKE_COMPILE_TIME=\"\\\"$(COMPILE_TIME)\\\"\"
+DIR_TO_CHECK_FOR := .git
+ifeq ("$(wildcard $(DIR_TO_CHECK_FOR))", "")
+EXTRA_CFLAGS += -DCLX_DEV_RELEASED
+else
+GIT_HASH := $(shell git rev-parse --short HEAD 2> /dev/null)
+EXTRA_CFLAGS += -DCLX_DEV_MAKE_GIT_HASH=\"\\\"$(GIT_HASH)\\\"\"
+endif
+
 ################################################################################
 DEV_MODULE_NAME            := clx_dev
 

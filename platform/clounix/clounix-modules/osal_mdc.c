@@ -66,6 +66,7 @@
 #include <netif_pkt_knl.h>
 #include <netif_osal.h>
 #include <netif_perf.h>
+#include <clx_dev_ver.h>
 
 #include <light/lightning/hal_lt_lightning_pkt_knl.h>
 #include <light/dawn/hal_lt_dawn_pkt_knl.h>
@@ -2502,7 +2503,6 @@ osal_mdc_module_exit(void)
 {}
 
 #endif /* End of CLX_LINUX_USER_MODE */
-
 module_init(osal_mdc_module_init);
 module_exit(osal_mdc_module_exit);
 
@@ -2524,3 +2524,5 @@ MODULE_PARM_DESC(intel_iommu_flag, "intel iommu on:1, intel iommu off:0");
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Clounix");
 MODULE_DESCRIPTION("SDK Kernel Module");
+MODULE_INFO(build_time, "Compiled on " CLX_DEV_VER_COMPILE_TIME);
+MODULE_INFO(build_hash,  CLX_DEV_VER_GIT_HASH);

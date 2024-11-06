@@ -57,11 +57,18 @@
 #define NETIF_NL_GET_FAMILY_META(__idx__) &(_netif_nl_cb.fam_entry[__idx__].meta)
 #define NETIF_NL_GET_INTF_IGR_SAMPLE_RATE(__inft_id__) \
     (_netif_nl_cb.intf_entry[__inft_id__].igr_sample_rate)
+#define NETIF_NL_GET_INTF_EGR_SAMPLE_RATE(__inft_id__) \
+    (_netif_nl_cb.intf_entry[__inft_id__].egr_sample_rate)
 
 #define NETIF_NL_FAMILY_IS_PSAMPLE(__ptr_family__)                                             \
     (0 ==                                                                                      \
      strncmp(__ptr_family__->name, NETIF_NL_PSAMPLE_FAMILY_NAME, NETIF_NL_NETLINK_NAME_LEN)) ? \
         1 :                                                                                    \
+        0
+
+#define NETIF_NL_FAMILY_IS_MOD(__ptr_family__)                                                  \
+    (0 == strncmp(__ptr_family__->name, NETIF_NL_MOD_FAMILY_NAME, NETIF_NL_NETLINK_NAME_LEN)) ? \
+        1 :                                                                                     \
         0
 
 /* porting part */
@@ -109,7 +116,9 @@
 #define NETIF_NL_PSAMPLE_MC_GROUP_NUM       (NETIF_NL_PSAMPLE_MC_GROUP_ID_LAST)
 #define NETIF_NL_DEFAULT_MC_GROUP_NUM       (1)
 
-#define NETIF_NL_PSAMPLE_PKT_LEN_MAX       (9216)
+#define NETIF_NL_MOD_FAMILY_NAME "mod"
+
+#define NETIF_NL_PKT_LEN_MAX               (9216)
 #define NETIF_NL_PSAMPLE_DFLT_USR_GROUP_ID (1)
 
 typedef enum {
@@ -529,81 +538,41 @@ _netif_nl_getMcgrpIdByName(NETIF_NL_FAMILY_T *ptr_nl_family,
     return (rc);
 }
 
-CLX_ERROR_NO_T
-_netif_nl_allocPsampleSkb(NETIF_NL_CB_T *ptr_cb,
-                          NETIF_NL_FAMILY_T *ptr_nl_family,
-                          struct sk_buff *ptr_ori_skb,
-                          struct sk_buff **pptr_nl_skb)
+UI32_T
+_netif_nl_getDataLen(UI32_T msg_hdr_len, struct sk_buff *ptr_ori_skb)
 {
-    UI32_T msg_hdr_len;
     UI32_T data_len;
-    struct sk_buff *ptr_nl_skb;
-    UI16_T igr_intf_idx;
-    struct net_device_priv *ptr_priv;
-    UI32_T rate;
-    UI32_T intf_id;
-    void *ptr_nl_hdr = NULL;
-    struct nlattr *ptr_nl_attr;
-    CLX_ERROR_NO_T rc = CLX_E_OK;
-
-    /* make sure the total len (original pkt len + hdr msg) < PSAMPLE_MAX_PACKET_SIZE */
-
-    msg_hdr_len = NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI16_T)) + /* PSAMPLE_ATTR_IIFINDEX */
-        NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_SAMPLE_RATE */
-        NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_ORIGSIZE */
-        NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_SAMPLE_GROUP */
-        NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T));            /* PSAMPLE_ATTR_GROUP_SEQ */
-
     data_len = NETIF_NL_GET_ATTR_TOTAL_SIZE(ptr_ori_skb->len);
 
-    if ((msg_hdr_len + NETIF_NL_GET_ATTR_TOTAL_SIZE(ptr_ori_skb->len)) >
-        NETIF_NL_PSAMPLE_PKT_LEN_MAX) {
-        data_len = NETIF_NL_PSAMPLE_PKT_LEN_MAX - msg_hdr_len - NLA_HDRLEN - NLA_ALIGNTO;
+    if ((msg_hdr_len + NETIF_NL_GET_ATTR_TOTAL_SIZE(ptr_ori_skb->len)) > NETIF_NL_PKT_LEN_MAX) {
+        data_len = NETIF_NL_PKT_LEN_MAX - msg_hdr_len - NLA_HDRLEN - NLA_ALIGNTO;
     } else {
         data_len = ptr_ori_skb->len;
     }
 
-    ptr_nl_skb = NETIF_NL_ALLOC_SKB(NETIF_NL_GET_ATTR_TOTAL_SIZE(data_len) + msg_hdr_len);
-    if (NULL != ptr_nl_skb) {
-        /* to create a netlink msg header (cmd=0) */
-        ptr_nl_hdr = NETIF_NL_SET_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_family, 0, 0);
-        if (NULL != ptr_nl_hdr) {
-            /* obtain the intf index for the igr_port */
-            igr_intf_idx = ptr_ori_skb->dev->ifindex;
-            NETIF_NL_SET_16_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_IIFINDEX,
-                                     (UI16_T)igr_intf_idx);
+    return data_len;
+}
 
-            /* meta header */
-            /* use the igr port id as the index for the database to get sample rate */
-            ptr_priv = netdev_priv(ptr_ori_skb->dev);
-            intf_id = ptr_priv->port;
-            rate = NETIF_NL_GET_INTF_IGR_SAMPLE_RATE(intf_id);
-            NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_SAMPLE_RATE, rate);
-            NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_ORIGSIZE, data_len);
-            NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_SAMPLE_GROUP,
-                                     NETIF_NL_PSAMPLE_DFLT_USR_GROUP_ID);
-            NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_GROUP_SEQ, ptr_cb->seq_num);
-            ptr_cb->seq_num++;
+UI32_T
+_netif_nl_getMsgHdrLen(NETIF_NL_FAMILY_T *ptr_nl_family)
+{
+    UI32_T msg_hdr_len = 0;
 
-            /* data */
-            ptr_nl_attr =
-                (struct nlattr *)skb_put(ptr_nl_skb, NETIF_NL_GET_ATTR_TOTAL_SIZE(data_len));
-            ptr_nl_attr->nla_type = NETIF_NL_PSAMPLE_ATTR_DATA;
-            /* get the attr size without padding, since it's the last one */
-            ptr_nl_attr->nla_len = NETIF_NL_GET_ATTR_SIZE(data_len);
-            skb_copy_bits(ptr_ori_skb, 0, nla_data(ptr_nl_attr), data_len);
-
-            NETIF_NL_END_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_hdr);
-        } else {
-            rc = CLX_E_OTHERS;
-        }
+    if (NETIF_NL_FAMILY_IS_PSAMPLE(ptr_nl_family)) {
+        msg_hdr_len = NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI16_T)) + /* PSAMPLE_ATTR_IIFINDEX */
+            NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI16_T)) +           /* PSAMPLE_ATTR_OIFINDEX  */
+            NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_SAMPLE_RATE */
+            NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_ORIGSIZE */
+            NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T)) +           /* PSAMPLE_ATTR_SAMPLE_GROUP */
+            NETIF_NL_GET_ATTR_TOTAL_SIZE(sizeof(UI32_T));            /* PSAMPLE_ATTR_GROUP_SEQ */
+    } else if (NETIF_NL_FAMILY_IS_MOD(ptr_nl_family)) {
+        msg_hdr_len = 0;
     } else {
-        rc = CLX_E_OTHERS;
+        OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] unknown netlink family\n");
+        return -1;
     }
 
-    *pptr_nl_skb = ptr_nl_skb;
-
-    return (rc);
+    return msg_hdr_len;
 }
 
 CLX_ERROR_NO_T
@@ -613,12 +582,174 @@ _netif_nl_allocNetlinkSkb(NETIF_NL_CB_T *ptr_cb,
                           struct sk_buff **pptr_nl_skb)
 {
     CLX_ERROR_NO_T rc = CLX_E_OK;
+    UI32_T msg_hdr_len;
+    UI32_T data_len;
+    struct sk_buff *ptr_nl_skb;
+
+    /* need to fill specific skb header format */
+    msg_hdr_len = _netif_nl_getMsgHdrLen(ptr_nl_family);
+    if (-1 == msg_hdr_len) {
+        return CLX_E_OTHERS;
+    }
+
+    data_len = _netif_nl_getDataLen(msg_hdr_len, ptr_ori_skb);
+    if (-1 == data_len) {
+        return CLX_E_OTHERS;
+    }
+
+    ptr_nl_skb = NETIF_NL_ALLOC_SKB(NETIF_NL_GET_ATTR_TOTAL_SIZE(data_len) + msg_hdr_len);
+    if (NULL == ptr_nl_skb) {
+        OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] alloc netlink skb failed\n");
+    }
+
+    *pptr_nl_skb = ptr_nl_skb;
+    return (rc);
+}
+
+CLX_ERROR_NO_T
+_netif_nl_setPsampleNetlinkSkb(NETIF_NL_CB_T *ptr_cb,
+                               NETIF_NL_FAMILY_T *ptr_nl_family,
+                               struct sk_buff *ptr_ori_skb,
+                               NETIF_NL_RX_COOKIES_T *ptr_cookies,
+                               struct sk_buff *ptr_nl_skb)
+{
+    UI16_T igr_intf_idx;
+    UI16_T egr_intf_idx;
+    struct net_device_priv *ptr_priv;
+    UI32_T rate;
+    UI32_T intf_id;
+    void *ptr_nl_hdr = NULL;
+    struct nlattr *ptr_nl_attr;
+    UI32_T msg_hdr_len;
+    UI32_T data_len;
+    CLX_ERROR_NO_T rc = CLX_E_OK;
+
+    msg_hdr_len = _netif_nl_getMsgHdrLen(ptr_nl_family);
+    if (-1 == msg_hdr_len) {
+        return CLX_E_OTHERS;
+    }
+
+    data_len = _netif_nl_getDataLen(msg_hdr_len, ptr_ori_skb);
+    if (-1 == data_len) {
+        return CLX_E_OTHERS;
+    }
+
+    /* to create a netlink msg header (cmd=0) */
+    ptr_nl_hdr = NETIF_NL_SET_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_family, 0, 0);
+    if (NULL != ptr_nl_hdr) {
+        /* obtain the intf index for the igr_port */
+        igr_intf_idx = ptr_ori_skb->dev->ifindex;
+        egr_intf_idx = ptr_cookies->pkt.egr_intf_idx;
+
+        if (egr_intf_idx >= NETIF_NL_INTF_NUM_MAX) {
+            egr_intf_idx = igr_intf_idx;
+            OSAL_PRINT(OSAL_DBG_NETLINK,
+                       "force  egress port %u to %u parser the information correct in hsflowd",
+                       ptr_cookies->pkt.egr_intf_idx, egr_intf_idx);
+        }
+
+        OSAL_PRINT(
+            OSAL_DBG_NETLINK,
+            "update ingress port %u and egress port %u for netlink egr intfid:%d psample_dir:%d",
+            igr_intf_idx, egr_intf_idx, ptr_cookies->pkt.egr_intf_id, ptr_cookies->pkt.psample_dir);
+        NETIF_NL_SET_16_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_IIFINDEX, (UI16_T)igr_intf_idx);
+        NETIF_NL_SET_16_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_OIFINDEX, (UI16_T)egr_intf_idx);
+
+        /* meta header */
+        /* use the igr port id as the index for the database to get sample rate */
+        ptr_priv = netdev_priv(ptr_ori_skb->dev);
+        intf_id = ptr_priv->port;
+        if (ptr_cookies->pkt.psample_dir == NETIF_NL_PKT_PSAMPLE_INGRESS) {
+            rate = NETIF_NL_GET_INTF_IGR_SAMPLE_RATE(intf_id);
+        } else {
+            /* sample rate is anyone of port when egr_port is not valid */
+            rate = NETIF_NL_GET_INTF_EGR_SAMPLE_RATE(ptr_cookies->pkt.egr_intf_id %
+                                                     NETIF_NL_INTF_NUM_MAX);
+        }
+        NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_SAMPLE_RATE, rate);
+        NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_ORIGSIZE, data_len);
+        NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_SAMPLE_GROUP,
+                                 ptr_cookies->pkt.psample_dir);
+        NETIF_NL_SET_32_BIT_ATTR(ptr_nl_skb, NETIF_NL_PSAMPLE_ATTR_GROUP_SEQ, ptr_cb->seq_num);
+        ptr_cb->seq_num++;
+
+        /* data */
+        ptr_nl_attr = (struct nlattr *)skb_put(ptr_nl_skb, NETIF_NL_GET_ATTR_TOTAL_SIZE(data_len));
+        ptr_nl_attr->nla_type = NETIF_NL_PSAMPLE_ATTR_DATA;
+        /* get the attr size without padding, since it's the last one */
+        ptr_nl_attr->nla_len = NETIF_NL_GET_ATTR_SIZE(data_len);
+        skb_copy_bits(ptr_ori_skb, 0, nla_data(ptr_nl_attr), data_len);
+
+        NETIF_NL_END_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_hdr);
+    } else {
+        rc = CLX_E_OTHERS;
+    }
+
+    return (rc);
+}
+
+CLX_ERROR_NO_T
+_netif_nl_setGenericNetlinkSkb(NETIF_NL_CB_T *ptr_cb,
+                               NETIF_NL_FAMILY_T *ptr_nl_family,
+                               struct sk_buff *ptr_ori_skb,
+                               NETIF_NL_RX_COOKIES_T *ptr_cookies,
+                               struct sk_buff *ptr_nl_skb)
+{
+    void *ptr_nl_hdr = NULL;
+    struct nlattr *ptr_nl_attr;
+    UI32_T msg_hdr_len;
+    UI32_T data_len;
+    CLX_ERROR_NO_T rc = CLX_E_OK;
+
+    msg_hdr_len = _netif_nl_getMsgHdrLen(ptr_nl_family);
+    if (-1 == msg_hdr_len) {
+        return CLX_E_OTHERS;
+    }
+
+    data_len = _netif_nl_getDataLen(msg_hdr_len, ptr_ori_skb);
+    if (-1 == data_len) {
+        return CLX_E_OTHERS;
+    }
+
+    /* to create a netlink msg header (cmd=0) */
+    ptr_nl_hdr = NETIF_NL_SET_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_family, 0, 0);
+    if (NULL != ptr_nl_hdr) {
+        /* data */
+        ptr_nl_attr = (struct nlattr *)skb_put(ptr_nl_skb, NETIF_NL_GET_ATTR_TOTAL_SIZE(data_len));
+        ptr_nl_attr->nla_type = NETIF_NL_PSAMPLE_ATTR_DATA;
+        /* get the attr size without padding, since it's the last one */
+        ptr_nl_attr->nla_len = NETIF_NL_GET_ATTR_SIZE(data_len);
+        skb_copy_bits(ptr_ori_skb, 0, nla_data(ptr_nl_attr), data_len);
+
+        NETIF_NL_END_SKB_ATTR_HDR(ptr_nl_skb, ptr_nl_hdr);
+    } else {
+        rc = CLX_E_OTHERS;
+    }
+
+    return (rc);
+}
+
+CLX_ERROR_NO_T
+_netif_nl_setNetlinkSkb(NETIF_NL_CB_T *ptr_cb,
+                        NETIF_NL_FAMILY_T *ptr_nl_family,
+                        struct sk_buff *ptr_ori_skb,
+                        NETIF_NL_RX_COOKIES_T *ptr_cookies,
+                        struct sk_buff *ptr_nl_skb)
+{
+    CLX_ERROR_NO_T rc = CLX_E_OK;
 
     /* need to fill specific skb header format */
     if (NETIF_NL_FAMILY_IS_PSAMPLE(ptr_nl_family)) {
-        rc = _netif_nl_allocPsampleSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, pptr_nl_skb);
+        rc = _netif_nl_setPsampleNetlinkSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, ptr_cookies,
+                                            ptr_nl_skb);
         if (CLX_E_OK != rc) {
-            OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] alloc netlink skb failed\n");
+            OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] set psample netlink skb failed\n");
+        }
+    } else if (NETIF_NL_FAMILY_IS_MOD(ptr_nl_family)) {
+        rc = _netif_nl_setGenericNetlinkSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, ptr_cookies,
+                                            ptr_nl_skb);
+        if (CLX_E_OK != rc) {
+            OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] set generic netlink skb failed\n");
         }
     } else {
         OSAL_PRINT(OSAL_DBG_NETLINK, "[DBG] unknown netlink family\n");
@@ -657,7 +788,7 @@ _netif_nl_freeNetlinkSkb(struct sk_buff *ptr_nl_skb)
 
 CLX_ERROR_NO_T
 _netif_nl_forwardPkt(NETIF_NL_CB_T *ptr_cb,
-                     NETIF_NL_RX_DST_NETLINK_T *ptr_nl_dest,
+                     NETIF_NL_RX_COOKIES_T *ptr_cookies,
                      struct sk_buff *ptr_ori_skb)
 {
     struct sk_buff *ptr_nl_skb = NULL;
@@ -665,18 +796,29 @@ _netif_nl_forwardPkt(NETIF_NL_CB_T *ptr_cb,
     UI32_T nl_mcgrp_id;
     CLX_ERROR_NO_T rc;
 
-    rc = _netif_nl_getFamilyByName(ptr_cb, ptr_nl_dest->name, &ptr_nl_family);
-    if (CLX_E_OK == rc) {
-        rc = _netif_nl_getMcgrpIdByName(ptr_nl_family, ptr_nl_dest->mc_group_name, &nl_mcgrp_id);
-        if (CLX_E_OK == rc) {
-            rc = _netif_nl_allocNetlinkSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, &ptr_nl_skb);
-            if (CLX_E_OK == rc) {
-                rc = _netif_nl_sendNetlinkSkb(ptr_nl_family, nl_mcgrp_id, ptr_nl_skb);
-                if (CLX_E_OK != rc) {
-                    /* _netif_nl_freeNetlinkSkb(ptr_nl_skb); */
-                }
-            }
-        }
+    rc = _netif_nl_getFamilyByName(ptr_cb, ptr_cookies->nl->name, &ptr_nl_family);
+    if (CLX_E_OK != rc) {
+        return rc;
+    }
+
+    rc = _netif_nl_getMcgrpIdByName(ptr_nl_family, ptr_cookies->nl->mc_group_name, &nl_mcgrp_id);
+    if (CLX_E_OK != rc) {
+        return rc;
+    }
+
+    rc = _netif_nl_allocNetlinkSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, &ptr_nl_skb);
+    if (CLX_E_OK != rc) {
+        return rc;
+    }
+
+    rc = _netif_nl_setNetlinkSkb(ptr_cb, ptr_nl_family, ptr_ori_skb, ptr_cookies, ptr_nl_skb);
+    if (CLX_E_OK != rc) {
+        return rc;
+    }
+
+    rc = _netif_nl_sendNetlinkSkb(ptr_nl_family, nl_mcgrp_id, ptr_nl_skb);
+    if (CLX_E_OK != rc) {
+        return rc;
     }
 
     return (rc);
@@ -686,14 +828,17 @@ CLX_ERROR_NO_T
 netif_nl_rxSkb(const UI32_T unit, struct sk_buff *ptr_skb, void *ptr_cookie)
 {
     NETIF_NL_CB_T *ptr_cb = &_netif_nl_cb;
-
-    NETIF_NL_RX_DST_NETLINK_T *ptr_nl_dest;
     CLX_ERROR_NO_T rc;
+    NETIF_NL_RX_COOKIES_T *ptr_data = NULL;
 
-    ptr_nl_dest = (NETIF_NL_RX_DST_NETLINK_T *)ptr_cookie;
+    if (NULL == ptr_cookie) {
+        return CLX_E_OTHERS;
+    }
+
+    ptr_data = (NETIF_NL_RX_COOKIES_T *)ptr_cookie;
 
     /* send the packet to netlink mcgroup */
-    rc = _netif_nl_forwardPkt(ptr_cb, ptr_nl_dest, ptr_skb);
+    rc = _netif_nl_forwardPkt(ptr_cb, ptr_data, ptr_skb);
 
     /* need to free the original skb anyway */
     osal_skb_free(ptr_skb);
