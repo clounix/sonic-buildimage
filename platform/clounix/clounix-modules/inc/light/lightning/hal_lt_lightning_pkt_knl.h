@@ -1404,7 +1404,7 @@ typedef struct {
 /**
  * @brief To send a packet to the C-model.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully send the packet to the C-model.
@@ -1418,7 +1418,7 @@ hal_lt_lightning_pkt_sendGpdToCmodel(const UI32_T unit,
 /**
  * @brief To perform the packet transmission form CPU to the switch.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the transferring.
@@ -1434,8 +1434,8 @@ hal_lt_lightning_pkt_sendGpd(const UI32_T unit,
 /**
  * @brief To de-initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
  */
@@ -1446,8 +1446,8 @@ hal_lt_lightning_pkt_deinitTask(const UI32_T unit, void *ptr_data);
  * @brief To invoke the functions to de-initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully de-initialize the control blocks.
  * @return         CLX_E_OTHERS    - De-initialize the control blocks failed.
  */
@@ -1458,8 +1458,8 @@ hal_lt_lightning_pkt_deinitPktDrv(const UI32_T unit, void *ptr_data);
 /**
  * @brief To initialize the Task for packet module.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
  */
@@ -1470,8 +1470,8 @@ hal_lt_lightning_pkt_initTask(const UI32_T unit, void *ptr_data);
  * @brief To invoke the functions to initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
- * @param [in]     ptr_data    - Pointer of the data cookie
+ * @param [in]     unit         - Device unit number
+ * @param [in]     ptr_data     - Pointer of the data cookie
  * @return         CLX_E_OK        - Successfully initialize the control blocks.
  * @return         CLX_E_OTHERS    - Initialize the control blocks failed.
  */
@@ -1481,7 +1481,7 @@ hal_lt_lightning_pkt_initPktDrv(const UI32_T unit, void *ptr_data);
 /**
  * @brief To initialize the packet module.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the packet module.
  * @return         CLX_E_OTHERS    - Initialize the packet module failed.
  */
@@ -1493,7 +1493,7 @@ hal_lt_lightning_pkt_init(const UI32_T unit);
 /**
  * @brief To get the PDMA TX interrupt counters of the target channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [out]    ptr_intr_cnt    - intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -1504,7 +1504,7 @@ hal_lt_lightning_pkt_getTxIntrCnt(const UI32_T unit, const UI32_T channel, UI32_
 /**
  * @brief To get the PDMA RX interrupt counters of the target channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [out]    ptr_intr_cnt    - intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -1517,7 +1517,7 @@ hal_lt_lightning_pkt_getRxIntrCnt(const UI32_T unit, const UI32_T channel, UI32_
 /**
  * @brief To get the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the TX cookie
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1527,7 +1527,7 @@ hal_lt_lightning_pkt_getTxKnlCnt(const UI32_T unit, void *ptr_data);
 /**
  * @brief To get the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1537,7 +1537,7 @@ hal_lt_lightning_pkt_getRxKnlCnt(const UI32_T unit, void *ptr_data);
 /**
  * @brief To clear the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the TX cookie
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1547,7 +1547,7 @@ hal_lt_lightning_pkt_clearTxKnlCnt(const UI32_T unit, void *ptr_data);
 /**
  * @brief To clear the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1559,7 +1559,7 @@ hal_lt_lightning_pkt_clearRxKnlCnt(const UI32_T unit, void *ptr_data);
  *        2. To init the Rx subsystem and start the Rx channel.
  *        3. To restart the Rx subsystem
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.
@@ -1570,7 +1570,7 @@ hal_lt_lightning_pkt_setRxKnlConfig(const UI32_T unit, void *ptr_data);
 /**
  * @brief To get the Rx subsystem configuration.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data    - Pointer of the RX cookie
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.

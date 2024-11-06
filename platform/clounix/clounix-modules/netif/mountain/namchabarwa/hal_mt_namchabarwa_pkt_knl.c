@@ -206,6 +206,13 @@ static UI32_T _hal_mt_namchabarwa_pkt_slice_port_to_di_db[OSAL_MDC_MAX_CHIPS_PER
 
 #define HAL_MT_NAMCHABARWA_PKT_GET_PORT_NETIF(port) (&_hal_mt_namchabarwa_pkt_port_db[port].meta)
 
+#define HAL_MT_NAMCHABARWA_PKT_RX_MOD_HW_REASON     (511)
+#define HAL_MT_NAMCHABARWA_PKT_RX_EGR_SFLOW_SAMPLER (480)
+#define HAL_MT_NAMCHABARWA_PKT_RX_IGR_SFLOW_SAMPLER (352)
+
+UI8_T g_mod_default_mac[6] = {0x70, 0x06, 0x92,
+                              0x6D, 0x00, 0x01}; //{0x02, 0x1f, 0x83, 0x86, 0x00, 0x00};
+
 /*****************************************************************************
  * DATA TYPE DECLARATIONS
  *****************************************************************************
@@ -331,7 +338,9 @@ typedef struct {
     BOOL_T running;                 /* TRUE when rxStart
                                      * FALSE when rxStop
                                      */
-
+    /* mod mac */
+    BOOL_T enable_mod_dmac;
+    UI8_T mod_dmac[6];
 } HAL_MT_NAMCHABARWA_PKT_RX_CB_T;
 
 /* ----------------------------------------------------------------------------------- Network
@@ -535,7 +544,7 @@ _hal_mt_namchabarwa_pkt_unmaskIntr(const UI32_T unit, const UI32_T channel)
 /**
  * @brief To set rx channel work index.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     work_idx   - work index
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -559,7 +568,7 @@ _hal_mt_namchabarwa_pkt_setRxWorkIdx(const UI32_T unit,
 /**
  * @brief To get rx channel work index.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -581,7 +590,7 @@ _hal_mt_namchabarwa_pkt_getRxWorkIdx(const UI32_T unit,
 /**
  * @brief To set tx channel work index.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -603,7 +612,7 @@ _hal_mt_namchabarwa_pkt_getRxPopIdx(const UI32_T unit,
 /**
  * @brief To set tx channel work index.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @param [in]     work_idx   - work index
  * @return         CLX_E_OK        - Successfully configure the register.
@@ -627,7 +636,7 @@ _hal_mt_namchabarwa_pkt_setTxWorkIdx(const UI32_T unit,
 /**
  * @brief To get tx channel work index.
  * 
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -647,7 +656,7 @@ _hal_mt_namchabarwa_pkt_getTxWorkIdx(
 /**
  * @brief To get tx channel pop index.
  * 
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -668,7 +677,7 @@ _hal_mt_namchabarwa_pkt_getTxPopIdx(
 /**
  * @brief To issue "START" command to the target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -692,7 +701,7 @@ _hal_mt_namchabarwa_pkt_startTxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "START" command to the target RX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -716,7 +725,7 @@ _hal_mt_namchabarwa_pkt_startRxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "STOP" command to the target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -740,7 +749,7 @@ _hal_mt_namchabarwa_pkt_stopTxChannelReg(const UI32_T unit,
 /**
  * @brief To issue "STOP" command to the target RX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK        - Successfully configure the register.
  * @return         CLX_E_OTHERS    - Configure the register failed.
@@ -935,7 +944,7 @@ _hal_mt_namchabarwa_pkt_unmaskTxPdmaAbnormalIntrReg(
 /**
  * @brief To configure the start address and the length of target GPD ring of TX channel.
  *
- * @param [in]     unit              - The unit ID
+ * @param [in]     unit              - Device unit number
  * @param [in]     channel           - The target TX channel
  * @param [in]     gpd_start_addr    - The start address of the GPD ring
  * @param [in]     gpd_ring_sz       - The size of the GPD ring
@@ -975,7 +984,7 @@ _hal_mt_namchabarwa_pkt_setTxGpdStartAddrReg(const UI32_T unit,
 /**
  * @brief To configure the start address and the length of target GPD ring of RX channel.
  *
- * @param [in]     unit              - The unit ID
+ * @param [in]     unit              - Device unit number
  * @param [in]     channel           - The target RX channel
  * @param [in]     gpd_start_addr    - The start address of the GPD ring
  * @param [in]     gpd_ring_sz       - The size of the GPD ring
@@ -1018,7 +1027,7 @@ _hal_mt_namchabarwa_pkt_setRxGpdStartAddrReg(const UI32_T unit,
 /**
  * @brief To get the PDMA TX interrupt counters of the target channel.
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     channel      - The target channel
  * @param [out]    ptr_intr_cnt - The Pointer of intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -1033,7 +1042,7 @@ hal_mt_namchabarwa_pkt_getTxIntrCnt(const UI32_T unit, const UI32_T channel, UI3
 /**
  * @brief To get the PDMA RX interrupt counters of the target channel.
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     channel      - The target channel
  * @param [out]    ptr_intr_cnt - The Pointer of intr cnt
  * @return         CLX_E_OK    - Successfully get the counters.
@@ -1048,7 +1057,7 @@ hal_mt_namchabarwa_pkt_getRxIntrCnt(const UI32_T unit, const UI32_T channel, UI3
 /**
  * @brief To get the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1066,7 +1075,7 @@ hal_mt_namchabarwa_pkt_getTxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully get the counters.
  */
@@ -1084,7 +1093,7 @@ hal_mt_namchabarwa_pkt_getRxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To clear the PDMA TX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1114,7 +1123,7 @@ hal_mt_namchabarwa_pkt_clearTxKnlCnt(const UI32_T unit, void *ptr_data)
 /**
  * @brief To clear the PDMA RX counters of the target channel.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1368,7 +1377,7 @@ _hal_mt_namchabarwa_pkt_getQueueCount(HAL_MT_NAMCHABARWA_PKT_SW_QUEUE_T *ptr_que
 /**
  * @brief To allocate the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_idx    - The current GPD index
  * @return         CLX_E_OK           - Successfully allocate the buffer.
@@ -1417,7 +1426,7 @@ _hal_mt_namchabarwa_pkt_allocRxPayloadBuf(const UI32_T unit,
 /**
  * @brief To free the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @param [in]     gpd_idx    - The current GPD index
  * @return         CLX_E_OK    - Successfully free the buffer.
@@ -1453,7 +1462,7 @@ _hal_mt_namchabarwa_pkt_freeRxPayloadBuf(const UI32_T unit,
 /**
  * @brief To free the RX packet payload buffer for the GPD.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_sw_gpd    - The pointer of RX SW GPD
  * @return         CLX_E_OK    - Successfully free the buffer.
  */
@@ -1479,7 +1488,7 @@ _hal_mt_namchabarwa_pkt_freeRxPayloadBufGpd(const UI32_T unit,
 /**
  * @brief To initialize the GPD ring of target TX channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully initialize the GPD ring.
  */
@@ -1543,7 +1552,7 @@ _hal_mt_namchabarwa_pkt_initRxPdmaRing(const UI32_T unit,
 /**
  * @brief To de-init the Rx PDMA ring configuration.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA ring.
  */
@@ -1581,7 +1590,7 @@ _hal_mt_namchabarwa_pkt_initRxPdmaRingBuf(const UI32_T unit,
 /**
  * @brief To de-init the Rx PDMA ring configuration.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA ring.
  */
@@ -1603,7 +1612,7 @@ _hal_mt_namchabarwa_pkt_deinitRxPdmaRingBuf(const UI32_T unit,
 /**
  * @brief To check status if the PDMA is ready to recover.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully ready to recover PDMA.
  */
@@ -1626,7 +1635,7 @@ _hal_mt_namchabarwa_pkt_checkTxPdmaRecoverStatus(const UI32_T unit,
 /**
  * @brief To check status if the PDMA is ready to recover.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully ready to recover PDMA.
  */
@@ -1649,7 +1658,7 @@ _hal_mt_namchabarwa_pkt_checkRxPdmaRecoverStatus(const UI32_T unit,
 /**
  * @brief To recover the PDMA status to the initial state.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target TX channel
  * @return         CLX_E_OK    - Successfully recover PDMA.
  */
@@ -1688,7 +1697,7 @@ _hal_mt_namchabarwa_pkt_recoverTxPdma(const UI32_T unit,
 /**
  * @brief To recover the RX PDMA from the error state.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target RX channel
  * @return         CLX_E_OK    - Successfully recovery the PDMA.
  */
@@ -1744,7 +1753,7 @@ _hal_mt_namchabarwa_pkt_recoverRxPdma(const UI32_T unit,
 /**
  * @brief To free the TX SW GPD link list.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_sw_gpd    - The pointer of TX SW GPD
  * @return         CLX_E_OK    - Successfully free the GPD list.
  */
@@ -1763,7 +1772,7 @@ _hal_mt_namchabarwa_pkt_freeTxGpdList(UI32_T unit, HAL_MT_NAMCHABARWA_PKT_TX_SW_
 /**
  * @brief To free the RX SW GPD link list.
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     ptr_sw_gpd      - The pointer of RX SW GPD
  * @param [in]     free_payload    - TRUE: To free the buf in SDK, FALSE: in user process.
  * @return         CLX_E_OK    - Successfully recovery the PDMA.
@@ -1791,7 +1800,7 @@ _hal_mt_namchabarwa_pkt_freeRxGpdList(UI32_T unit,
 /**
  * @brief To enqueue numbers of packet in the bulk buffer
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @param [in]     number     - The number of packet to be enqueue
  */
@@ -1815,7 +1824,7 @@ _hal_mt_namchabarwa_pkt_txEnQueueBulk(const UI32_T unit, const UI32_T channel, c
 /**
  * @brief To dequeue the packets based on the strict algorithm.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully dequeue the packets.
  */
@@ -2078,7 +2087,7 @@ _hal_mt_namchabarwa_pkt_getPacketDest(const UI32_T unit,
  * @brief To dump the values of fields for the specified RX GPD.
  *
  * @param [in]     ptr_virt_addr    - Pointer for the RX PKT buf address
- * @param [in]     buf_len          - pkt buf_len
+ * @param [in]     size             - pkt buf_len
  * @param [in]     loglvl           - Log level for printing the payload.
  */
 static void
@@ -2117,7 +2126,7 @@ _hal_mt_namchabarwa_pkt_print_payload(UI8_T *ptr_virt_addr, UI32_T size, UI32_T 
 /**
  * @brief To dump the values of fields for the specified RX GPD.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_gpd       - Pointer for the GPD
  * @param [in]     loglvl        - Log level for printing the RX GPD.
  * @return         CLX_E_OK    - Successfully show the RX GPD content.
@@ -2268,10 +2277,83 @@ _hal_mt_namchabarwa_pkt_print_pph(HAL_MT_NAMCHABARWA_PKT_PPH_L2_T *ptr_pph_l2, U
     }
 }
 
+/* FUNCTION NAME: _hal_mt_namchabarwa_pkt_rxHandleMOD
+ * PURPOSE:
+ *      To check mod，change pph cpu reason to mod reason and change dmac if needed.
+ * INPUT:
+ *      ptr_rx_gpd      -- Pointer of the RX GPD
+ * OUTPUT:
+ *      None
+ * RETURN:
+ *      CLX_E_OK        -- Successfully dispatch the packets to netdev.
+ */
+static void
+_hal_mt_namchabarwa_pkt_rxHandleMOD(const UI32_T unit,
+                                    HAL_MT_NAMCHABARWA_PKT_RX_SW_GPD_T *ptr_rx_gpd)
+{
+    UI8_T *pkt_dmac = NULL;
+    HAL_MT_NAMCHABARWA_PKT_RX_CB_T *ptr_rx_cb = HAL_MT_NAMCHABARWA_PKT_GET_RX_CB_PTR(unit);
+
+    pkt_dmac = (UI8_T *)ptr_rx_gpd->ptr_pph_l2 + HAL_MT_NAMCHABARWA_PKT_PPH_HDR_SZ;
+    if (0 == memcmp(g_mod_default_mac, pkt_dmac, 6)) {
+        /* change dmac */
+        if (ptr_rx_cb->enable_mod_dmac) {
+            osal_memcpy(pkt_dmac, ptr_rx_cb->mod_dmac, 6);
+        }
+        ptr_rx_gpd->ptr_pph_l2->cpu_reason = HAL_MT_NAMCHABARWA_PKT_RX_MOD_HW_REASON;
+
+        OSAL_PRINT(
+            OSAL_DBG_RX | OSAL_DBG_INFO,
+            "u=%u ptr_rx_cb->enable_mod_dmac:%d change mod mac:%02x-%02x-%02x-%02x-%02x-%02x, pkt_dmac:%02x-%02x-%02x-%02x-%02x-%02x\n",
+            unit, ptr_rx_cb->enable_mod_dmac, ptr_rx_cb->mod_dmac[0], ptr_rx_cb->mod_dmac[1],
+            ptr_rx_cb->mod_dmac[2], ptr_rx_cb->mod_dmac[3], ptr_rx_cb->mod_dmac[4],
+            ptr_rx_cb->mod_dmac[5], pkt_dmac[0], pkt_dmac[1], pkt_dmac[2], pkt_dmac[3], pkt_dmac[4],
+            pkt_dmac[5]);
+
+    } else {
+        return;
+    }
+
+    return;
+}
+
+#if defined(CLX_EN_NETIF)
+static void
+_hal_mt_namchabarwa_pkt_parseRxPkt(const UI32_T unit,
+                                   HAL_MT_NAMCHABARWA_PKT_RX_SW_GPD_T *ptr_rx_gpd,
+                                   NETIF_NL_RX_PKT_EXTRA_T *ptr_pktcookies)
+{
+    UI32_T port = 0;
+    HAL_MT_NAMCHABARWA_PKT_NETIF_INTF_T *ptr_egr_netif = NULL;
+    struct net_device *ptr_net_dev = NULL;
+
+    if (HAL_MT_NAMCHABARWA_PKT_RX_IGR_SFLOW_SAMPLER == ptr_rx_gpd->ptr_pph_l2->cpu_reason) {
+        ptr_pktcookies->psample_dir = NETIF_NL_PKT_PSAMPLE_INGRESS;
+    }
+
+    if (HAL_MT_NAMCHABARWA_PKT_RX_EGR_SFLOW_SAMPLER == ptr_rx_gpd->ptr_pph_l2->cpu_reason) {
+        ptr_pktcookies->psample_dir = NETIF_NL_PKT_PSAMPLE_EGRESS;
+    }
+
+    port = HAL_MT_NAMCHABARWA_PKT_PPH_GET_DST_IDX(ptr_rx_gpd->ptr_pph_l2);
+    if (port >= HAL_MT_NAMCHABARWA_PKT_MAX_PORT_NUM) {
+        ptr_pktcookies->egr_intf_idx = port;
+
+        /* di cannot get phy port di, egr_intf_id default use 0 */
+        ptr_pktcookies->egr_intf_id = 0;
+    } else {
+        ptr_net_dev = HAL_MT_NAMCHABARWA_PKT_GET_PORT_NETDEV(port);
+        ptr_pktcookies->egr_intf_idx = (NULL != ptr_net_dev) ? ptr_net_dev->ifindex : port;
+        ptr_egr_netif = HAL_MT_NAMCHABARWA_PKT_GET_PORT_NETIF(port);
+        ptr_pktcookies->egr_intf_id = ptr_egr_netif->id;
+    }
+}
+#endif
+
 /**
  * @brief To enqueue the packets to multiple queues.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Rx GPD link list
  * @return         CLX_E_OK    - Successfully enqueue the packets.
@@ -2304,6 +2386,7 @@ _hal_mt_namchabarwa_pkt_rxEnQueue(const UI32_T unit,
     static UI8_T stp_mac[ETH_ALEN] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x00};
     static UI8_T pvst_mac[ETH_ALEN] = {0x01, 0x00, 0x0c, 0xcc, 0xcc, 0xcd};
     HAL_MT_NAMCHABARWA_PKT_NETIF_INTF_T *ptr_netif = NULL;
+    NETIF_NL_RX_COOKIES_T netlink_cookies;
 #endif
 
     /* To verify kernel Rx performance */
@@ -2377,6 +2460,9 @@ _hal_mt_namchabarwa_pkt_rxEnQueue(const UI32_T unit,
         ptr_sw_gpd = ptr_sw_gpd->ptr_next;
     }
 
+    /* if mod pkt,set mod hw reason */
+    _hal_mt_namchabarwa_pkt_rxHandleMOD(unit, ptr_sw_first_gpd);
+
     _hal_mt_namchabarwa_pkt_getPacketDest(unit, ptr_sw_first_gpd, &dest_type, &ptr_dest);
 #if defined(CLX_EN_NETIF)
     if ((HAL_MT_NAMCHABARWA_PKT_DEST_NETDEV == dest_type) ||
@@ -2430,6 +2516,12 @@ _hal_mt_namchabarwa_pkt_rxEnQueue(const UI32_T unit,
         } else {
             vid_1st = ptr_sw_first_gpd->ptr_pph_l2->src_bdi;
             vlan_pop_num = 1;
+        }
+
+        /* parse rx pkt */
+        if (HAL_MT_NAMCHABARWA_PKT_DEST_NETLINK == dest_type) {
+            osal_memset(&netlink_cookies, 0, sizeof(netlink_cookies));
+            _hal_mt_namchabarwa_pkt_parseRxPkt(unit, ptr_sw_first_gpd, &netlink_cookies.pkt);
         }
 
         /* if the packet is composed of multiple gpd (skb), need to merge it into a single skb */
@@ -2535,7 +2627,8 @@ _hal_mt_namchabarwa_pkt_rxEnQueue(const UI32_T unit,
             OSAL_PRINT(OSAL_DBG_PROFILE, "hit profile dest=netlink, name=%s, mcgrp=%s\n",
                        ((NETIF_NL_RX_DST_NETLINK_T *)ptr_dest)->name,
                        ((NETIF_NL_RX_DST_NETLINK_T *)ptr_dest)->mc_group_name);
-            netif_nl_rxSkb(unit, ptr_skb, ptr_dest);
+            netlink_cookies.nl = (NETIF_NL_RX_DST_NETLINK_T *)ptr_dest;
+            netif_nl_rxSkb(unit, ptr_skb, &netlink_cookies);
         }
     } else
 #endif
@@ -2578,7 +2671,7 @@ _hal_mt_namchabarwa_pkt_flushRxQueue(const UI32_T unit, HAL_MT_NAMCHABARWA_PKT_S
 /**
  * @brief To dequeue the packets based on the configured algorithm.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully dequeue the packets.
  */
@@ -2705,7 +2798,7 @@ _hal_mt_namchabarwa_pkt_schedRxDeQueue(const UI32_T unit, void *ptr_data)
 /**
  * @brief To determine the next action after transfer the packet to HW.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the target action.
@@ -2812,7 +2905,7 @@ _hal_mt_namchabarwa_pkt_stopAllIntf(const UI32_T unit)
 /**
  * @brief To perform the packet transmission form CPU to the switch.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target TX channel
  * @param [in]     ptr_sw_gpd    - Pointer for the SW Tx GPD link list
  * @return         CLX_E_OK    - Successfully perform the transferring.
@@ -3015,7 +3108,7 @@ _hal_mt_namchabarwa_pkt_rxStart(const UI32_T unit)
  *        2. To init the Rx subsystem and start the Rx channel.
  *        3. To restart the Rx subsystem
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data      - Pointer of the data
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.
@@ -3052,7 +3145,7 @@ hal_mt_namchabarwa_pkt_setRxKnlConfig(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the Rx subsystem configuration.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]     ptr_data      - Pointer of the data
  * @return         CLX_E_OK        - Successfully configure the RX parameters.
  * @return         CLX_E_OTHERS    - Configure the parameter failed.
@@ -3072,7 +3165,7 @@ hal_mt_namchabarwa_pkt_getRxKnlConfig(const UI32_T unit, void *ptr_data)
 /**
  * @brief To de-initialize the Task for packet module.
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     ptr_data     - The pointer of data
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
@@ -3146,7 +3239,7 @@ hal_mt_namchabarwa_pkt_deinitTask(const UI32_T unit, void *ptr_data)
 /**
  * @brief To de-initialize the Tx PDMA configuration of the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Tx channel
  * @return         CLX_E_OK        - Successfully de-init the Tx PDMA.
  * @return         CLX_E_OTHERS    - De-init the Tx PDMA failed.
@@ -3179,7 +3272,7 @@ _hal_mt_namchabarwa_pkt_deinitTxPdma(const UI32_T unit,
 /**
  * @brief To de-initialize the Rx PDMA configuration of the specified channel.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Rx channel
  * @return         CLX_E_OK    - Successfully de-init the Rx PDMA.
  */
@@ -3202,7 +3295,7 @@ _hal_mt_namchabarwa_pkt_deinitRxPdma(const UI32_T unit,
 /**
  * @brief To de-init the control block of Drv.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3230,7 +3323,7 @@ _hal_mt_namchabarwa_pkt_deinitPktCb(const UI32_T unit)
 /**
  * @brief To de-init the control block of Tx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3260,7 +3353,7 @@ _hal_mt_namchabarwa_pkt_deinitPktTxCb(const UI32_T unit)
 /**
  * @brief To de-init the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-init the control block.
  */
 static CLX_ERROR_NO_T
@@ -3291,7 +3384,7 @@ _hal_mt_namchabarwa_pkt_deinitPktRxCb(const UI32_T unit)
 /**
  * @brief To de-initialize the PDMA L1 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully de-initialize for the L1 ISR.
  */
 static CLX_ERROR_NO_T
@@ -3312,7 +3405,7 @@ _hal_mt_namchabarwa_pkt_deinitL1Isr(const UI32_T unit)
 /**
  * @brief To handle the error which occurs in TX channels.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel where the error occurs
  * @return         CLX_E_OK    - Successfully handle the error situation.
  */
@@ -3369,7 +3462,7 @@ _hal_mt_namchabarwa_pkt_handleTxErrStat(const UI32_T unit,
 /**
  * @brief To handle the error which occurs in RX channels.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel where the error occurs
  * @return         CLX_E_OK    - Successfully handle the error situation.
  */
@@ -3436,7 +3529,7 @@ _hal_mt_namchabarwa_pkt_handleRxErrStat(const UI32_T unit,
 /**
  * @brief To invoke the corresponding handler for the L2 interrupts.
  *
- * @param [in]     ptr_argv    - The unit ID
+ * @param [in]     ptr_argv    - Device unit number
  */
 static void
 _hal_mt_namchabarwa_pkt_handleErrorTask(void *ptr_argv)
@@ -3467,7 +3560,7 @@ _hal_mt_namchabarwa_pkt_handleErrorTask(void *ptr_argv)
 /**
  * @brief To handle the TX done interrupt for the specified TX channel.
  *
- * @param [in]     ptr_argv    - The unit ID and channel ID
+ * @param [in]     ptr_argv    - Device unit number and channel ID
  */
 static void
 _hal_mt_namchabarwa_pkt_handleTxDoneTask(void *ptr_argv)
@@ -3586,7 +3679,7 @@ _hal_mt_namchabarwa_pkt_handleTxDoneTask(void *ptr_argv)
 /**
  * @brief To handle the RX done interrupt for the specified RX channel.
  *
- * @param [in]     ptr_argv    - The unit ID and channel ID
+ * @param [in]     ptr_argv    - Device unit number and channel ID
  */
 static void
 _hal_mt_namchabarwa_pkt_handleRxDoneTask(void *ptr_argv)
@@ -3787,7 +3880,7 @@ _hal_mt_namchabarwa_pkt_handleRxDoneTask(void *ptr_argv)
 /**
  * @brief To initialize the Task for packet module.
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     ptr_data     - The pointer of data
  * @return         CLX_E_OK        - Successfully dinitialize the control block.
  * @return         CLX_E_OTHERS    - Initialize the control block failed.
@@ -3862,7 +3955,7 @@ hal_mt_namchabarwa_pkt_initTask(const UI32_T unit, void *ptr_data)
 /**
  * @brief To initialize the TX PDMA.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Tx channel
  * @return         CLX_E_OK    - Successfully initialize the TX PDMA.
  */
@@ -3960,7 +4053,7 @@ _hal_mt_namchabarwa_pkt_initTxPdma(const UI32_T unit,
 /**
  * @brief To initialize the RX PDMA.
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target Rx channel
  * @return         CLX_E_OK    - Successfully initialize the RX PDMA.
  */
@@ -4030,7 +4123,7 @@ _hal_mt_namchabarwa_pkt_initRxPdma(const UI32_T unit,
 /**
  * @brief To initialize the control block of Drv.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK    - Successfully initialize the control block.
  */
 static CLX_ERROR_NO_T
@@ -4059,7 +4152,7 @@ _hal_mt_namchabarwa_pkt_initPktCb(const UI32_T unit)
 /**
  * @brief To initialize the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the control block.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4106,7 +4199,7 @@ _hal_mt_namchabarwa_pkt_initPktTxCb(const UI32_T unit)
 /**
  * @brief To initialize the control block of Rx PDMA.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the control block.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4158,7 +4251,7 @@ _hal_mt_namchabarwa_pkt_initPktRxCb(const UI32_T unit)
 /**
  * @brief To initialize the PDMA L1 ISR configuration.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Successfully initialize the L1 ISR.
  * @return         CLX_E_OTHERS    - Configure failed.
  */
@@ -4353,7 +4446,7 @@ _hal_mt_namchabarwa_pkt_allocProfEntry(HAL_MT_NAMCHABARWA_PKT_NETIF_PROFILE_T *p
 
     for (idx = 0; idx < HAL_MT_NAMCHABARWA_PKT_NET_PROFILE_NUM_MAX; idx++) {
         if (NULL == _ptr_hal_mt_namchabarwa_pkt_profile_entry[idx]) {
-            OSAL_PRINT(OSAL_DBG_PROFILE, "alloc prof entry failed, id=%d\n", idx);
+            OSAL_PRINT(OSAL_DBG_PROFILE, "alloc prof entry success, id=%d\n", idx);
             _ptr_hal_mt_namchabarwa_pkt_profile_entry[idx] = ptr_profile;
             ptr_profile->id = idx;
             return (CLX_E_OK);
@@ -4463,7 +4556,7 @@ _hal_mt_namchabarwa_pkt_destroyAllProfile(const UI32_T unit)
  * @brief To invoke the functions to de-initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data     - The pointer of data
  * @return         CLX_E_OK        - Successfully de-initialize the control blocks.
  * @return         CLX_E_OTHERS    - De-initialize the control blocks failed.
@@ -4514,7 +4607,7 @@ hal_mt_namchabarwa_pkt_deinitPktDrv(const UI32_T unit, void *ptr_data)
  * @brief To invoke the functions to return pdma ring base info
  *        PDMA subsystem.
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @param [in]     ptr_data     - The pointer of data
  * @return         CLX_E_OK        - Successfully .
  * @return         CLX_E_OTHERS    - failed.
@@ -4580,7 +4673,7 @@ hal_mt_namchabarwa_pkt_initPktDrvCallback(const UI32_T unit, void *ptr_data)
  * @brief To invoke the functions to initialize the control block for each
  *        PDMA subsystem.
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     ptr_data     - The pointer of data
  * @return         CLX_E_OK        - Successfully initialize the control blocks.
  * @return         CLX_E_OTHERS    - Initialize the control blocks failed.
@@ -5296,7 +5389,7 @@ _hal_mt_namchabarwa_pkt_setIntf(const UI32_T unit, void *ptr_data)
 /**
  * @brief To set the port attributes such as status or speeds.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully set the attributes.
  */
@@ -5342,7 +5435,7 @@ hal_mt_namchabarwa_pkt_setPortAttr(const UI32_T unit, void *ptr_data)
 /**
  * @brief To get the port attributes such as status or speeds.
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_data      - Pointer of the data
  * @return         CLX_E_OK    - Successfully set the attributes.
  */
@@ -5669,6 +5762,36 @@ hal_mt_namchabarwa_pkt_dev_tx(const UI32_T unit, void *ptr_data)
     return (CLX_E_OK);
 }
 
+CLX_ERROR_NO_T
+hal_mt_namchabarwa_pkt_ioctl_mod(const UI32_T unit, void *ptr_data)
+{
+    HAL_MT_NAMCHABARWA_PKT_IOCTL_MOD_COOKIE_T mod_cookie;
+    HAL_MT_NAMCHABARWA_PKT_IOCTL_MOD_COOKIE_T *ptr_cookie = ptr_data;
+    HAL_MT_NAMCHABARWA_PKT_RX_CB_T *ptr_rx_cb = HAL_MT_NAMCHABARWA_PKT_GET_RX_CB_PTR(unit);
+
+    /* copy the tx-cookie */
+    osal_io_copyFromUser(&mod_cookie, ptr_data, sizeof(HAL_MT_NAMCHABARWA_PKT_IOCTL_MOD_COOKIE_T));
+    if (mod_cookie.get) {
+        osal_memcpy(mod_cookie.mod_dmac, ptr_rx_cb->mod_dmac, 6);
+        osal_io_copyToUser(ptr_cookie->mod_dmac, mod_cookie.mod_dmac, 6);
+    } else {
+        if (0 == memcmp(g_mod_default_mac, mod_cookie.mod_dmac, 6)) {
+            ptr_rx_cb->enable_mod_dmac = FALSE;
+            osal_memset(ptr_rx_cb->mod_dmac, 0, 6);
+        } else {
+            ptr_rx_cb->enable_mod_dmac = TRUE;
+            osal_memcpy(ptr_rx_cb->mod_dmac, mod_cookie.mod_dmac, 6);
+        }
+    }
+
+    OSAL_PRINT(OSAL_DBG_INFO, "u=%u, enable_mod_dmac=%u mod mac:%02x-%02x-%02x-%02x-%02x-%02x\n",
+               unit, ptr_rx_cb->enable_mod_dmac, ptr_rx_cb->mod_dmac[0], ptr_rx_cb->mod_dmac[1],
+               ptr_rx_cb->mod_dmac[2], ptr_rx_cb->mod_dmac[3], ptr_rx_cb->mod_dmac[4],
+               ptr_rx_cb->mod_dmac[5]);
+
+    return (CLX_E_OK);
+}
+
 long
 hal_mt_namchabarwa_pkt_dev_ioctl(const UI32_T unit)
 {
@@ -5741,6 +5864,10 @@ hal_mt_namchabarwa_pkt_dev_ioctl(const UI32_T unit)
 
     _osal_mdc_registerIoctlCallback(unit, OSAL_MDC_IOCTL_TYPE_NETIF_DEV_TX,
                                     hal_mt_namchabarwa_pkt_dev_tx);
+
+    _osal_mdc_registerIoctlCallback(unit, OSAL_MDC_IOCTL_TYPE_PKT_MOD,
+                                    hal_mt_namchabarwa_pkt_ioctl_mod);
+
     return rc;
 }
 
