@@ -763,6 +763,7 @@ typedef enum {
     CLX_PKT_RX_REASON_CIA_TRAP_45, /* cia trap reason 45, CL8600 only. */
     CLX_PKT_RX_REASON_CIA_TRAP_46, /* cia trap reason 46, CL8600 only. */
     CLX_PKT_RX_REASON_CIA_TRAP_47, /* cia trap reason 47, CL8600 only. */
+    CLX_PKT_RX_REASON_MOD,         /* mod reason */
     CLX_PKT_RX_REASON_OTHERS,      /* None of the above reasons */
     CLX_PKT_RX_REASON_LAST
 } CLX_PKT_RX_REASON_T;
@@ -1133,6 +1134,7 @@ typedef struct {
     UI32_T group_label; /* ACL ingress group label                              */
     UI32_T ts_sec;      /* The timestamp in seconds                             */
     UI32_T ts_nsec;     /* The timestamp in nano seconds                        */
+    UI32_T hdc_latency; /* high latency */
 
     /* Stacking */
     UI32_T path; /* The ingress path ID for packet Rx from remote chip   */
@@ -1346,7 +1348,7 @@ typedef struct {
  *
  * support_chip all
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     ptr_rx_cfg    - The user configuration
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
@@ -1361,7 +1363,7 @@ clx_pkt_setRxConfig(const UI32_T unit, const CLX_PKT_RX_CFG_T *ptr_rx_cfg);
  *
  * support_chip all
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [out]    ptr_rx_cfg    - The user configuration
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
@@ -1374,7 +1376,7 @@ clx_pkt_getRxConfig(const UI32_T unit, CLX_PKT_RX_CFG_T *ptr_rx_cfg);
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The channel used for packet transmission
  * @param [in]     ptr_pkt    - The packet structure of the TX packet
  * @return         CLX_E_OK        - Operation is successful.
@@ -1388,7 +1390,7 @@ clx_pkt_sendPacket(const UI32_T unit, const UI32_T channel, const CLX_PKT_TX_PKT
  *
  * support_chip all
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     ptr_pkt         - The packet structure of the TX packet
  * @param [in]     ptr_data_buf    - The buffer payload
  * @param [in]     len             - The packet length
@@ -1406,7 +1408,7 @@ clx_pkt_prepareTxPkt(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     queue      - The specified queue
  * @param [in]     channel    - The specified RX channel
  * @return         CLX_E_OK        - Operation is successful.
@@ -1420,7 +1422,7 @@ clx_pkt_setQueueToRxChannel(const UI32_T unit, const UI32_T queue, const UI32_T 
  *
  * support_chip all
  *
- * @param [in]     unit           - The unit ID
+ * @param [in]     unit           - Device unit number
  * @param [in]     queue          - The specified queue
  * @param [out]    ptr_channel    - The channel to which the specified queue is mapped
  * @return         CLX_E_OK        - Operation is successful.
@@ -1436,7 +1438,7 @@ clx_pkt_getQueueToRxChannel(const UI32_T unit, const UI32_T queue, UI32_T *ptr_c
  *
  * support_chip all
  *
- * @param [in]     unit             - The unit ID
+ * @param [in]     unit             - Device unit number
  * @param [in]     queue            - The specified queue ID
  * @param [in]     truncate_size    - Packet size of the queue
  * @return         CLX_E_OK        - Operation is successful.
@@ -1450,7 +1452,7 @@ clx_pkt_setRxQueueTruncateSize(const UI32_T unit, const UI32_T queue, const UI32
  *
  * support_chip all
  *
- * @param [in]     unit                 - The unit ID
+ * @param [in]     unit                 - Device unit number
  * @param [in]     queue                - The target queue ID
  * @param [out]    ptr_truncate_size    - Packet size of the queue
  * @return         CLX_E_OK        - Operation is successful.
@@ -1464,7 +1466,7 @@ clx_pkt_getRxQueueTruncateSize(const UI32_T unit, const UI32_T queue, UI32_T *pt
  *
  * support_chip CL8300 CL8500
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The specified TX channel
  * @param [in]     cos_bitmap    - The specified CoS values
  * @return         CLX_E_OK        - Operation is successful.
@@ -1478,7 +1480,7 @@ clx_pkt_setTxChannelCosBitmap(const UI32_T unit, const UI32_T channel, const UI8
  *
  * support_chip CL8300 CL8500
  *
- * @param [in]     unit              - The unit ID
+ * @param [in]     unit              - Device unit number
  * @param [in]     channel           - The specified TX channel
  * @param [out]    ptr_cos_bitmap    - Pointer for the CoS bitmap
  * @return         CLX_E_OK        - Operation is successful.
@@ -1492,7 +1494,7 @@ clx_pkt_getTxChannelCosBitmap(const UI32_T unit, const UI32_T channel, UI8_T *pt
  *
  * support_chip all
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     index        - The specified entry index for the rule
  * @param [in]     ptr_entry    - The value which will be set to the target entry
  * @return         CLX_E_OK        - Operation is successful.
@@ -1508,7 +1510,7 @@ clx_pkt_setCtrlToCpuEntry(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit         - The unit ID
+ * @param [in]     unit         - Device unit number
  * @param [in]     index        - The specified entry index
  * @param [out]    ptr_entry    - The value obtained from the entry
  * @return         CLX_E_OK        - Operation is successful.
@@ -1524,7 +1526,7 @@ clx_pkt_getCtrlToCpuEntry(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit    - The unit ID
+ * @param [in]     unit    - Device unit number
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
  */
@@ -1536,7 +1538,7 @@ clx_pkt_delCtrlToCpuEntryAll(const UI32_T unit);
  *
  * support_chip all
  *
- * @param [in]     unit             - The unit ID
+ * @param [in]     unit             - Device unit number
  * @param [in]     queue            - The specified queue
  * @param [in]     reason_bitmap    - The reason bitmap
  * @return         CLX_E_OK        - Operation is successful.
@@ -1552,7 +1554,7 @@ clx_pkt_setRxQueueMapping(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit                 - The unit ID
+ * @param [in]     unit                 - Device unit number
  * @param [in]     queue                - The specified queue
  * @param [out]    ptr_reason_bitmap    - Pointer of the reason bitmap
  * @return         CLX_E_OK        - Operation is successful.
@@ -1568,7 +1570,7 @@ clx_pkt_getRxQueueMapping(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit             - The unit ID
+ * @param [in]     unit             - Device unit number
  * @param [in]     port             - The port ID indicating CPU or CPI
  * @param [in]     queue            - The specified queue
  * @param [in]     reason_bitmap    - The reason bitmap
@@ -1586,7 +1588,7 @@ clx_pkt_setRxMapping(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit                 - The unit ID
+ * @param [in]     unit                 - Device unit number
  * @param [in]     port                 - The port ID indicating CPU or CPI
  * @param [in]     queue                - The specified queue
  * @param [out]    ptr_reason_bitmap    - Pointer of the reason bitmap
@@ -1604,7 +1606,7 @@ clx_pkt_getRxMapping(const UI32_T unit,
  *
  * support_chip all
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target channel
  * @param [out]    ptr_rx_cnt    - Pointer for the Rx counter
  * @return         CLX_E_OK                 - Operation is successful.
@@ -1618,7 +1620,7 @@ clx_pkt_getRxCnt(const UI32_T unit, const UI32_T channel, CLX_PKT_RX_CNT_T *ptr_
  *
  * support_chip all
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     channel       - The target channel
  * @param [out]    ptr_tx_cnt    - Pointer for the Tx counter
  * @return         CLX_E_OK                 - Operation is successful.
@@ -1632,7 +1634,7 @@ clx_pkt_getTxCnt(const UI32_T unit, const UI32_T channel, CLX_PKT_TX_CNT_T *ptr_
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1644,7 +1646,7 @@ clx_pkt_clearRxCnt(const UI32_T unit, const UI32_T channel);
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1656,7 +1658,7 @@ clx_pkt_clearTxCnt(const UI32_T unit, const UI32_T channel);
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @return         CLX_E_OK    - Successfully clear the counters.
  */
@@ -1668,7 +1670,7 @@ clx_pkt_showTxDbgCnt(const UI32_T unit, const UI32_T channel);
  *
  * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     channel    - The target channel
  * @return         CLX_E_OK    - Successfully clear the counters.
  */

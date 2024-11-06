@@ -6,3 +6,9 @@ Build paramters:
     ./build_env
     make KVERSION=4.19.0-12-2-amd64
 '''
+## release for customer
+      1. generate version header file.
+'''
+    sh gen_rel_ver_header.sh
+'''
+      2. update the latest changes and version header from github.

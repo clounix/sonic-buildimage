@@ -122,11 +122,11 @@ typedef struct {
 
 /* ----------------------------------------------------------------------------------- APIs */
 /**
- * @brief This API is used to create the Network Interface for Linux TCP/IP stack.
+ * @brief To create the Network Interface for Linux TCP/IP stack.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     ptr_net_intf    - Pointer of the Network Interface
  * @param [out]    ptr_intf_id     - Pointer of the Network Interface ID
  * @return         CLX_E_OK        - Operation is successful.
@@ -136,11 +136,11 @@ CLX_ERROR_NO_T
 clx_netif_createIntf(const UI32_T unit, CLX_NETIF_INTF_T *ptr_net_intf, UI32_T *ptr_intf_id);
 
 /**
- * @brief This API is used to destroy the Network Interface for Linux TCP/IP stack.
+ * @brief To destroy the Network Interface for Linux TCP/IP stack.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     intf_id    - The Network Interface ID
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
@@ -149,11 +149,11 @@ CLX_ERROR_NO_T
 clx_netif_destroyIntf(const UI32_T unit, const UI32_T intf_id);
 
 /**
- * @brief This API get the Network Interface for Linux TCP/IP stack.
+ * @brief To get the Network Interface for Linux TCP/IP stack.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit            - The unit ID
+ * @param [in]     unit            - Device unit number
  * @param [in]     intf_id         - The Network Interface ID
  * @param [out]    ptr_net_intf    - Pointer of the Network Interface
  * @return         CLX_E_OK        - Operation is successful.
@@ -163,11 +163,11 @@ CLX_ERROR_NO_T
 clx_netif_getIntf(const UI32_T unit, const UI32_T intf_id, CLX_NETIF_INTF_T *ptr_net_intf);
 
 /**
- * @brief This API get the Network Profile counter for Linux TCP/IP stack.
+ * @brief To get the Network Profile counter for Linux TCP/IP stack.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit             - The unit ID
+ * @param [in]     unit             - Device unit number
  * @param [in]     intf_id          - The Network Interface ID
  * @param [out]    ptr_netif_cnt    - Pointer of the Network Interface counter
  * @return         CLX_E_OK        - Operation is successful.
@@ -177,11 +177,11 @@ CLX_ERROR_NO_T
 clx_netif_getIntfCnt(const UI32_T unit, const UI32_T intf_id, CLX_NETIF_INTF_CNT_T *ptr_netif_cnt);
 
 /**
- * @brief This API clear the Network Profile counter for Linux TCP/IP stack.
+ * @brief To clear the Network Profile counter for Linux TCP/IP stack.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit       - The unit ID
+ * @param [in]     unit       - Device unit number
  * @param [in]     intf_id    - The Network Interface ID
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
@@ -190,11 +190,11 @@ CLX_ERROR_NO_T
 clx_netif_clearIntfCnt(const UI32_T unit, const UI32_T intf_id);
 
 /**
- * @brief This API is used to create the Network Profile for Rx packets to User Process.
+ * @brief To create the Network Profile for Rx packets to User Process.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit               - The unit ID
+ * @param [in]     unit               - Device unit number
  * @param [in]     ptr_net_profile    - Pointer of the Network Profile
  * @param [out]    ptr_profile_id     - Pointer of the Network Profile ID
  * @return         CLX_E_OK        - Operation is successful.
@@ -206,11 +206,11 @@ clx_netif_createProfile(const UI32_T unit,
                         UI32_T *ptr_profile_id);
 
 /**
- * @brief This API is used to destroy the Network Profile for Rx packets to User Process.
+ * @brief To destroy the Network Profile for Rx packets to User Process.
  *
- * support_chip ALL
+ * support_chip all
  *
- * @param [in]     unit          - The unit ID
+ * @param [in]     unit          - Device unit number
  * @param [in]     profile_id    - The Network Profile ID
  * @return         CLX_E_OK        - Operation is successful.
  * @return         CLX_E_OTHERS    - Fail
@@ -232,9 +232,9 @@ typedef enum {
 } CLX_NETIF_INTF_PROPERTY_T;
 
 /**
- * @brief Set Port property.
+ * @brief To set Netif property.
  *
- * support_chip ALL
+ * support_chip all
  *
  * @param [in]     unit        - Device unit number
  * @param [in]     intf_id     - Network Interface ID
@@ -252,13 +252,15 @@ clx_netif_setIntfProperty(const UI32_T unit,
                           const UI32_T param1);
 
 /**
- * @brief Get port property.
+ * @brief To get Netif property.
  *
- * support_chip ALL
+ * support_chip all
  *
  * @param [in]     unit        - Device unit number
  * @param [in]     intf_id     - Network Interface ID
  * @param [in]     property    - Property type
+ * @param [in]     ptr_param0  - First parameter
+ * @param [in]     ptr_param1  - Second parameter
  * @return         CLX_E_OK               - Operation success
  * @return         CLX_E_BAD_PARAMETER    - Bad parameter
  */
@@ -286,9 +288,9 @@ typedef struct {
 } CLX_NETIF_NETLINK_T;
 
 /**
- * @brief Create Netlink.
+ * @brief To create Netlink.
  *
- * support_chip ALL
+ * support_chip all
  *
  * @param [in]     unit              - Device unit number
  * @param [in]     ptr_netlink       - Pointer of the Netlink
@@ -302,9 +304,9 @@ clx_netif_createNetlink(const UI32_T unit,
                         UI32_T *ptr_netlink_id);
 
 /**
- * @brief Destroy Netlink.
+ * @brief To destroy Netlink.
  *
- * support_chip ALL
+ * support_chip all
  *
  * @param [in]     unit          - Device unit number
  * @param [in]     netlink_id    - The Netlink ID
@@ -315,9 +317,9 @@ CLX_ERROR_NO_T
 clx_netif_destroyNetlink(const UI32_T unit, const UI32_T netlink_id);
 
 /**
- * @brief Get the Netlink.
+ * @brief To get the Netlink.
  *
- * support_chip ALL
+ * support_chip all
  *
  * @param [in]     unit           - Device unit number
  * @param [in]     netlink_id     - The Netlink ID
