@@ -70,7 +70,7 @@ def readFile(path):
         try:
             file = open(path)
         except IOError as e:
-            print("Error: unable to open file: %s" % str(e))
+            syslog.syslog(syslog.LOG_WARNING, "Error: unable to open file: %s" % str(e))
             FILE_LOCK.release()
             return 'Error'
 
@@ -82,17 +82,25 @@ def readFile(path):
 
 
 def writeFile(path, value):
+    result = 'Ignore'
     if FILE_LOCK.acquire():
         try:
-            file = open(path, "w")
+            with open(path, "r+") as file:
+                oldValue = file.readline().rstrip()
+                if oldValue == "NA" or oldValue == "N/A":
+                    syslog.syslog(syslog.LOG_INFO, 'Skipped %s because of N/A' % path)
+                    pass
+                else:
+                    file.seek(0)
+                    file.write(str(value))
+                    file.truncate()
+                    result = 'Success'
         except IOError as e:
-            print("Error: unable to open file: %s" % str(e))
+            syslog.syslog(syslog.LOG_WARNING, "Error: unable to open file: %s" % str(e))
+            result = 'Error'
+        except:
+            result = 'Unknown Error'
+        finally:
             FILE_LOCK.release()
-            return 'Error'
 
-        file.seek(0)
-        file.write(str(value))
-        file.close()
-        FILE_LOCK.release()
-
-    return "Success"
+    return result
