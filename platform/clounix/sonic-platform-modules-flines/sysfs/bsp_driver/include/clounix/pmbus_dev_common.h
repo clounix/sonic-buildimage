@@ -70,7 +70,7 @@ struct pmbus_data {
 #define SCALE_FACTOR_LABEL  3
 
 
-static inline int get_psu_sensor_index(int curr_index, unsigned char (*range_map)[2])
+static inline int get_psu_sensor_index(int curr_index, unsigned char (*range_map)[SENSOR_RANGE_MAX])
 {
     int i = 0;
     while (range_map[i][RANGE_LABEL] != 0) {
@@ -83,7 +83,7 @@ static inline int get_psu_sensor_index(int curr_index, unsigned char (*range_map
     return range_map[i][LOCATION_LABEL];
 }
 
-static inline int get_sensor_internal_index(int sensor_index, int node_index, short (*sensor_map)[SENSOR_DRIVER_INDEX_COL_MAX])
+static inline int get_sensor_internal_index(int sensor_index, int node_index, short (*sensor_map)[SENSOR_COL_MAX])
 {
     return node_index - sensor_map[sensor_index][SENSOR_OFFSET_LABEL];
 }

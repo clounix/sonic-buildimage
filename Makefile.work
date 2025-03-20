@@ -371,23 +371,19 @@ init :
 
 .ONESHELL : reset
 reset :
-	@echo && echo -n "Warning! All local changes will be lost. Proceed? [y/N]: "
-	@read ans && (
-	    if [ $$ans == y ]; then
-	        echo "Resetting local repository. Please wait...";
-	        $(DOCKER_RUN) $(SLAVE_IMAGE):$(SLAVE_TAG) sudo rm -rf fsroot;
-	        if [ "$(MULTIARCH_QEMU_ENVIRON)" == y ] && [[ "$(CONFIGURED_ARCH)" == "armhf" || "$(CONFIGURED_ARCH)" ==  "arm64" ]]; then
-	            echo "Stopping march $(CONFIGURED_ARCH) docker"
-	            sudo kill -9 `sudo cat /var/run/march/docker.pid` || true
-	            sudo rm -f /var/run/march/docker.pid || true
-	        fi
-	        git clean -xfdf;
-	        git reset --hard;
-	        git submodule foreach --recursive 'git clean -xfdf || true';
-	        git submodule foreach --recursive 'git reset --hard || true';
-	        git submodule foreach --recursive 'git remote update || true';
-	        git submodule update --init --recursive;
-	        echo "Reset complete!";
-	    else
-	        echo "Reset aborted";
-	    fi )
+	@echo "Resetting local repository. Please wait...";
+	@$(DOCKER_RUN) $(SLAVE_IMAGE):$(SLAVE_TAG) sudo rm -rf fsroot;
+	@if [ "$(MULTIARCH_QEMU_ENVIRON)" == y ] && [[ "$(CONFIGURED_ARCH)" == "armhf" || "$(CONFIGURED_ARCH)" ==  "arm64" ]]; then
+		echo "Stopping march $(CONFIGURED_ARCH) docker"
+		sudo kill -9 `sudo cat /var/run/march/docker.pid` || true
+		sudo rm -f /var/run/march/docker.pid || true
+	fi
+	@git clean -xfdf;
+	@git reset --hard;
+	@git submodule foreach --recursive 'git clean -xfdf || true';
+	@git submodule foreach --recursive 'git reset --hard || true';
+	@git submodule foreach --recursive 'git remote update || true';
+	@git submodule update --init --recursive;
+	@echo "Reset complete!";
+
+

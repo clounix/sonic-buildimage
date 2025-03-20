@@ -19,6 +19,7 @@ struct fan_fn_if {
     ssize_t (*get_fan_status)(void *driver, unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_led_status)(void *driver, unsigned int fan_index, char *buf, size_t count);
     int (*set_fan_led_status)(void *driver, unsigned int fan_index, int status);
+    ssize_t (*get_fan_vmon)(void *driver, unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_direction)(void *driver, unsigned int fan_index, char *buf, size_t count);
     ssize_t (*get_fan_motor_speed)(void *driver, unsigned int fan_index, unsigned int motor_index, char *buf, size_t count);
     ssize_t (*get_fan_motor_speed_tolerance)(void *driver, unsigned int fan_index, unsigned int motor_index, char *buf, size_t count);

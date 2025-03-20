@@ -1,0 +1,10 @@
+{
+    "chassis": {
+        "DS410F-48Y8C": {
+            "component": {
+                "FPGA": {},
+                "BIOS": {}
+            }
+        }
+    }
+}

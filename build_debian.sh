@@ -67,6 +67,55 @@ mkdir -p $FILESYSTEM_ROOT/$PLATFORM_DIR
 mkdir -p $FILESYSTEM_ROOT/$PLATFORM_DIR/x86_64-grub
 touch $FILESYSTEM_ROOT/$PLATFORM_DIR/firsttime
 
+# Deploy FLINES custom tools
+if [ ! -d $FILESYSTEM_ROOT/usr/local/bin ]; then 
+    sudo mkdir -p $FILESYSTEM_ROOT/usr/local/bin
+    sudo chown -R root:root $FILESYSTEM_ROOT/usr/local/bin
+fi
+if [ ! -d $FILESYSTEM_ROOT/usr/bin ]; then 
+    sudo mkdir -p $FILESYSTEM_ROOT/usr/bin
+    sudo chown -R root:root $FILESYSTEM_ROOT/usr/bin
+fi
+sudo cp -f files/vtysh_bin/vtysh $FILESYSTEM_ROOT/usr/local/bin/
+if [ ! -d $FILESYSTEM_ROOT/var/vtysh ]; then
+    sudo mkdir -p $FILESYSTEM_ROOT/var/vtysh
+    sudo chown -R root:root $FILESYSTEM_ROOT/var/vtysh
+fi
+sudo cp -f files/vtysh_bin/all.sh $FILESYSTEM_ROOT/var/vtysh
+sudo cp -f files/vtysh_bin/all_other.sh $FILESYSTEM_ROOT/var/vtysh
+sudo cp -f files/vtysh_bin/mac.py $FILESYSTEM_ROOT/var/vtysh
+sudo cp -f files/vtysh_bin/bios.sh $FILESYSTEM_ROOT/var/vtysh
+sudo cp -f files/vtysh_bin/all_12.8t.sh $FILESYSTEM_ROOT/var/vtysh
+if [ ! -d $FILESYSTEM_ROOT/usr/lib/systemd/system/ ]; then
+    sudo mkdir -p $FILESYSTEM_ROOT/usr/lib/systemd/system/
+fi
+if [ ! -d $FILESYSTEM_ROOT/opt ]; then
+    sudo mkdir -p $FILESYSTEM_ROOT/opt
+fi
+sudo cp -f files/vtysh_bin/vtysh.service $FILESYSTEM_ROOT/usr/lib/systemd/system/
+sudo cp -f files/vtysh_bin/bios.sh $FILESYSTEM_ROOT/usr/bin/
+sudo cp -f files/clounix_bin/clx_fpga $FILESYSTEM_ROOT/usr/bin/
+sudo cp -f files/clounix_bin/cpld_update_app $FILESYSTEM_ROOT/usr/bin/
+sudo cp -f files/clounix_bin/ec_update_app $FILESYSTEM_ROOT/usr/bin/
+sudo cp -f files/afu/afulnx_64 $FILESYSTEM_ROOT/usr/bin/
+sudo cp -f files/afu/amifldrv_mod $FILESYSTEM_ROOT/var/vtysh/
+sudo cp -f files/bmc/sendSysInfo.sh $FILESYSTEM_ROOT/opt
+sudo chown root:root $FILESYSTEM_ROOT/usr/local/bin/vtysh
+sudo chown root:root $FILESYSTEM_ROOT/usr/bin/clx_fpga
+sudo chown root:root $FILESYSTEM_ROOT/usr/bin/cpld_update_app
+sudo chown root:root $FILESYSTEM_ROOT/usr/bin/ec_update_app
+sudo chown root:root $FILESYSTEM_ROOT/usr/bin/afulnx_64
+sudo chown root:root $FILESYSTEM_ROOT/var/vtysh/amifldrv_mod
+sudo chown root:root $FILESYSTEM_ROOT/opt/sendSysInfo.sh
+sudo chmod 755 $FILESYSTEM_ROOT/usr/local/bin/vtysh
+sudo chmod 755 $FILESYSTEM_ROOT/usr/bin/clx_fpga
+sudo chmod 755 $FILESYSTEM_ROOT/usr/bin/bios.sh
+sudo chmod 755 $FILESYSTEM_ROOT/usr/bin/cpld_update_app
+sudo chmod 755 $FILESYSTEM_ROOT/usr/bin/ec_update_app
+sudo chmod 700 $FILESYSTEM_ROOT/usr/bin/afulnx_64
+sudo chmod 600 $FILESYSTEM_ROOT/var/vtysh/amifldrv_mod
+sudo chmod 755 $FILESYSTEM_ROOT/opt/sendSysInfo.sh
+
 ## ensure proc is mounted
 sudo mount proc /proc -t proc || true
 

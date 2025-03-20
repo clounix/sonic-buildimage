@@ -1,0 +1,13 @@
+﻿[Unit]
+Description=VTYSH Service
+After=network.target
+BindsTo=sonic.target
+After=sonic.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/vtysh
+
+[Install]
+WantedBy=multi-user.target

@@ -29,31 +29,39 @@
 #define fault_msg_len (128)
 #define fault_msg_offset (0x180)
 
-#define SENSOR_DEVICE_ATTR_RO(_name, _func, _index)     \
+#define SENSOR_DEVICE_ATTR_RO(_name, _func, _index) \
     SENSOR_DEVICE_ATTR(_name, 0444, _func##_show, NULL, _index)
 
 static int g_adm1166_loglevel = 0x2;
-#define ADM1166_INFO(fmt, args...) do {                                        \
-    if (g_adm1166_loglevel & INFO) { \
-        printk(KERN_INFO "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
-    } \
-} while (0)
+#define ADM1166_INFO(fmt, args...)                                                            \
+    do                                                                                        \
+    {                                                                                         \
+        if (g_adm1166_loglevel & INFO)                                                        \
+        {                                                                                     \
+            printk(KERN_INFO "[ADM1166][func:%s line:%d]\n" fmt, __func__, __LINE__, ##args); \
+        }                                                                                     \
+    } while (0)
 
-#define ADM1166_ERR(fmt, args...) do {                                        \
-    if (g_adm1166_loglevel & ERR) { \
-        printk(KERN_ERR "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
-    } \
-} while (0)
+#define ADM1166_ERR(fmt, args...)                                                            \
+    do                                                                                       \
+    {                                                                                        \
+        if (g_adm1166_loglevel & ERR)                                                        \
+        {                                                                                    \
+            printk(KERN_ERR "[ADM1166][func:%s line:%d]\n" fmt, __func__, __LINE__, ##args); \
+        }                                                                                    \
+    } while (0)
 
-#define ADM1166_DBG(fmt, args...) do {                                        \
-    if (g_adm1166_loglevel & DBG) { \
-        printk(KERN_DEBUG "[ADM1166][func:%s line:%d]\n"fmt, __func__, __LINE__, ## args); \
-    } \
-} while (0)
+#define ADM1166_DBG(fmt, args...)                                                              \
+    do                                                                                         \
+    {                                                                                          \
+        if (g_adm1166_loglevel & DBG)                                                          \
+        {                                                                                      \
+            printk(KERN_DEBUG "[ADM1166][func:%s line:%d]\n" fmt, __func__, __LINE__, ##args); \
+        }                                                                                      \
+    } while (0)
 
 module_param(g_adm1166_loglevel, int, 0644);
 MODULE_PARM_DESC(g_adm1166_loglevel, "The log level(info=0x1, err=0x2, dbg=0x4).\n");
-
 
 ssize_t chip_id_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -82,9 +90,10 @@ ssize_t adm1166_eeprom_dump_show(struct device *dev, struct device_attribute *at
     addr[1] = 1;
     i2c_master_send(client, addr, 2);
 
-    for (i=0; i<(MAX_EEPROM_LEN/I2C_SMBUS_BLOCK_MAX); i++) {
-        addr[0] = (i*I2C_SMBUS_BLOCK_MAX + EEPROM_START_ADDR) >> 8;
-        addr[1] = (i*I2C_SMBUS_BLOCK_MAX + EEPROM_START_ADDR) & 0xff;
+    for (i = 0; i < (MAX_EEPROM_LEN / I2C_SMBUS_BLOCK_MAX); i++)
+    {
+        addr[0] = (i * I2C_SMBUS_BLOCK_MAX + EEPROM_START_ADDR) >> 8;
+        addr[1] = (i * I2C_SMBUS_BLOCK_MAX + EEPROM_START_ADDR) & 0xff;
         i2c_master_send(client, addr, 2);
         i2c_smbus_read_block_data(client, 0xfd, buf);
         buf += I2C_SMBUS_BLOCK_MAX;
@@ -99,7 +108,8 @@ ssize_t adm1166_dump_show(struct device *dev, struct device_attribute *attr, cha
     unsigned char data;
     unsigned char addr;
 
-    for (addr=0; addr<MAX_RAM_ADDR; addr++) {
+    for (addr = 0; addr < MAX_RAM_ADDR; addr++)
+    {
         i2c_master_send(client, &addr, 1);
         i2c_master_recv(client, &data, 1);
         *buf = data;
@@ -116,7 +126,8 @@ ssize_t adm1166_fault_log_info_show(struct device *dev, struct device_attribute 
     unsigned char addr;
     unsigned char ret = 0;
 
-    for (addr=prevstext; addr<bbaddr; addr++) {
+    for (addr = prevstext; addr < bbaddr; addr++)
+    {
         i2c_master_send(client, &addr, 1);
         i2c_master_recv(client, &data, 1);
         ret += sprintf(buf, "%02x ", data);
@@ -149,50 +160,84 @@ ssize_t adm1166_fault_log_addr_show(struct device *dev, struct device_attribute 
 
 static void process_elec_data(unsigned long long *data, unsigned char index, unsigned short addr)
 {
-    *data = ((*data * ref_voltage_mV)/((1 << adc_bits) - 1));
+    *data = ((*data * ref_voltage_mV) / ((1 << adc_bits) - 1));
 
-    
-    switch (index) {
-        case 0xa0:
-            if (addr == 0x34) {
-                *data = (*data*4363)/1000;
-            } else {
-                *data = (*data*2181)/1000;
-            }
-            break;
+    switch (index)
+    {
+    case 0xa0:
+        if (addr == 0x34)
+        {
+            *data = (*data * 4363) / 1000;
+        }
+        else
+        {
+            *data = (*data * 2181) / 1000;
+        }
+        break;
 
-        case 0xa2:
-            if (addr == 0x34) {
-                *data = (*data*4363)/1000;
-            } else {
-                *data = (*data);
-            }
-            break;
-
-        case 0xa4:
-            if (addr == 0x34) {
-                *data = (*data);
-            } else {
-                *data = (*data*4363)/1000;
-            }
-            break;
-
-        case 0xa6:
-            if (addr == 0x34) {
-                *data = (*data*11519)/1000;
-            } else {
-                *data = (*data*4363)/1000;
-            }
-
-            break;
-
-        case 0xa8:
-            *data = (*data*10472)/1000;
-            break;
-
-        default:
+    case 0xa2:
+        if (addr == 0x34)
+        {
+            *data = (*data * 4363) / 1000;
+        }
+        else
+        {
             *data = (*data);
-            break;
+        }
+        break;
+
+    case 0xa4:
+        if (addr == 0x34)
+        {
+            *data = (*data);
+        }
+        else
+        {
+            *data = (*data * 4363) / 1000;
+        }
+        break;
+
+    case 0xa6:
+        if (addr == 0x34)
+        {
+            *data = (*data * 11519) / 1000;
+        }
+        else
+        {
+            *data = (*data * 4363) / 1000;
+        }
+
+        break;
+
+    case 0xa8:
+        *data = (*data * 10472) / 1000;
+        break;
+
+    case 0xb0:
+        if (addr == 0x34)
+        {
+            *data = (*data);
+        }
+        else
+        {
+            *data = (*data * 3);
+        }
+        break;
+
+    case 0xb4:
+        if (addr == 0x34)
+        {
+            *data = (*data);
+        }
+        else
+        {
+            *data = (*data * 3);
+        }
+        break;
+
+    default:
+        *data = (*data);
+        break;
     }
     /* cacl over return value's unit is mV */
     return;
@@ -217,15 +262,19 @@ static ssize_t electrical_info_show(struct device *dev, struct device_attribute 
     reg_set[0] = rrctl;
     reg_set[1] = 0x1;
     i2c_master_send(client, reg_set, 2);
-   
+
     t_out = jiffies + msecs_to_jiffies(500);
-    while (1) {
+    while (1)
+    {
         i2c_addr = rrctl;
         i2c_master_send(client, &i2c_addr, 1);
         i2c_master_recv(client, &i2c_data, 1);
-        if (i2c_data == 0) {
+        if (i2c_data == 0)
+        {
             break;
-        } else {
+        }
+        else
+        {
             if (time_after(jiffies, t_out))
                 return 0;
         }
@@ -239,7 +288,7 @@ static ssize_t electrical_info_show(struct device *dev, struct device_attribute 
     i2c_master_send(client, &i2c_addr, 1);
     i2c_master_recv(client, &i2c_data, 1);
     data = (i2c_data & 0xf) * 256;
-    
+
     i2c_addr++;
     i2c_master_send(client, &i2c_addr, 1);
     i2c_master_recv(client, &i2c_data, 1);
@@ -248,12 +297,11 @@ static ssize_t electrical_info_show(struct device *dev, struct device_attribute 
     reg_set[0] = rrctl;
     reg_set[1] = 0x0;
     i2c_master_send(client, reg_set, 2);
-    
+
     process_elec_data(&data, sensor_attr->index, client->addr);
 
     return sprintf(buf, "%llu\n", data);
 }
-
 
 SENSOR_DEVICE_ATTR_RO(vp1, electrical_info, 0xa0);
 SENSOR_DEVICE_ATTR_RO(vp2, electrical_info, 0xa2);
@@ -311,9 +359,12 @@ static void fault_log_space_check(struct i2c_client *client)
     i2c_master_send(client, addr, 1);
     i2c_master_recv(client, &data, 1);
 
-    if (data == 0) {
+    if (data == 0)
+    {
         ADM1166_INFO("%s %x fault log full!\n", client->name, client->addr);
-    } else {
+    }
+    else
+    {
         ADM1166_INFO("%s %x fault log at 0xf980 + %x\n", client->name, client->addr, data);
         return;
     }
@@ -328,9 +379,10 @@ static void fault_log_space_check(struct i2c_client *client)
     addr[1] = 5;
     i2c_master_send(client, addr, 2);
 
-    for (i = 0; i < fault_msg_len/I2C_SMBUS_BLOCK_MAX; i++) {
-        addr[0] = (EEPROM_START_ADDR + fault_msg_offset + i*I2C_SMBUS_BLOCK_MAX) >> 8;
-        addr[1] = (EEPROM_START_ADDR + fault_msg_offset + i*I2C_SMBUS_BLOCK_MAX) & 0xff;
+    for (i = 0; i < fault_msg_len / I2C_SMBUS_BLOCK_MAX; i++)
+    {
+        addr[0] = (EEPROM_START_ADDR + fault_msg_offset + i * I2C_SMBUS_BLOCK_MAX) >> 8;
+        addr[1] = (EEPROM_START_ADDR + fault_msg_offset + i * I2C_SMBUS_BLOCK_MAX) & 0xff;
         i2c_master_send(client, addr, 2);
         data = 0xfe;
         i2c_master_send(client, &data, 1);
@@ -347,17 +399,20 @@ static void fault_log_space_check(struct i2c_client *client)
     i2c_master_send(client, addr, 2);
 
     time = jiffies + msecs_to_jiffies(2000);
-    while (1) {
+    while (1)
+    {
         addr[0] = bbaddr;
         i2c_master_send(client, addr, 1);
         i2c_master_recv(client, &data, 1);
 
-        if (data == 0x80) {
+        if (data == 0x80)
+        {
             ADM1166_INFO("%s %x fault log clear over\n", client->name, client->addr);
             break;
         }
 
-        if (time_after(jiffies, time)) {
+        if (time_after(jiffies, time))
+        {
             ADM1166_INFO("%s %x fault log clear fail\n", client->name, client->addr);
             break;
         }
@@ -388,8 +443,7 @@ static int adm1166_remove(struct i2c_client *client)
 
 static struct i2c_device_id adm1166_id[] = {
     {"adm1166", 0},
-    {}
-};
+    {}};
 MODULE_DEVICE_TABLE(i2c, adm1166_id);
 
 static struct i2c_driver adm1166_driver = {

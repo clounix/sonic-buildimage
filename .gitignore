@@ -81,3 +81,19 @@ sonic-slave*/**/buildinfo
 # Debian mirror Sources
 sources.list.*
 !sources.list*.j2
+src/dhcpmon/
+src/ntp/
+src/openssh/
+src/sonic-ctrmgrd/
+src/sonic-host-services/
+platform/clounix/clx-utils/
+platform/clounix/sonic-platform-modules-clounix/
+platform/clounix/sonic-platform-modules-flines/**/*.mod
+platform/clounix/sonic-platform-modules-flines/**/*.symvers
+lldp*.timer
+database-chassis.service
+platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/s3ip_proxy
+/*.service
+/*.sh
+/.vscode/
+*.o_shipped

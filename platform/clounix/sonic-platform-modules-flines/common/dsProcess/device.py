@@ -26,22 +26,22 @@ def deviceInit():
     sfp_num = int(common.readFile(SFP_PATH + "/num"))
 
     # Set SFP& QSFP reset to normal
-    for x in range(0, sfp_num):
-        path = SFP_PATH  + '/eth' + str(x+1) + '/reset'
+    for x in range(sfp_num):
+        path = SFP_PATH + '/eth' + str(x + 1) + '/reset'
         result = common.writeFile(path, "0")
 
-    for x in range(0, sfp_num):
-        path = SFP_PATH  + '/eth' + str(x+1) + '/power_on'
-        result = common.writeFile(path, "1")
-
-    for x in range(0, sfp_num):
-        path = SFP_PATH  + '/eth' + str(x+1) + '/lpmode'
+    # Set SFP && QSFP  high power mode  according to the present signal
+    for x in range(sfp_num):
+        path = SFP_PATH + '/eth' + str(x + 1) + '/lpmode'
+        result = common.writeFile(path, "0")
+    
+    for x in range(sfp_num):
+        path = SFP_PATH + '/eth' + str(x + 1) + '/tx_disable'
         result = common.writeFile(path, "0")
 
-    # set tx_disable for SFP
-    for x in range(0, sfp_num):
-        path = SFP_PATH + '/eth' + str(x+1) + '/tx_disable'
-        result = common.readFile(path)
-        if result != 'NA':
-            result = common.writeFile(path, "1")
     return
+
+if __name__ == '__main__':
+    print('standalone init')
+    deviceInit()
+

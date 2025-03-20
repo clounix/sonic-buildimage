@@ -10,14 +10,13 @@
 #define PORT_SFP 3
 
 #define XCVR_PORT_MAX (56)
-
 #define XCVR_CHIP_NUM 1
-#define XCVR_BASE_ADDRESS           (0x0)
+#define XCVR_BASE_ADDRESS (0x0)
 
-//register define
-#define XCVR_HW_VERSION_ADDR           (0x0)
-#define XCVR_FW_VERSION_ADDR           (0x4)
-#define MAX_DEBUG_INFO_LEN  1024
+// register define
+#define XCVR_HW_VERSION_ADDR (0x0)
+#define XCVR_FW_VERSION_ADDR (0x4)
+#define MAX_DEBUG_INFO_LEN 1024
 
 #define NUM_ADDRESS 2
 
@@ -49,29 +48,28 @@
  * flags to distinguish one-address (QSFP family) from two-address (SFP family)
  * If the family is not known, figure it out when the device is accessed
  */
-#define ONE_ADDR  1
-#define TWO_ADDR  2
+#define ONE_ADDR 1
+#define TWO_ADDR 2
 #define CMIS_ADDR 3
 
-/* a few constants to find our way around the EEPROM */\
-#define SFP_EEPROM_A0_ADDR  0xA0
-#define SFP_EEPROM_A2_ADDR  0xA2
-#define SFP_PAGE_SELECT_REG   0x7F
-#define SFP_IEDNTIFIER_REG 0x00
+/* a few constants to find our way around the EEPROM */ \
+#define SFP_EEPROM_A0_ADDR 0xA0
+#define SFP_EEPROM_A2_ADDR 0xA2
+#define SFP_PAGE_SELECT_REG 0x7F
 #define ONE_ADDR_PAGEABLE_REG 0x02
-#define QSFP_NOT_PAGEABLE (1<<2)
-#define CMIS_NOT_PAGEABLE (1<<7)
+#define QSFP_NOT_PAGEABLE (1 << 2)
+#define CMIS_NOT_PAGEABLE (1 << 7)
 #define TWO_ADDR_PAGEABLE_REG 0x40
-#define TWO_ADDR_PAGEABLE (1<<4)
+#define TWO_ADDR_PAGEABLE (1 << 4)
 #define TWO_ADDR_0X51_REG 92
-#define TWO_ADDR_0X51_SUPP (1<<6)
+#define TWO_ADDR_0X51_SUPP (1 << 6)
 #define SFP_ID_REG 0
 #define SFP_READ_OP 0
 #define SFP_WRITE_OP 1
-#define SFP_EOF 0  /* used for access beyond end of device */
-#define GET_BIT(data, bit, value)   value = (data >> bit) & 0x1
-#define SET_BIT(data, bit)          data |= (1 << bit)
-#define CLEAR_BIT(data, bit)        data &= ~(1 << bit)
+#define SFP_EOF 0 /* used for access beyond end of device */
+#define GET_BIT(data, bit, value) value = (data >> bit) & 0x1
+#define SET_BIT(data, bit) data |= (1 << bit)
+#define CLEAR_BIT(data, bit) data &= ~(1 << bit)
 
 #define SFP_FAST_BYTE_LENGTH 4
 
@@ -84,34 +82,36 @@
  *
  * This value is forced to be a power of two so that writes align on pages.
  */
-//static unsigned int io_limit = SFP_PAGE_SIZE;
+// static unsigned int io_limit = SFP_PAGE_SIZE;
 
 /*
  * specs often allow 5 msec for a page write, sometimes 20 msec;
  * it's important to recover from write timeouts.
  */
 static unsigned int write_timeout = 250;
-struct sfp_platform_data {
-    u32          byte_len;       /* size (sum of all addr) */
-    u16          page_size;      /* for writes */
-    u8           flags;
-    void        *dummy1;        /* backward compatibility */
-    void        *dummy2;        /* backward compatibility */
+struct sfp_platform_data
+{
+    u32 byte_len;  /* size (sum of all addr) */
+    u16 page_size; /* for writes */
+    u8 flags;
+    void *dummy1; /* backward compatibility */
+    void *dummy2; /* backward compatibility */
 
     /* dev_class: ONE_ADDR (QSFP) or TWO_ADDR (SFP) */
-    int          dev_class;
-    int          slave_addr;
-    int          clk_div;
+    int dev_class;
+    int slave_addr;
+    int clk_div;
     unsigned int write_max;
     u8 dev_idx;
     u8 cpld_idx;
 };
 
-struct clounix_priv_data {
+struct clounix_priv_data
+{
     struct mutex lock;
     void __iomem *mmio;
     struct sfp_platform_data chip[XCVR_PORT_MAX];
-    u8  platform_type;
+    u8 platform_type;
 };
 
 inline static void fpga_reg_write(struct clounix_priv_data *priv, int reg, int val)
@@ -125,43 +125,43 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 
 #define CPLD_BASE_ADDRESS 0x300
 /*platform CLX8000*/
-#define QSFP_CONFIG_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x30)
-#define QSFP_CONFIG_RESET_OFFSET         0
-#define QSFP_CONFIG_POWER_MODE_OFFSET    8
-#define QSFP_CONFIG_POWER_EN_OFFSET      16
-#define QSFP_STATUS_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x34)
-#define QSFP_STATUS_PRESENT_OFFSET       0
-#define QSFP_STATUS_IRQ_OFFSET           8
-#define QSFP_STATUS_POWER_FAULT_OFFSET   16 
-#define QSFP_START_PORT                  48
+#define QSFP_CONFIG_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x30)
+#define QSFP_CONFIG_RESET_OFFSET 0
+#define QSFP_CONFIG_POWER_MODE_OFFSET 8
+#define QSFP_CONFIG_POWER_EN_OFFSET 16
+#define QSFP_STATUS_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x34)
+#define QSFP_STATUS_PRESENT_OFFSET 0
+#define QSFP_STATUS_IRQ_OFFSET 8
+#define QSFP_STATUS_POWER_FAULT_OFFSET 16
+#define QSFP_START_PORT 48
 /*platform CLX128000*/
-#define SFP_CONFIG_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x30)
-#define SFP_CONFIG_TX_DIS_OFFSET        0
-#define SFP_STATUS_ADDRESS_BASE         (CPLD_BASE_ADDRESS + 0x34)
-#define SFP_STATUS_RXLOS_OFFSET       	0
-#define SFP_STATUS_TXTAULT_OFFSET     	2
-#define SFP_STATUS_PRESENT_OFFSET     	4 
-#define SFP_START_PORT                  32
+#define SFP_CONFIG_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x30)
+#define SFP_CONFIG_TX_DIS_OFFSET 0
+#define SFP_STATUS_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x34)
+#define SFP_STATUS_RXLOS_OFFSET 0
+#define SFP_STATUS_TXTAULT_OFFSET 2
+#define SFP_STATUS_PRESENT_OFFSET 4
+#define SFP_START_PORT 32
 
-#define FPGA_PORT_BASE      (0x1000) 
-#define FPGA_PORT_MGR0_CFG  (FPGA_PORT_BASE + 0x00)
+#define FPGA_PORT_BASE (0x1000)
+#define FPGA_PORT_MGR0_CFG (FPGA_PORT_BASE + 0x00)
 #define FPGA_PORT_MGR0_CTRL (FPGA_PORT_BASE + 0x04)
 #define FPGA_PORT_MGR0_STAT (FPGA_PORT_BASE + 0x08)
-#define FPGA_PORT_MGR0_MUX  (FPGA_PORT_BASE + 0x10)
+#define FPGA_PORT_MGR0_MUX (FPGA_PORT_BASE + 0x10)
 
-#define FPGA_PORT_MGR1_CFG  (FPGA_PORT_BASE + 0x20)
+#define FPGA_PORT_MGR1_CFG (FPGA_PORT_BASE + 0x20)
 #define FPGA_PORT_MGR1_CTRL (FPGA_PORT_BASE + 0x24)
 #define FPGA_PORT_MGR1_STAT (FPGA_PORT_BASE + 0x28)
-#define FPGA_PORT_MGR1_MUX  (FPGA_PORT_BASE + 0x30)
+#define FPGA_PORT_MGR1_MUX (FPGA_PORT_BASE + 0x30)
 
-#define FPGA_PORT_MGR2_CFG  (FPGA_PORT_BASE + 0x40)
+#define FPGA_PORT_MGR2_CFG (FPGA_PORT_BASE + 0x40)
 #define FPGA_PORT_MGR2_CTRL (FPGA_PORT_BASE + 0x44)
 #define FPGA_PORT_MGR2_STAT (FPGA_PORT_BASE + 0x48)
-#define FPGA_PORT_MGR2_MUX  (FPGA_PORT_BASE + 0x50)
+#define FPGA_PORT_MGR2_MUX (FPGA_PORT_BASE + 0x50)
 
-#define FPGA_MGR_RST    (1 << 31)
-#define FPGA_MGR_RD     (0x81 << 24)
-#define FPGA_MGR_WT     (0x84 << 24)
+#define FPGA_MGR_RST (1 << 31)
+#define FPGA_MGR_RD (0x81 << 24)
+#define FPGA_MGR_WT (0x84 << 24)
 
 #define DSFP_RESET_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x10)
 #define DSFP_LOW_POWER_ADDRESS_BASE (CPLD_BASE_ADDRESS + 0x14)
@@ -192,10 +192,10 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 
 #define XCVRD_POWR_ON 1
 
-#define FPGA_PORT_MGR_CFG  (0x1000)
+#define FPGA_PORT_MGR_CFG (0x1000)
 #define FPGA_PORT_MGR_CTRL (0x1004)
 #define FPGA_PORT_MGR_STAT (0x1008)
-#define FPGA_PORT_MGR_MUX  (0x1010)
+#define FPGA_PORT_MGR_MUX (0x1010)
 #define FPGA_PORT_BATCH_DATA (0x100000)
 
 #define XCVR_I2C_DEV_MAX 3
@@ -204,33 +204,35 @@ inline static int fpga_reg_read(struct clounix_priv_data *priv, int reg)
 #define FPGA_I2C_MASTER_TX_FINISH_MASK (0x80000000UL)
 #define FPGA_I2C_MASTER_TX_ERROR_MASK (0x40000000UL)
 
-enum {
+enum
+{
     XCVR_PLATFORM_TYPEA,
     XCVR_PLATFORM_TYPEB,
+    XCVR_PLATFORM_TYPEC,
     XCVR_PLATFORM_TYPE_MAX
 };
 
 #define port_mgr_cfg_reg(base_addr, idx) \
-(base_addr + FPGA_PORT_MGR_CFG + 0x20 * (idx))
+    (base_addr + FPGA_PORT_MGR_CFG + 0x20 * (idx))
 
 #define port_mgr_ctrl_reg(base_addr, idx) \
-(base_addr + FPGA_PORT_MGR_CTRL + 0x20 * (idx))
+    (base_addr + FPGA_PORT_MGR_CTRL + 0x20 * (idx))
 
 #define port_mgr_stat_reg(base_addr, idx) \
-(base_addr + FPGA_PORT_MGR_STAT + 0x20 * (idx))
+    (base_addr + FPGA_PORT_MGR_STAT + 0x20 * (idx))
 
 #define port_mgr_mux_reg(base_addr, idx) \
-(base_addr + FPGA_PORT_MGR_MUX + 0x20 * (idx))
+    (base_addr + FPGA_PORT_MGR_MUX + 0x20 * (idx))
 
 #define port_mgr_batch_reg(base_addr, idx, offset) \
-(base_addr + FPGA_PORT_BATCH_DATA + 0x10000 * (idx) + offset)
+    (base_addr + FPGA_PORT_BATCH_DATA + 0x10000 * (idx) + offset)
 
-struct drv_xcvr_fpga {
+struct drv_xcvr_fpga
+{
     struct xcvr_fn_if xcvr_if;
-    //private
+    // private
     void __iomem *xcvr_base;
     struct clounix_priv_data dev;
 };
-
 
 #endif //_DRV_XCVR_FPGA_H_
