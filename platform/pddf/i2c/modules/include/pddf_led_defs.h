@@ -33,7 +33,7 @@ struct kobject *cur_state_kobj=NULL;
  * space JSON data file
  *****************************************/
 #define NAME_SIZE 32
-#define VALUE_SIZE 5
+#define VALUE_SIZE 8
 typedef enum {
     STATUS_LED_COLOR_OFF=0,
     STATUS_LED_COLOR_GREEN=1,
@@ -50,17 +50,17 @@ typedef enum {
 }LED_STATUS;
 
 char*  LED_STATUS_STR[] = {
-    "off",
-    "green",
-    "yellow",
-    "red",
-    "blue",
-    "green_blink",
-    "yellow_blink",
-    "red_blink",
-    "blue_blink",
-    "amber",
-    "amber_blink"
+    "STATUS_LED_COLOR_OFF",
+    "STATUS_LED_COLOR_GREEN",
+    "STATUS_LED_COLOR_YELLOW",
+    "STATUS_LED_COLOR_RED",
+    "STATUS_LED_COLOR_BLUE",
+    "STATUS_LED_COLOR_GREEN_BLINK",
+    "STATUS_LED_COLOR_YELLOW_BLINK",
+    "STATUS_LED_COLOR_RED_BLINK",
+    "STATUS_LED_COLOR_BLUE_BLINK",
+    "STATUS_LED_COLOR_AMBER",
+    "STATUS_LED_COLOR_AMBER_BLINK"
 };
 
 
@@ -90,7 +90,7 @@ typedef struct
     int sys_led;
     int bmc_led;
     int fan_led;
-    int psu_led;
+    int sys_psu_led;
     int loc_led;
 /* S3IP Power LED  RO sysfs */
     int psu1_led;
@@ -117,23 +117,26 @@ typedef struct
 } LED_OPS_DATA; 
 
 typedef enum{
-	LED_SYS,
-	LED_PSU,
-	LED_FAN,
-	LED_FANTRAY,
-	LED_DIAG,
-	LED_LOC,
+    LED_SYS,
+    LED_SYS_PSU,
+    LED_PSU,
+    LED_FAN,
+    LED_FANTRAY,
+    LED_DIAG,
+    LED_LOC,
     LED_BMC,
-	LED_TYPE_MAX
+    LED_TYPE_MAX
 } LED_TYPE;
+
 char* LED_TYPE_STR[LED_TYPE_MAX] = 
 {
-	"LED_SYS",
-	"LED_PSU",
-	"LED_FAN",
-	"LED_FANTRAY",
-	"LED_DIAG",
-	"LED_LOC",
+    "LED_SYS",
+    "LED_SYS_PSU",
+    "LED_PSU",
+    "LED_FAN",
+    "LED_FANTRAY",
+    "LED_DIAG",
+    "LED_LOC",
     "LED_BMC"
 };
 

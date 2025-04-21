@@ -40,6 +40,7 @@ extern int sonic_i2c_get_fan_fault_default(void *client, FAN_DATA_ATTR *adata, v
 extern int sonic_i2c_set_fan_pwm_default(void *client, FAN_DATA_ATTR *adata, void *data);
 extern int sonic_i2c_get_fan_dc_default(void *client, FAN_DATA_ATTR *udata, void *info);
 extern int sonic_i2c_set_fan_dc_default(void *client, FAN_DATA_ATTR *udata, void *info);
-
-
+extern int sonic_i2c_get_fan_eepromwp_default(void *client, FAN_DATA_ATTR *adata, void *data);
+extern int sonic_i2c_set_fan_eepromwp_default(void *client, FAN_DATA_ATTR *adata, void *data);
+extern int sonic_i2c_get_fan_hw_version_default(void *client, FAN_DATA_ATTR *udata, void *info);
 #endif

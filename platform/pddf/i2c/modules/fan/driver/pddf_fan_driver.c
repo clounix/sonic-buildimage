@@ -272,6 +272,9 @@ EXPORT_SYMBOL(data_fan_part_num);
 FAN_SYSFS_ATTR_DATA data_fan_hw_version = {FAN_HW_VERSION, S_IRUGO, fan_show_string, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan_hw_version);
 
+FAN_SYSFS_ATTR_DATA data_fan_eepromwp = {FAN1_PWM, S_IRUGO | S_IWUSR, fan_show_default, NULL, sonic_i2c_get_fan_eepromwp_default, NULL, fan_store_default, NULL, sonic_i2c_set_fan_eepromwp_default, NULL, NULL};
+EXPORT_SYMBOL(data_fan_eepromwp);
+
 FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
 {
 	{ "fan1_present", &data_fan1_present},
@@ -375,6 +378,7 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan_serial_num", &data_fan_serial_num},
     { "fan_part_num", &data_fan_part_num},
     { "fan_hw_version", &data_fan_hw_version},
+    { "fan_eepromwp", &data_fan_eepromwp}
 };
 
 void *get_fan_access_data(char *name)

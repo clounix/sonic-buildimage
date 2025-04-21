@@ -542,6 +542,9 @@ sudo cp files/image_config/pip/pip.conf $FILESYSTEM_ROOT/etc/pip.conf
 
 # For building Python packages
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install python3-setuptools python3-wheel
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'urllib3==1.26.15'
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'requests==2.31.0'
+
 
 # docker Python API package is needed by Ansible docker module as well as some SONiC applications
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install 'docker==7.1.0'

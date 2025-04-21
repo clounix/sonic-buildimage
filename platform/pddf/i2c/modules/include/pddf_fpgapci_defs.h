@@ -29,6 +29,8 @@ typedef struct
   uint32_t data_size;
   uint32_t i2c_ch_base_offset;
   uint32_t i2c_ch_size;
+  uint32_t port_mgr_virt_bus;
+  uint32_t port_mgr_port_num;
 } FPGA_OPS_DATA;
 
 /*****************************************

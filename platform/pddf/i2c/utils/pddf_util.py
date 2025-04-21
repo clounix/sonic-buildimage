@@ -29,6 +29,7 @@ SONIC_CFGGEN_PATH = '/usr/local/bin/sonic-cfggen'
 HWSKU_KEY = 'DEVICE_METADATA.localhost.hwsku'
 PLATFORM_KEY = 'DEVICE_METADATA.localhost.platform'
 
+NOT_FOUND_DEV = "No such device"
 PROJECT_NAME = 'PDDF'
 version = '1.1'
 verbose = False
@@ -355,10 +356,13 @@ def driver_install():
     log_os_system("depmod", 1)
     for i in range(0,len(kos)):
         status, output = log_os_system(kos[i], 1)
-        if status:
+        if NOT_FOUND_DEV in output:
+            print(output)
+            continue
+        elif status:
             print("driver_install() failed with error %d"%status)
-            if FORCE == 0:        
-                return status       
+            if FORCE == 0:
+                return status
 
     output = config_pddf_utils()
     if output:
@@ -486,7 +490,10 @@ def do_uninstall():
         status = driver_uninstall()
         if status:
             if FORCE == 0:        
-                return  status                          
+                return  status     
+    # Check if S3IP support is enabled, if yes, stop the service in no block mode
+    if 'enable_s3ip' in pddf_obj.data['PLATFORM'].keys() and pddf_obj.data['PLATFORM']['enable_s3ip'] == 'yes':
+        log_os_system('systemctl stop --no-block pddf-s3ip-init.service', 1)
     return       
 
 def do_switch_pddf():

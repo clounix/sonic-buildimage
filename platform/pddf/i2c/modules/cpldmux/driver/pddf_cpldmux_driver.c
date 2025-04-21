@@ -60,7 +60,7 @@ extern PDDF_CPLDMUX_DATA pddf_cpldmux_data;
 
 PDDF_CPLDMUX_OPS pddf_cpldmux_ops = {
     .select = pddf_cpldmux_select_default,
-    .deselect = pddf_cpldmux_deselect_default,
+    .deselect = NULL, /* pddf_cpldmux_deselct_default */
 };
 EXPORT_SYMBOL(pddf_cpldmux_ops);
 
