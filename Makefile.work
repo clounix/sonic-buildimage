@@ -137,6 +137,8 @@ SONIC_DPKG_CACHE_SOURCE ?= /home/share/cache/sonic_202405/$(shell [ -f .platform
 
 
 ifeq ($(BLDENV), bookworm)
+ANOTHER_CONDITION = y
+LEGACY_SONIC_MGMT_DOCKER = y
 SLAVE_DIR = sonic-slave-bookworm
 else ifeq ($(BLDENV), bullseye)
 SLAVE_DIR = sonic-slave-bullseye
@@ -452,7 +454,7 @@ DOCKER_SLAVE_BASE_BUILD = docker build --no-cache \
 		    $(SPLIT_LOG) $(DOCKER_BASE_LOG)
 
 DOCKER_BASE_PULL = docker pull \
-			$(REGISTRY_SERVER):$(REGISTRY_PORT)$(REGISTRY_SERVER_PATH)/$(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG)
+			docker.clounix.com/software/sonic/sonic-slave-bookworm:7a243647e97
 
 DOCKER_USER_BUILD = docker build --no-cache \
 	       --build-arg user=$(USER) \
@@ -472,14 +474,13 @@ DOCKER_SLAVE_BASE_INSPECT = \
 	}
 
 DOCKER_SLAVE_BASE_PULL_REGISTRY = \
-	[ $(ENABLE_DOCKER_BASE_PULL) == y ] && \
+	[ $(ENABLE_DOCKER_BASE_PULL) == y a $(ANOTHER_CONDITION) == y] && \
 	{ \
 		echo Image $(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG) not found. Pulling...; \
 		$(DOCKER_BASE_PULL); \
 	} && \
 	{ \
-		docker tag $(REGISTRY_SERVER):$(REGISTRY_PORT)$(REGISTRY_SERVER_PATH)/$(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG) $(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG) && \
-		$(COLLECT_DOCKER); \
+		docker tag docker.clounix.com/software/sonic/sonic-slave-bookworm:7a243647e97 $(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG); \
 	}\
 
 SONIC_SLAVE_BASE_BUILD = \
