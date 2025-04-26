@@ -4719,7 +4719,7 @@ _hal_lt_dawn_pkt_setup(struct net_device *ptr_net_dev)
     ptr_net_dev->min_mtu = 64;
     ptr_net_dev->max_mtu = 65535;
 #endif
-    random_ether_addr(ptr_net_dev->dev_addr); /* Please use the mac-addr of interface. */
+    eth_random_addr(ptr_net_dev->dev_addr); /* Please use the mac-addr of interface. */
 
     /* setup private data */
     ptr_priv->ptr_net_dev = ptr_net_dev;

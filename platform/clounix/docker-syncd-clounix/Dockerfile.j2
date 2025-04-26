@@ -42,7 +42,7 @@ RUN  cp update_libc++/* /usr/lib/x86_64-linux-gnu/
 
 
 COPY ["supervisord.conf", "/etc/supervisor/conf.d/"]
-COPY ["files/supervisor-proc-exit-listener", "/usr/bin"]
+#COPY ["files/supervisor-proc-exit-listener", "/usr/bin"]
 COPY ["critical_processes", "/etc/supervisor/"]
 
 # IPython kernel config
