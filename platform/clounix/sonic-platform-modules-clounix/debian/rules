@@ -32,7 +32,7 @@ MODPROBE_DIR := modprobe.d
 IXGBE_VERSION := 5.9.4
 
 %:
-	dh $@ --with systemd,python2,python3 --buildsystem=pybuild
+	dh $@ --with systemd,python3 --buildsystem=pybuild
 
 clean:
 	dh_testdir
@@ -44,8 +44,6 @@ build:
 	make clean -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/common/modules; \
 	make modules -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/common/modules;\
 	cd $(MOD_SRC_DIR)/common; \
-	python2 setup.py build; \
-	python2 setup.py bdist_wheel -d $(MOD_SRC_DIR)/common/utils; \
 	python3 setup.py build; \
 	python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/common/utils; \
 	cd $(MOD_SRC_DIR)/common/fpga_utils; \

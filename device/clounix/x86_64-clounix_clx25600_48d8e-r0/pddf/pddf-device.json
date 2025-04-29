@@ -179,7 +179,7 @@
             "device_id": "0x7021", 
             "virt_bus": "0x64",
             "data_base_offset":"0x0", 
-            "data_size":"0x60", 
+            "data_size":"0x2000",
             "i2c_ch_base_offset":"0x200000",
             "i2c_ch_size":"0x10000", 
             "virt_i2c_ch":"6",

@@ -72,4 +72,5 @@ module_i2c_driver(xdpe132g5h_driver);
 
 MODULE_AUTHOR("daiaq@clounix.com");
 MODULE_DESCRIPTION("PMBus driver for XDPE132G5H device");
+MODULE_IMPORT_NS(PMBUS);
 MODULE_LICENSE("GPL");

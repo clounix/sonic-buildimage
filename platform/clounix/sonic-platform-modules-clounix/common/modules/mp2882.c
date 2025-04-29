@@ -298,4 +298,5 @@ module_i2c_driver(mp2882_driver);
 
 MODULE_AUTHOR("Vadim Pasternak <vadimp@nvidia.com>");
 MODULE_DESCRIPTION("PMBus driver for MPS MP2882 device");
+MODULE_IMPORT_NS(PMBUS);
 MODULE_LICENSE("GPL");

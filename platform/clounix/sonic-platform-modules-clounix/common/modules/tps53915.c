@@ -145,4 +145,5 @@ module_i2c_driver(tps_driver);
 
 MODULE_AUTHOR("daiaq@clounix.com");
 MODULE_DESCRIPTION("PMBus driver for TPS53915");
+MODULE_IMPORT_NS(PMBUS);
 MODULE_LICENSE("GPL");

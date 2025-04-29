@@ -380,10 +380,10 @@ static int adm1166_probe(struct i2c_client *client, const struct i2c_device_id *
     return sysfs_create_group(&(client->dev.kobj), &attr_group);
 }
 
-static int adm1166_remove(struct i2c_client *client)
+static void adm1166_remove(struct i2c_client *client)
 {
     sysfs_remove_group(&(client->dev.kobj), &attr_group);
-    return 0;
+    return;
 }
 
 static struct i2c_device_id adm1166_id[] = {

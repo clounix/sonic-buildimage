@@ -133,4 +133,5 @@ module_i2c_driver(tps_driver);
 
 MODULE_AUTHOR("baohx@clounix.com");
 MODULE_DESCRIPTION("PMBus driver for TPS546B24A");
+MODULE_IMPORT_NS(PMBUS);
 MODULE_LICENSE("GPL");

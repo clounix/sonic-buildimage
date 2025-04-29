@@ -809,4 +809,5 @@ module_i2c_driver(adm1275_driver);
 
 MODULE_AUTHOR("Guenter Roeck");
 MODULE_DESCRIPTION("PMBus driver for Analog Devices ADM1275 and compatibles");
+MODULE_IMPORT_NS(PMBUS);
 MODULE_LICENSE("GPL");
