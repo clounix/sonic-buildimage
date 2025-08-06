@@ -8,12 +8,12 @@
 	branch = 202305
 [submodule "sonic-sairedis"]
 	path = src/sonic-sairedis
-	url = https://github.com/sonic-net/sonic-sairedis
-	branch = 202305
+	url = git@github.com:clounix/sonic-sairedis.git
+	branch = 202305.clounix
 [submodule "sonic-swss"]
 	path = src/sonic-swss
-	url = https://github.com/sonic-net/sonic-swss
-	branch = 202305
+	url = git@github.com:clounix/sonic-swss.git 
+	branch = 202305.clounix
 [submodule "src/p4c-bm/p4c-bm"]
 	path = platform/p4/p4c-bm/p4c-bm
 	url = https://github.com/krambn/p4c-bm
@@ -34,8 +34,8 @@
 	url = https://github.com/p4lang/ptf.git
 [submodule "src/sonic-utilities"]
 	path = src/sonic-utilities
-	url = https://github.com/sonic-net/sonic-utilities
-	branch = 202305
+	url = git@github.com:clounix/sonic-utilities.git
+	branch = 202305.clounix
 [submodule "platform/broadcom/sonic-platform-modules-arista"]
 	path = platform/broadcom/sonic-platform-modules-arista
 	url = https://github.com/aristanetworks/sonic
