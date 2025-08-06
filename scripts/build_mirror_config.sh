@@ -11,9 +11,13 @@ MIRROR_VERSION_FILE=
 [ -f target/versions/default/versions-mirror ] && MIRROR_VERSION_FILE=target/versions/default/versions-mirror
 
 # The default mirror urls
-DEFAULT_MIRROR_URLS=http://debian-archive.trafficmanager.net/debian/
-DEFAULT_MIRROR_SECURITY_URLS=http://debian-archive.trafficmanager.net/debian-security/
-
+if [ "$BUILD_IN_HZ" == "yes" ]; then
+    DEFAULT_MIRROR_URLS=http://proxy.clounix.com/repository/debian/
+    DEFAULT_MIRROR_SECURITY_URLS=http://proxy.clounix.com/repository/debian-security/
+else
+    DEFAULT_MIRROR_URLS=http://debian-archive.trafficmanager.net/debian/
+    DEFAULT_MIRROR_SECURITY_URLS=http://debian-archive.trafficmanager.net/debian-security/
+fi
 
 # The debian-archive.trafficmanager.net does not support armhf, use debian.org instead
 if [ "$ARCHITECTURE" == "armhf" ]; then
