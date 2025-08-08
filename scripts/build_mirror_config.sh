@@ -12,7 +12,7 @@ MIRROR_VERSION_FILE=
 
 # The default mirror urls
 if [ "$BUILD_IN_HZ" == "yes" ]; then
-    DEFAULT_MIRROR_URLS=http://proxy.clounix.com/repository/debian/
+    DEFAULT_MIRROR_URLS=http://proxy.clounix.com/repository/debian-archive/
     DEFAULT_MIRROR_SECURITY_URLS=http://proxy.clounix.com/repository/debian-security/
 else
     DEFAULT_MIRROR_URLS=http://debian-archive.trafficmanager.net/debian/
