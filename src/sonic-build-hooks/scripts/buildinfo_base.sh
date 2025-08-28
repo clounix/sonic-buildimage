@@ -30,6 +30,7 @@ else
 fi
 PKG_CACHE_FILE_NAME=${PKG_CACHE_PATH}/cache.tgz
 [ -d ${PKG_CACHE_PATH} ] || $SUDO mkdir -p ${PKG_CACHE_PATH}
+$SUDO chmod 777 ${PKG_CACHE_PATH} 2>/dev/null || true
 
 . ${BUILDINFO_PATH}/scripts/utils.sh
 
@@ -124,10 +125,10 @@ set_reproducible_mirrors()
         expression3="/#SET_REPR_MIRRORS/d"
     fi
     if [[ "$1" != "-d" ]] && [ -f /etc/apt/sources.list.d/debian.sources ]; then
-        mv /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/debian.sources.back
+        $SUDO mv /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/debian.sources.back
     fi
     if [[ "$1" == "-d" ]] && [ -f /etc/apt/sources.list.d/debian.sources.back ]; then
-        mv /etc/apt/sources.list.d/debian.sources.back /etc/apt/sources.list.d/debian.sources
+        $SUDO mv /etc/apt/sources.list.d/debian.sources.back /etc/apt/sources.list.d/debian.sources
     fi
 
     local mirrors="/etc/apt/sources.list $(find /etc/apt/sources.list.d/ -type f)"
@@ -181,7 +182,7 @@ download_packages()
             fi
             local result=0
             WEB_CACHE_PATH=${PKG_CACHE_PATH}/web
-            mkdir -p ${WEB_CACHE_PATH}
+            mkdir -p ${WEB_CACHE_PATH} 2>/dev/null || $SUDO mkdir -p ${WEB_CACHE_PATH}
             local WEB_FILENAME=$(echo $url | awk -F"/" '{print $NF}' | cut -d? -f1 | cut -d# -f1)
             if [ -z "${DST_FILENAME}" ];then
                 DST_FILENAME="${WEB_FILENAME}"

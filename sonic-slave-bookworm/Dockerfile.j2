@@ -23,6 +23,9 @@ MAINTAINER gulv@microsoft.com
 
 COPY ["no-check-valid-until", "/etc/apt/apt.conf.d/"]
 
+ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.cn
+
 {%- if CROSS_BUILD_ENVIRON != "y" %}
 COPY ["sources.list.{{ CONFIGURED_ARCH }}", "/etc/apt/sources.list"]
 {%- else %}
@@ -781,6 +784,7 @@ ENV PATH $PATH:$RUST_ROOT/bin
 
 # Install cargo-tarpaulin for code coverage
 RUN $RUST_ROOT/bin/cargo install --locked cargo-tarpaulin
+{% endif %}
 
 {# Include vendor-defined rules for slave container if it exists.  Contained in ../files #}
 {% with DEBIAN_VERSION='bookworm' %}

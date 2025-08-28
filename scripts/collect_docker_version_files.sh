@@ -39,6 +39,7 @@ docker create --name $DOCKER_CONTAINER --entrypoint /bin/bash $DOCKER_IMAGE_TAG
 docker cp -L $DOCKER_CONTAINER:/etc/os-release $TARGET_VERSIONS_PATH/
 docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/pre-versions $TARGET_VERSIONS_PATH/
 docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/post-versions $TARGET_VERSIONS_PATH/
+docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/log ${BUILD_LOG_PATH}/
 
 # Save the cache contents from docker build
 IMAGENAME=${DOCKER_IMAGE_TAG} j2 files/build_templates/build_docker_cache.j2 > ${DOCKER_FILE}.cleanup
@@ -46,13 +47,12 @@ docker tag ${DOCKER_IMAGE_TAG} tmp-${DOCKER_IMAGE_TAG}
 DOCKER_BUILDKIT=1 docker build -f ${DOCKER_PATH}/Dockerfile.cleanup  --target output -o target/vcache/${DOCKER_IMAGE_NAME} ${DOCKER_PATH}
 DOCKER_BUILDKIT=1 docker build -f ${DOCKER_PATH}/Dockerfile.cleanup  --no-cache --target final --tag ${DOCKER_IMAGE_TAG} ${DOCKER_PATH}
 docker rmi tmp-${DOCKER_IMAGE_TAG}
-docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/log ${BUILD_LOG_PATH}/
-
 
 # Save the cache contents from docker build
 LOCAL_CACHE_FILE=target/vcache/${DOCKER_IMAGE_NAME}/cache.tgz
 CACHE_ENCODE_FILE=${DOCKER_PATH}/vcache/cache.base64
-sleep 1; sync ${CACHE_ENCODE_FILE}
+sleep 1
+[ -e "${CACHE_ENCODE_FILE}" ] && sync "${CACHE_ENCODE_FILE}" || sync target/vcache/${DOCKER_IMAGE_NAME} 2>/dev/null || true
 
 # Decode the cache content into gz format
 SRC_VERSION_PATH=files/build/versions
@@ -99,4 +99,4 @@ if [[ ! -z ${SONIC_VERSION_CACHE} && -e ${CACHE_ENCODE_FILE} ]]; then
 	fi
 fi
 
-docker container rm $DOCKER_CONTAINER
+docker container rm $DOCKER_CONTAINER 2>/dev/null || true
