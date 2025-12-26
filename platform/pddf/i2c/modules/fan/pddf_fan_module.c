@@ -39,6 +39,8 @@ extern void *get_fan_access_data(char *);
 extern void* get_device_table(char *name);
 extern void delete_device_table(char *name);
 
+static int *log_level = &fan_log_level;
+
 FAN_DATA fan_data = {0};
 
 
@@ -111,14 +113,11 @@ struct i2c_board_info *i2c_get_fan_board_info(FAN_DATA *fdata, NEW_DEV_ATTR *cda
     static struct i2c_board_info board_info;
     FAN_PDATA *fan_platform_data;
 
-    if (strcmp(cdata->dev_type, "fan_ctrl")==0 ||
-            strcmp(cdata->dev_type, "fan_eeprom")==0 ||
-            strcmp(cdata->dev_type, "fan_cpld")==0 )
-    {
+    if (strcmp(cdata->dev_type, "fan_ctrl") == 0 || strcmp(cdata->dev_type, "fan_eeprom") == 0 ||
+        strcmp(cdata->dev_type, "fan_cpld") == 0 || strcmp(cdata->dev_type, "fan_multifpgapci") == 0) {
         /* Allocate the fan_platform_data */
         fan_platform_data = (FAN_PDATA *)kzalloc(sizeof(FAN_PDATA), GFP_KERNEL);
         fan_platform_data->fan_attrs = (FAN_DATA_ATTR *)kzalloc(num*sizeof(FAN_DATA_ATTR), GFP_KERNEL);
-
 
         fan_platform_data->num_fantrays = fdata->num_fantrays;
         fan_platform_data->len = fdata->len;
@@ -137,7 +136,7 @@ struct i2c_board_info *i2c_get_fan_board_info(FAN_DATA *fdata, NEW_DEV_ATTR *cda
     }
     else
     {
-        printk(KERN_ERR "%s:Unknown type of device %s. Unable to create I2C client for it\n",__FUNCTION__, cdata->dev_type);
+        pddf_err(FAN, "%s:Unknown type of device %s. Unable to create I2C client for it\n",__FUNCTION__, cdata->dev_type);
     }
 
     return &board_info;
@@ -156,6 +155,10 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
     if (strncmp(buf, "add", strlen(buf)-1)==0)
     {
         adapter = i2c_get_adapter(cdata->parent_bus);
+        if (!adapter) {
+            pddf_err(FAN, "%s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
+            goto clear_data;
+        }
         board_info = i2c_get_fan_board_info(fdata, cdata);
 
         /* Populate the platform data for fan */
@@ -164,7 +167,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
         if(!IS_ERR(client_ptr))
         {
             i2c_put_adapter(adapter);
-            pddf_dbg(FAN, KERN_ERR "Created a %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
+            pddf_dbg(FAN, "Created a %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
             add_device_table(cdata->i2c_name, (void*)client_ptr);
         }
         else 
@@ -179,18 +182,18 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
         client_ptr = (struct i2c_client *)get_device_table(cdata->i2c_name);
         if (client_ptr)
         {
-            pddf_dbg(FAN, KERN_ERR "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
+            pddf_dbg(FAN, "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
             i2c_unregister_device(client_ptr);
             delete_device_table(cdata->i2c_name);
         }
         else
         {
-            printk(KERN_ERR "Unable to get the client handle for %s\n", cdata->i2c_name);
+            pddf_err(FAN, "Unable to get the client handle for %s\n", cdata->i2c_name);
         }
     }
     else
     {
-        printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+        pddf_err(FAN, "%s: Invalid value for dev_ops %s", __FUNCTION__, buf);
     }
 
     goto clear_data;
@@ -201,10 +204,10 @@ free_data:
         FAN_PDATA *fan_platform_data = board_info->platform_data;
         if (fan_platform_data->fan_attrs)
         {
-            printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
+            pddf_err(FAN, "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
             kfree(fan_platform_data->fan_attrs);
         }
-        printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
+        pddf_err(FAN, "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
         kfree(fan_platform_data);
     }
 clear_data:
@@ -254,7 +257,7 @@ int __init pddf_data_init(void)
         kobject_put(fan_kobj);
         return ret;
     }
-    pddf_dbg(FAN, "CREATED PDDF FAN DATA SYSFS GROUP\n");
+    pddf_info(FAN, "CREATED PDDF FAN DATA SYSFS GROUP\n");
     
 
 
@@ -268,7 +271,7 @@ void __exit pddf_data_exit(void)
     sysfs_remove_group(i2c_kobj, &pddf_clients_data_group);
     kobject_put(i2c_kobj);
     kobject_put(fan_kobj);
-    pddf_dbg(FAN, KERN_ERR "%s: Removed the kobjects for 'i2c' and 'fan'\n",__FUNCTION__);
+    pddf_info(FAN, "%s: Removed the kobjects for 'i2c' and 'fan'\n", __FUNCTION__);
     return;
 }
 

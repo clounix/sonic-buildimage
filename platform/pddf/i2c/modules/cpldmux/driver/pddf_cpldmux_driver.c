@@ -24,15 +24,45 @@
 #include <linux/platform_device.h>
 #include "pddf_client_defs.h"
 #include "pddf_cpldmux_defs.h"
+#include "pddf_multifpgapci_defs.h"
 
 extern PDDF_CPLDMUX_DATA pddf_cpldmux_data;
+static int *log_level = &cpldmux_log_level;
 
-/* Users may overwrite these select and delsect functions as per their requirements 
- * by overwriting them in custom driver
+/* Users may overwrite these select and delsect functions as per their requirements
+ * by overwriting them in custom driver.
+ *
+ * Example driver skeleton:
+ *
+ * #include <linux/module.h>
+ * #include <linux/i2c.h>
+ * ..
+ * ..
+ * #include "pddf_cpldmux_defs.h"
+ *
+ * extern PDDF_CPLDMUX_OPS pddf_cpldmux_ops;
+ *
+ * int cpldmux_byte_write(struct i2c_client *client, u8 regaddr, u8 val)
+ * {
+ *     // Provide custom implementation here
+ * }
+ *
+ * int pddf_cpldmux_deselect(struct i2c_mux_core *muxc, uint32_t chan)
+ * {
+ *     // Provide the custom implementation here
+ * }
+ *
+ * static int __init pddf_custom_cpldmux_init(void)
+ * {
+ *     pddf_cpldmux_ops.deselect = pddf_cpldmux_deselect;
+ *     pddf_cpldmux_ops.byte_write = cpldmux_byte_write;
+ *     return 0;
+ * }
  */
+
 PDDF_CPLDMUX_OPS pddf_cpldmux_ops = {
     .select = pddf_cpldmux_select_default,
-    .deselect = NULL, /* pddf_cpldmux_deselct_default */
+    .deselect = pddf_cpldmux_deselect_default,
 };
 EXPORT_SYMBOL(pddf_cpldmux_ops);
 
@@ -62,16 +92,40 @@ int pddf_cpldmux_select_default(struct i2c_mux_core *muxc, uint32_t chan)
     pdata = &private->data;
     if (chan>=pdata->num_chan)
     {
-        printk(KERN_ERR "%s: wrong channel number %d, supported channels %d\n",__FUNCTION__, chan, pdata->num_chan);
+        pddf_err(CPLDMUX, "%s: wrong channel number %d, supported channels %d\n",__FUNCTION__, chan, pdata->num_chan);
         return 0;
     }
 
-    if ( (pdata->chan_cache!=1) || (private->last_chan!=chan) )
-    {
+    if ((pdata->chan_cache != 1) || (private->last_chan != chan)) {
         sdata = &pdata->chan_data[chan];
-        pddf_dbg(CPLDMUX, KERN_ERR "%s: Writing 0x%x at 0x%x offset of cpld 0x%x to enable chan %d\n", __FUNCTION__, sdata->cpld_sel, sdata->cpld_offset, sdata->cpld_devaddr, chan);
-        ret =  cpldmux_byte_write(pdata->cpld, sdata->cpld_offset,  (uint8_t)(sdata->cpld_sel & 0xff));
+        switch (pdata->dev_type) {
+        case CPLD_MUX:
+            // cpld_mux
+            pddf_dbg(
+                CPLDMUX,
+                "%s: Writing 0x%x at 0x%x offset of cpld 0x%x to enable chan %d\n",
+                __FUNCTION__, sdata->cpld_sel,
+                sdata->cpld_offset, sdata->cpld_devaddr, chan);
+            ret = cpldmux_byte_write(
+                pdata->cpld, sdata->cpld_offset,
+                (uint8_t)(sdata->cpld_sel & 0xff));
+            break;
+        case MULTIFPGAPCI_MUX:
+            ret = ptr_multifpgapci_writepci(
+                pdata->fpga_pci_dev,
+                sdata->cpld_sel,
+                sdata->cpld_offset);
+            break;
+        default:
+            pddf_err(CPLDMUX, "%s: Unexpected device type %d\n",
+                   __FUNCTION__, pdata->dev_type);
+            break;
+        }
         private->last_chan = chan;
+    }
+
+    if (ret) {
+        pddf_err(CPLDMUX, "%s: Error status = %d", __FUNCTION__, ret);
     }
 
     return ret;
@@ -88,13 +142,36 @@ int pddf_cpldmux_deselect_default(struct i2c_mux_core *muxc, uint32_t chan)
     pdata = &private->data;
     if (chan>=pdata->num_chan)
     {
-        printk(KERN_ERR "%s: wrong channel number %d, supported channels %d\n",__FUNCTION__, chan, pdata->num_chan);
+        pddf_err(CPLDMUX, "%s: wrong channel number %d, supported channels %d\n",__FUNCTION__, chan, pdata->num_chan);
         return 0;
     }
     sdata = &pdata->chan_data[chan];
+    switch (pdata->dev_type) {
+    case CPLD_MUX:
+        pddf_dbg(
+            CPLDMUX,
+            "%s: Writing 0x%x at 0x%x offset of cpld 0x%x to disable chan %d",
+            __FUNCTION__, sdata->cpld_desel, sdata->cpld_offset,
+            sdata->cpld_devaddr, chan);
+        ret = cpldmux_byte_write(pdata->cpld, sdata->cpld_offset,
+                     (uint8_t)(sdata->cpld_desel));
+        break;
+    case MULTIFPGAPCI_MUX:
+        ret = ptr_multifpgapci_writepci(
+            pdata->fpga_pci_dev,
+            sdata->cpld_desel,
+            sdata->cpld_offset);
+        break;
+    default:
+        pddf_err(CPLDMUX, "%s: Unexpected device type %d\n", __FUNCTION__,
+               pdata->dev_type);
+        break;
+    }
 
-    pddf_dbg(CPLDMUX, KERN_ERR "%s: Writing 0x%x at 0x%x offset of cpld 0x%x to disable chan %d", __FUNCTION__, sdata->cpld_desel, sdata->cpld_offset, sdata->cpld_devaddr, chan);
-    ret = cpldmux_byte_write(pdata->cpld, sdata->cpld_offset,  (uint8_t)(sdata->cpld_desel));
+    if (ret) {
+        pddf_err(CPLDMUX, "%s: Error status = %d", __FUNCTION__, ret);
+    }
+
     return ret;
 }
 
@@ -108,12 +185,12 @@ static int cpld_mux_probe(struct platform_device *pdev)
 
     pdata = pdev->dev.platform_data;
     if (!pdata) {
-        dev_err(&pdev->dev, "CPLDMUX platform data not found\n");
+        pddf_err(CPLDMUX, "platform data %s not found\n", dev_name(&pdev->dev));
         return -ENODEV;
     }
     private = (PDDF_CPLDMUX_PRIV_DATA *)kzalloc(sizeof(PDDF_CPLDMUX_PRIV_DATA) , GFP_KERNEL);
     if (!private) {
-        printk(KERN_ERR "Failed to allocate memory for priv data\n");
+        pddf_err(CPLDMUX, "Failed to allocate memory for priv data\n");
         return -ENOMEM;
     }
     
@@ -123,7 +200,7 @@ static int cpld_mux_probe(struct platform_device *pdev)
     adap = i2c_get_adapter(pdata->parent_bus);
     if (!adap) {
         kfree(private);
-        dev_err(&pdev->dev, "Parent adapter (%d) not found\n", pdata->parent_bus);
+        pddf_err(CPLDMUX, "%s Parent adapter (%d) not found\n", dev_name(&pdev->dev), pdata->parent_bus);
         return -ENODEV;
     }
     ndev = pdata->num_chan;
@@ -142,11 +219,11 @@ static int cpld_mux_probe(struct platform_device *pdev)
         unsigned int class = 0;
         ret = i2c_mux_add_adapter(muxc, nr, i, class);
         if (ret) {
-            dev_err(&pdev->dev, "Failed to add adapter %d\n", i);
+            pddf_err(CPLDMUX ,"%s Failed to add adapter %d\n", dev_name(&pdev->dev), i);
             goto add_adapter_failed;
         }
     }
-    dev_info(&pdev->dev, "%d port mux on %s adapter\n", ndev, adap->name);
+    pddf_info(CPLDMUX, "%s %d port mux on %s adapter\n", dev_name(&pdev->dev), ndev, adap->name);
     return 0;
 
 add_adapter_failed:
@@ -169,12 +246,18 @@ static int cpld_mux_remove(struct platform_device *pdev)
     i2c_put_adapter(adap);
 
     if (cpldmux_pdata) {
-        pddf_dbg(CPLDMUX, KERN_DEBUG "%s: Freeing cpldmux platform data\n", __FUNCTION__);
+        pddf_dbg(CPLDMUX, "%s: Freeing cpldmux platform data\n", __FUNCTION__);
         kfree(cpldmux_pdata);
     }
 
     return 0;
 }
+
+static const struct platform_device_id mux_ids[] = {
+    { "cpld_mux", 0 },
+    { "multifpgapci_mux", 0 },
+    {},
+};
 
 static struct platform_driver cpld_mux_driver = {
     .probe  = cpld_mux_probe,
@@ -183,6 +266,7 @@ static struct platform_driver cpld_mux_driver = {
         .owner  = THIS_MODULE,
         .name   = "cpld_mux",
     },
+    .id_table = mux_ids,
 };
 
 static int __init board_i2c_cpldmux_init(void)
@@ -190,7 +274,7 @@ static int __init board_i2c_cpldmux_init(void)
     int ret;
     ret = platform_driver_register(&cpld_mux_driver);
     if (ret) {
-        printk(KERN_WARNING "Fail to register swpld mux driver\n");
+        pddf_err(CPLDMUX, "Fail to register swpld mux driver\n");
     }
     return (ret);
 }

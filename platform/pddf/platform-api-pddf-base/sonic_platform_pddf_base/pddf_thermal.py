@@ -13,7 +13,7 @@
 
 try:
     from sonic_platform_base.thermal_base import ThermalBase
-    import os
+    from subprocess import getstatusoutput
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
@@ -74,7 +74,7 @@ class PddfThermal(ThermalBase):
     def get_temperature(self):
         if self.is_psu_thermal:
             device = "PSU{}".format(self.thermals_psu_index)
-            output = self.pddf_obj.get_attr_name_output(device, "psu_temp1_input")
+            output = self.pddf_obj.get_attr_name_output(device, "psu_temp{}_input".format(self.thermal_index))
             if not output:
                 return None
 
@@ -112,7 +112,14 @@ class PddfThermal(ThermalBase):
             else:
                 return (attr_value/float(1000))
         else:
-            raise NotImplementedError
+            device = "PSU{}".format(self.thermals_psu_index)
+            output = self.pddf_obj.get_attr_name_output(device, "psu_temp{}_high_threshold".format(self.thermal_index))
+            if not output:
+                return None
+
+            temp1 = output['status']
+            # temperature returned is in milli celcius
+            return float(temp1)/1000
 
 
     def get_low_threshold(self):
@@ -141,9 +148,11 @@ class PddfThermal(ThermalBase):
                 return None
 
             cmd = "echo '%d' > %s" % (temperature * 1000, node)
-            os.system(cmd)
-
-            return (True)
+            ret, _ = getstatusoutput(cmd)
+            if ret == 0:
+                return (True)
+            else:
+                return (False)
         else:
             raise NotImplementedError
 
@@ -154,9 +163,11 @@ class PddfThermal(ThermalBase):
                 print("ERROR %s does not exist" % node)
                 return None
             cmd = "echo '%d' > %s" % (temperature * 1000, node)
-            os.system(cmd)
-
-            return (True)
+            ret, _ = getstatusoutput(cmd)
+            if ret == 0:
+                return (True)
+            else:
+                return (False)
         else:
             raise NotImplementedError
 
@@ -210,19 +221,40 @@ class PddfThermal(ThermalBase):
         else:
             raise NotImplementedError
 
+    def get_position_in_parent(self):
+        """
+        Retrieves 1-based relative physical position in parent device.
+        Returns:
+            integer: The 1-based relative physical position in parent
+            device or -1 if cannot determine the position
+        """
+        return self.thermal_index
+
+    def is_replaceable(self):
+        """
+        Indicate whether Thermal is replaceable.
+        Returns:
+            bool: True if it is replaceable.
+        """
+        # Usually thermal sensor is not replaceable
+        return False
+
     # Helper Functions
     def get_temp_label(self):
+        label = None
         if 'bmc' in self.pddf_obj.data[self.thermal_obj_name].keys():
-            return None
+            return label
         else:
             if self.thermal_obj_name in self.pddf_obj.data.keys():
                 dev = self.pddf_obj.data[self.thermal_obj_name]
-                topo_info = dev['i2c']['topo_info']
-                label = "%s-i2c-%d-%x" % (topo_info['dev_type'], int(topo_info['parent_bus'], 0),
+                if 'topo_info' in dev['i2c']:
+                    topo_info = dev['i2c']['topo_info']
+                    label = "%s-i2c-%d-%x" % (topo_info['dev_type'], int(topo_info['parent_bus'], 0),
                                           int(topo_info['dev_addr'], 0))
-                return (label)
-            else:
-                return None
+                elif 'path_info' in dev['i2c']:
+                    label = self.get_name()
+
+            return (label)
 
     def dump_sysfs(self):
         return self.pddf_obj.cli_dump_dsysfs('temp-sensors')

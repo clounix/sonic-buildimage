@@ -32,19 +32,25 @@
 #include "pddf_client_defs.h"
 #include "pddf_sysstatus_defs.h"
 
-
+static int *log_level = &sysstat_log_level;
 
 SYSSTATUS_DATA sysstatus_data = {0};
 
 extern int board_i2c_cpld_read(unsigned short cpld_addr, u8 reg);
 extern int board_i2c_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
+extern int (*ptr_fpgapci_read)(uint32_t);
+extern int (*ptr_fpgapci_write)(uint32_t, uint32_t);
 
 static ssize_t do_attr_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
 ssize_t show_sysstatus_data(struct device *dev, struct device_attribute *da, char *buf);
-
+ssize_t show_reg_data(struct device *dev, struct device_attribute *da, char *buf);
+ssize_t store_reg_data(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
+ssize_t dump_reg_data(struct device *dev, struct device_attribute *da, char *buf);
 
 PDDF_DATA_ATTR(attr_name, S_IWUSR|S_IRUGO, show_pddf_data, store_pddf_data, PDDF_CHAR, 32, 
              (void*)&sysstatus_data.sysstatus_addr_attr.aname, NULL);
+PDDF_DATA_ATTR(attr_devtype, S_IWUSR|S_IRUGO, show_pddf_data, store_pddf_data, PDDF_CHAR, 32, 
+             (void*)&sysstatus_data.sysstatus_addr_attr.devtype, NULL);
 PDDF_DATA_ATTR(attr_devaddr, S_IWUSR|S_IRUGO, show_pddf_data, store_pddf_data, PDDF_UINT32, 
               sizeof(uint32_t),  (void*)&sysstatus_data.sysstatus_addr_attr.devaddr , NULL);
 PDDF_DATA_ATTR(attr_offset, S_IWUSR|S_IRUGO, show_pddf_data, store_pddf_data, PDDF_UINT32,
@@ -59,6 +65,7 @@ PDDF_DATA_ATTR(attr_ops, S_IWUSR, NULL, do_attr_operation, PDDF_CHAR, 8, (void*)
 
 static struct attribute *sysstatus_addr_attributes[] = {
     &attr_attr_name.dev_attr.attr,
+    &attr_attr_devtype.dev_attr.attr,
     &attr_attr_devaddr.dev_attr.attr,
     &attr_attr_offset.dev_attr.attr,
     &attr_attr_mask.dev_attr.attr,
@@ -68,9 +75,12 @@ static struct attribute *sysstatus_addr_attributes[] = {
 };
 
 PDDF_DATA_ATTR(board_info, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, 32, NULL, NULL);
+PDDF_DATA_ATTR(fpga_board_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(fpga_firmware_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld1_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld2_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld3_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(cpld4_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(power_module_status, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(system_reset1, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(system_reset2, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
@@ -83,14 +93,49 @@ PDDF_DATA_ATTR(system_reset8, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_U
 PDDF_DATA_ATTR(misc1, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(misc2, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(misc3, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
-
-
+/* dump key reg of cpld/fpga */
+//CPLD3
+PDDF_DATA_ATTR(r_cpld3_i2c_sel, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_uart_select_0, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_test_reg, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_sys_led_mode, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_sys_reset1, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_sys_reset2, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_payload_ctrl, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_payload_mask, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_pg, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_power_state, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_come_bios, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld3_dump_raw, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+//CPLD4
+PDDF_DATA_ATTR(r_cpld4_fan_led_mode, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld4_test_reg, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld4_sys_reset1, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld4_fanN_wp, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_cpld4_dump_raw, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UCHAR, sizeof(uint32_t), NULL, NULL);
+//FPGA
+PDDF_DATA_ATTR(r_fpga1_reset_config, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_reset_status, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_reset_ctrl, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_cpld_intf_config, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_cpld_intf_status, S_IWUSR|S_IRUGO, show_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_debug_led, S_IWUSR|S_IRUGO, show_reg_data, store_reg_data, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw1, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw2, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw3, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw4, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw5, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw6, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(r_fpga1_dump_raw7, S_IWUSR|S_IRUGO, dump_reg_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 
 static struct attribute *sysstatus_data_attributes[] = {
     &attr_board_info.dev_attr.attr,
+    &attr_fpga_board_version.dev_attr.attr,
+    &attr_fpga_firmware_version.dev_attr.attr,
     &attr_cpld1_version.dev_attr.attr,
     &attr_cpld2_version.dev_attr.attr,
     &attr_cpld3_version.dev_attr.attr,
+    &attr_cpld4_version.dev_attr.attr,
     &attr_power_module_status.dev_attr.attr,
     &attr_system_reset1.dev_attr.attr,
     &attr_system_reset2.dev_attr.attr,
@@ -103,6 +148,36 @@ static struct attribute *sysstatus_data_attributes[] = {
     &attr_misc1.dev_attr.attr,
     &attr_misc2.dev_attr.attr,
     &attr_misc3.dev_attr.attr,
+    &attr_r_cpld3_i2c_sel.dev_attr.attr,
+    &attr_r_cpld3_uart_select_0.dev_attr.attr,
+    &attr_r_cpld3_test_reg.dev_attr.attr,
+    &attr_r_cpld3_sys_led_mode.dev_attr.attr,
+    &attr_r_cpld3_sys_reset1.dev_attr.attr,
+    &attr_r_cpld3_sys_reset2.dev_attr.attr,
+    &attr_r_cpld3_payload_ctrl.dev_attr.attr,
+    &attr_r_cpld3_payload_mask.dev_attr.attr,
+    &attr_r_cpld3_pg.dev_attr.attr,
+    &attr_r_cpld3_power_state.dev_attr.attr,
+    &attr_r_cpld3_come_bios.dev_attr.attr,
+    &attr_r_cpld3_dump_raw.dev_attr.attr,
+    &attr_r_cpld4_fan_led_mode.dev_attr.attr,
+    &attr_r_cpld4_test_reg.dev_attr.attr,
+    &attr_r_cpld4_sys_reset1.dev_attr.attr,
+    &attr_r_cpld4_fanN_wp.dev_attr.attr,
+    &attr_r_cpld4_dump_raw.dev_attr.attr,
+    &attr_r_fpga1_reset_config.dev_attr.attr,
+    &attr_r_fpga1_reset_status.dev_attr.attr,
+    &attr_r_fpga1_reset_ctrl.dev_attr.attr,
+    &attr_r_fpga1_cpld_intf_config.dev_attr.attr,
+    &attr_r_fpga1_cpld_intf_status.dev_attr.attr,
+    &attr_r_fpga1_debug_led.dev_attr.attr,
+    &attr_r_fpga1_dump_raw1.dev_attr.attr,
+    &attr_r_fpga1_dump_raw2.dev_attr.attr,
+    &attr_r_fpga1_dump_raw3.dev_attr.attr,
+    &attr_r_fpga1_dump_raw4.dev_attr.attr,
+    &attr_r_fpga1_dump_raw5.dev_attr.attr,
+    &attr_r_fpga1_dump_raw6.dev_attr.attr,
+    &attr_r_fpga1_dump_raw7.dev_attr.attr,
     NULL
 };
 
@@ -144,19 +219,177 @@ ssize_t show_sysstatus_data(struct device *dev, struct device_attribute *da, cha
 
     if (sysstatus_addr_attrs==NULL )
     {
-        printk(KERN_DEBUG "%s is not supported attribute for this client\n",data->sysstatus_addr_attrs[i].aname);
+        pddf_err(SYSSTATUS, "%s is not supported attribute for this client\n",attr->dev_attr.attr.name);
         status = 0;
     }
     else
     {
-        status = board_i2c_cpld_read( sysstatus_addr_attrs->devaddr, sysstatus_addr_attrs->offset);
+        if (strncmp(sysstatus_addr_attrs->devtype, "cpld", strlen("cpld")) == 0)
+        {
+            status = board_i2c_cpld_read( sysstatus_addr_attrs->devaddr, sysstatus_addr_attrs->offset);
+        }
+        if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
+        {
+            status = ptr_fpgapci_read(sysstatus_addr_attrs->devaddr);
+            status =  (status >> sysstatus_addr_attrs->offset);
+            pddf_dbg(SYSSTATUS,  "%s: byte_value = 0x%x\n", __FUNCTION__, status);
+        }
+        status = status&sysstatus_addr_attrs->mask;
     }
-    
-    return sprintf(buf, "0x%x\n", (status&sysstatus_addr_attrs->mask)); 
-
+    return sprintf(buf, "0x%x\n", status);
 }
 
+ssize_t show_reg_data(struct device *dev, struct device_attribute *da, char *buf)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    
+    SYSSTATUS_DATA *data = &sysstatus_data;
+    struct SYSSTATUS_ADDR_ATTR *sysstatus_addr_attrs = NULL;
+    unsigned int i, status ;
 
+    for (i=0;i<MAX_ATTRS;i++)
+    {
+        if (strcmp(data->sysstatus_addr_attrs[i].aname, attr->dev_attr.attr.name) == 0 )
+        {
+            sysstatus_addr_attrs = &data->sysstatus_addr_attrs[i];
+        }
+    }
+
+    if (sysstatus_addr_attrs==NULL )
+    {
+        pddf_err(SYSSTATUS, "%s is not supported attribute for this client\n",attr->dev_attr.attr.name);
+        status = 0;
+    }
+    else
+    {
+        if (strncmp(sysstatus_addr_attrs->devtype, "cpld", strlen("cpld")) == 0)
+        {
+            status = board_i2c_cpld_read( sysstatus_addr_attrs->devaddr, sysstatus_addr_attrs->offset);
+            pddf_dbg(SYSSTATUS,  "%s: reg: 0x%x,value: 0x%x\n", __FUNCTION__, sysstatus_addr_attrs->offset,status);
+        }
+        if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
+        {
+            status = ptr_fpgapci_read(sysstatus_addr_attrs->devaddr+sysstatus_addr_attrs->offset);
+            pddf_dbg(SYSSTATUS,  "%s: reg: 0x%x,value: 0x%x\n", __FUNCTION__, 
+                sysstatus_addr_attrs->devaddr+sysstatus_addr_attrs->offset,status);
+        }
+        
+        status = status&sysstatus_addr_attrs->mask;
+    }
+    return sprintf(buf, "0x%x\n", (uint32_t)status);
+}
+
+ssize_t store_reg_data(struct device *dev, struct device_attribute *da, const char *buf, size_t count)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    
+    SYSSTATUS_DATA *data = &sysstatus_data;
+    struct SYSSTATUS_ADDR_ATTR *sysstatus_addr_attrs = NULL;
+    unsigned int i, status ;
+    PDDF_ATTR *ptr = (PDDF_ATTR *)da;
+    int reg_val = 0,ret;
+    u8 cpld_reg_val;
+    uint32_t fpga_reg_val,offset;
+
+    for (i=0;i<MAX_ATTRS;i++)
+    {
+        if (strcmp(data->sysstatus_addr_attrs[i].aname, attr->dev_attr.attr.name) == 0 )
+        {
+            sysstatus_addr_attrs = &data->sysstatus_addr_attrs[i];
+        }
+    }
+
+    if (sysstatus_addr_attrs==NULL )
+    {
+        pddf_err(SYSSTATUS, "%s is not supported attribute for this client\n",attr->dev_attr.attr.name);
+        status = 0;
+    }
+    else
+    {
+        switch(ptr->type) {
+        case PDDF_UCHAR:
+            ret = kstrtoint(buf,0,&reg_val);
+            if (ret==0)
+                cpld_reg_val = (unsigned char)reg_val;
+            break;
+        case PDDF_UINT32:
+            ret = kstrtouint(buf,16,&reg_val);
+            if (ret==0)
+                fpga_reg_val = (uint32_t)reg_val;
+            break;
+        default:
+            break;
+        }
+
+        if (strncmp(sysstatus_addr_attrs->devtype, "cpld", strlen("cpld")) == 0)
+        {
+            cpld_reg_val = cpld_reg_val&sysstatus_addr_attrs->mask;
+            status = board_i2c_cpld_write( sysstatus_addr_attrs->devaddr, sysstatus_addr_attrs->offset, cpld_reg_val);
+            pddf_dbg(SYSSTATUS,  "%s: cpld reg: 0x%x,value: 0x%x\n", __FUNCTION__, sysstatus_addr_attrs->offset, cpld_reg_val);
+        }
+        if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
+        {
+            fpga_reg_val = fpga_reg_val&sysstatus_addr_attrs->mask;
+            offset = sysstatus_addr_attrs->devaddr + sysstatus_addr_attrs->offset;
+            status = ptr_fpgapci_write(offset, fpga_reg_val);
+            pddf_dbg(SYSSTATUS,  "%s: fpga reg: 0x%x, value = 0x%x\n", __FUNCTION__, offset, fpga_reg_val);
+        }
+    }
+    return count;
+}
+#define BUF_SIZE_MAX 2048
+ssize_t dump_reg_data(struct device *dev, struct device_attribute *da, char *buf)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    SYSSTATUS_DATA *data = &sysstatus_data;
+    struct SYSSTATUS_ADDR_ATTR *sysstatus_addr_attrs = NULL;
+    unsigned int i, status ;
+    uint32_t reg;
+    ssize_t buf_cnt;
+
+    for (i=0;i<MAX_ATTRS;i++)
+    {
+        if (strcmp(data->sysstatus_addr_attrs[i].aname, attr->dev_attr.attr.name) == 0 )
+        {
+            sysstatus_addr_attrs = &data->sysstatus_addr_attrs[i];
+        }
+    }
+
+    if (sysstatus_addr_attrs==NULL )
+    {
+        pddf_err(SYSSTATUS, "%s is not supported attribute for this client\n",attr->dev_attr.attr.name);
+        status = 0;
+    }
+    else
+    {
+        if (strncmp(sysstatus_addr_attrs->devtype, "cpld", strlen("cpld")) == 0)
+        {
+            buf_cnt = 0;
+            buf_cnt += snprintf(&buf[buf_cnt], BUF_SIZE_MAX-buf_cnt, "reg(hex):val(hex)\n");
+            for (reg = sysstatus_addr_attrs->offset; reg <= sysstatus_addr_attrs->len; reg++) {
+                status = board_i2c_cpld_read( sysstatus_addr_attrs->devaddr, reg);
+                pddf_dbg(SYSSTATUS,  "%s: reg: 0x%x,value: 0x%x\n", __FUNCTION__, reg, status);
+                if (buf_cnt < BUF_SIZE_MAX) {
+                    buf_cnt += snprintf(&buf[buf_cnt], BUF_SIZE_MAX-buf_cnt, "%x:%x\n", reg, status);
+                }
+            }
+        }
+        if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
+        {
+            buf_cnt += snprintf(&buf[buf_cnt], BUF_SIZE_MAX-buf_cnt, "reg(hex):val(hex)\n");
+            for (reg = sysstatus_addr_attrs->devaddr; reg <= sysstatus_addr_attrs->len; reg+=4) {
+                status = ptr_fpgapci_read(reg);
+                pddf_dbg(SYSSTATUS,  "%s: reg: 0x%x,value: 0x%x\n", __FUNCTION__, reg, status);
+                if (buf_cnt < BUF_SIZE_MAX) {
+                    buf_cnt += snprintf(&buf[buf_cnt], BUF_SIZE_MAX-buf_cnt, "%x:%x\n", reg, status);
+                }
+            }
+        }
+        
+        status = status&sysstatus_addr_attrs->mask;
+    }
+    return buf_cnt;
+}
 
 static ssize_t do_attr_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count)
 {
@@ -165,7 +398,7 @@ static ssize_t do_attr_operation(struct device *dev, struct device_attribute *da
     
     pdata->sysstatus_addr_attrs[pdata->len] = pdata->sysstatus_addr_attr;
     pdata->len++;
-    pddf_dbg(SYSSTATUS, KERN_ERR "%s: Populating the data for %s\n", __FUNCTION__, pdata->sysstatus_addr_attr.aname);
+    pddf_dbg(SYSSTATUS, "%s: Populating the data for %s\n", __FUNCTION__, pdata->sysstatus_addr_attr.aname);
     memset(&pdata->sysstatus_addr_attr, 0, sizeof(pdata->sysstatus_addr_attr));
 
 
@@ -212,7 +445,7 @@ int __init sysstatus_data_init(void)
         return ret;
     }
 
-
+    pddf_info(SYSSTATUS, "%s: init done'\n",__FUNCTION__);
     return ret;
 }
 
@@ -223,7 +456,7 @@ void __exit sysstatus_data_exit(void)
     sysfs_remove_group(sysstatus_addr_kobj, &pddf_sysstatus_addr_group);
     kobject_put(sysstatus_data_kobj);
     kobject_put(sysstatus_addr_kobj);
-    pddf_dbg(SYSSTATUS, KERN_ERR "%s: Removed the kobjects for 'SYSSTATUS'\n",__FUNCTION__);
+    pddf_info(SYSSTATUS, "%s: Removed the kobjects for 'SYSSTATUS'\n",__FUNCTION__);
     return;
 }
 

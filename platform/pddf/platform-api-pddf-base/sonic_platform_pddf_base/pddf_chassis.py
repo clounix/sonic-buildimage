@@ -16,6 +16,29 @@ try:
 except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
+voltage_sensor_present = True
+try:
+    from sonic_platform.voltage_sensor import VoltageSensor
+except ImportError as e:
+    voltage_sensor_present = False
+
+current_sensor_present = True
+try:
+    from sonic_platform.current_sensor import CurrentSensor
+except ImportError as e:
+    current_sensor_present = False
+
+asicthermal_present = True
+try:
+    from sonic_platform.asic_thermal import AsicThermal
+except ImportError as e:
+    asicthermal_present = False
+
+component_present = True
+try:
+    from sonic_platform.component import Component
+except ImportError as e:
+    component_present = False
 
 class PddfChassis(ChassisBase):
     """
@@ -70,6 +93,34 @@ class PddfChassis(ChassisBase):
         for i in range(self.platform_inventory['num_temps']):
             thermal = Thermal(i, self.pddf_obj, self.plugin_data)
             self._thermal_list.append(thermal)
+
+        if voltage_sensor_present:
+            # VOLTAGE SENSORs
+            num_voltage_sensors = self.platform_inventory.get('num_voltage_sensors', 0)
+            for i in range(num_voltage_sensors):
+                voltage = VoltageSensor(i, self.pddf_obj, self.plugin_data)
+                self._voltage_sensor_list.append(voltage)
+
+        if current_sensor_present:
+            # CURRENT SENSORs
+            num_current_sensors = self.platform_inventory.get('num_current_sensors', 0)
+            for i in range(num_current_sensors):
+                current = CurrentSensor(i, self.pddf_obj, self.plugin_data)
+                self._current_sensor_list.append(current)
+
+        if asicthermal_present:
+            # ASIC Thermal
+            num_asic_temps = self.platform_inventory.get('num_asic_temps', 0)
+            for i in range(num_asic_temps):
+                asicthermal = AsicThermal(i, self.pddf_obj)
+                self._thermal_list.append(asicthermal)
+
+        if component_present:
+            # Components (Programmables)
+            num_components = self.platform_inventory.get('num_components', 0)
+            for i in range(num_components):
+                component = Component(i, self.pddf_obj, self.plugin_data)
+                self._component_list.append(component)
 
 
     def get_name(self):
@@ -193,32 +244,30 @@ class PddfChassis(ChassisBase):
     ##############################################
     # System LED  methods
     ##############################################
+    # APIs used by PDDF. Use them for debugging front panel
+    # system LED and fantray LED issues
     def set_system_led(self, led_device_name, color):
-        result, msg = self.pddf_obj.is_supported_sysled_state(led_device_name, color)
-        if result == False:
+        """
+        Sets the color of an LED device in PDDF
+        Args:
+           led_device_name: a pre-defined LED device name list used in pddf-device.json.
+           color: A string representing the color with which to set a LED
+        Returns:
+           bool: True if the LED state is set successfully, False if not
+        """
+        result, msg = self.pddf_obj.set_system_led_color(led_device_name, color)
+        if not result and msg:
             print(msg)
-            return (False)
-
-        index = self.pddf_obj.data[led_device_name]['dev_attr']['index']
-        device_name = self.pddf_obj.data[led_device_name]['dev_info']['device_name']
-        self.pddf_obj.create_attr('device_name', device_name,  self.pddf_obj.get_led_path())
-        self.pddf_obj.create_attr('index', index, self.pddf_obj.get_led_path())
-        self.pddf_obj.create_attr('color', color, self.pddf_obj.get_led_cur_state_path())
-        self.pddf_obj.create_attr('dev_ops', 'set_status',  self.pddf_obj.get_led_path())
-        return (True)
+        return (result)
 
     def get_system_led(self, led_device_name):
-        if led_device_name not in self.pddf_obj.data.keys():
-            status = "[FAILED] " + led_device_name + " is not configured"
-            return (status)
-
-        index = self.pddf_obj.data[led_device_name]['dev_attr']['index']
-        device_name = self.pddf_obj.data[led_device_name]['dev_info']['device_name']
-        self.pddf_obj.create_attr('device_name', device_name,  self.pddf_obj.get_led_path())
-        self.pddf_obj.create_attr('index', index, self.pddf_obj.get_led_path())
-        self.pddf_obj.create_attr('dev_ops', 'get_status',  self.pddf_obj.get_led_path())
-        color = self.pddf_obj.get_led_color()
-        return (color)
+        """
+        Gets the color of an LED device in PDDF
+        Returns:
+            string: color of LED or message if failed.
+        """
+        result, output = self.pddf_obj.get_system_led_color(led_device_name)
+        return (output)
 
     ##############################################
     # Other methods
