@@ -2,7 +2,6 @@
 
 DOCKER_BASE_BULLSEYE = docker-base-bullseye.gz
 $(DOCKER_BASE_BULLSEYE)_PATH = $(DOCKERS_PATH)/docker-base-bullseye
-
 $(DOCKER_BASE_BULLSEYE)_DEPENDS += $(SOCAT)
 
 GDB = gdb

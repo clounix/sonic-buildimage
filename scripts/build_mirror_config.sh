@@ -23,6 +23,13 @@ fi
 
 if [ "$DISTRIBUTION" == "buster" ]; then
     DEFAULT_MIRROR_URLS=http://archive.debian.org/debian/
+    DEFAULT_MIRROR_SECURITY_URLS=http://archive.debian.org/debian-security/
+fi
+
+# Bullseye: 主仓/backports 用 archive，安全更新仍在 debian-security 主站
+if [ "$DISTRIBUTION" == "bullseye" ]; then
+    DEFAULT_MIRROR_URLS=http://archive.debian.org/debian/
+    DEFAULT_MIRROR_SECURITY_URLS=http://deb.debian.org/debian-security/
 fi
 
 if [ "$MIRROR_SNAPSHOT" == y ]; then

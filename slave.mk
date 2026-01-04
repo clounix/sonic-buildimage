@@ -912,6 +912,17 @@ $(addprefix $(TARGET_PATH)/, $(DOCKER_IMAGES)) : $(TARGET_PATH)/%.gz : .platform
 		# Apply series of patches if exist
 		if [ -f $($*.gz_PATH).patch/series ]; then pushd $($*.gz_PATH) && quilt applied || QUILT_PATCHES=../$(notdir $($*.gz_PATH)).patch quilt push -a; popd; fi $(LOG)
 		mkdir -p $($*.gz_PATH)/debs $(LOG)
+		# For docker-base-bullseye, stage only required debs into build context to avoid missing soft links
+		if [ "$*" = "docker-base-bullseye" ]; then \
+			mkdir -p $($*.gz_PATH)/debs_dep; \
+			for deb in $($*.gz_DEPENDS); do \
+				if [ -f "$($*.gz_DEBS_PATH)/$$deb" ]; then \
+					cp -a "$($*.gz_DEBS_PATH)/$$deb" "$($*.gz_PATH)/debs_dep/"; \
+				else \
+					echo "WARN: deb $$deb not found under $($*.gz_DEBS_PATH)"; \
+				fi; \
+			done; \
+		fi
 		mkdir -p $($*.gz_PATH)/files $(LOG)
 		mkdir -p $($*.gz_PATH)/python-debs $(LOG)
 		mkdir -p $($*.gz_PATH)/python-wheels $(LOG)

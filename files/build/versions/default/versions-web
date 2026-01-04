@@ -101,10 +101,10 @@ https://sonicstorage.blob.core.windows.net/public/debian/socat_1.7.4.1.orig.tar.
 https://sonicstorage.blob.core.windows.net/public/debian/thrift_0.11.0-4.debian.tar.xz==52ad383b97ad051f4d1d25b54aaad569
 https://sonicstorage.blob.core.windows.net/public/debian/thrift_0.11.0-4.dsc==6917fe7b3ada9313be94713dd50fee7b
 https://sonicstorage.blob.core.windows.net/public/debian/thrift_0.11.0.orig.tar.gz==0be59730ebce071eceaf6bfdb8d3a20e
-https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.1/amd64/golang-1.15-go_1.15.15-1~deb11u4%2Bfips_amd64.deb==b60f6db62805696b47ab422ab798fe56
-https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.1/amd64/golang-1.15-src_1.15.15-1~deb11u4%2Bfips_amd64.deb==1c920937aa49b602a1bfec3c49747131
-https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.1/arm64/golang-1.15-go_1.15.15-1~deb11u4%2Bfips_arm64.deb==0b70c104b907db13ff2fe5d52b3d0008
-https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.1/arm64/golang-1.15-src_1.15.15-1~deb11u4%2Bfips_arm64.deb==1d06900f03424fa5ce34a782605983fe
+https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/amd64/golang-1.15-go_1.15.15-1~deb11u4+fips_amd64.deb==145e103357a915cc759cc93de602b631
+https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/amd64/golang-1.15-src_1.15.15-1~deb11u4+fips_amd64.deb==1c1a46d5599be92777702643c37d5751
+https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/arm64/golang-1.15-go_1.15.15-1~deb11u4+fips_arm64.deb==b59f315800ca2ec31de79136dfb8979d
+https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/arm64/golang-1.15-src_1.15.15-1~deb11u4+fips_arm64.deb==0038c68ed1e3adb1b43434af81cff678
 https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/amd64/golang-1.15-doc_1.15.15-1~deb11u4+fips_all.deb==72ead09139135d4ecd91b76c89128567
 https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/amd64/golang-1.15-go_1.15.15-1~deb11u4+fips_amd64.deb==145e103357a915cc759cc93de602b631
 https://sonicstorage.blob.core.windows.net/public/fips/bullseye/0.8/amd64/golang-1.15-src_1.15.15-1~deb11u4+fips_amd64.deb==1c1a46d5599be92777702643c37d5751
@@ -152,6 +152,6 @@ https://sonicstorage.blob.core.windows.net/public/sai/bcmpai/REL_3.8/3.8/libsaib
 https://sonicstorage.blob.core.windows.net/public/sai/bcmsai/REL_7.0_202205/7.1.66.7/libsaibcm_dnx_7.1.66.7_amd64.deb==06bbf4363b14612a8cfa0071006657ca
 https://sonicstorage.blob.core.windows.net/public/sai/bcmsai/REL_7.0_202205/7.1.73.4/libsaibcm-dev_7.1.73.4_amd64.deb==28eca348172e349285453c619f593d3e
 https://sonicstorage.blob.core.windows.net/public/sai/bcmsai/REL_7.0_202205/7.1.73.4/libsaibcm_7.1.73.4_amd64.deb==234bf9dec541611540a3493225a33162
-https://storage.googleapis.com/golang/go1.14.2.linux-amd64.tar.gz==856d248e3ea8a287d13e5f6afd086282
-https://storage.googleapis.com/golang/go1.14.2.linux-arm64.tar.gz==e5f79b403701e00f20d13f0ea561b064
-https://storage.googleapis.com/golang/go1.14.2.linux-armv6l.tar.gz==04467414e783b18de4278e9f24baf4be
+https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz==856d248e3ea8a287d13e5f6afd086282
+https://dl.google.com/go/go1.14.2.linux-arm64.tar.gz==e5f79b403701e00f20d13f0ea561b064
+https://dl.google.com/go/go1.14.2.linux-armv6l.tar.gz==04467414e783b18de4278e9f24baf4be

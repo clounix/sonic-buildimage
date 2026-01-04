@@ -1,0 +1,98 @@
+diff --git a/setup.py b/setup.py
+index 51fe9314..cc8eb75c 100644
+--- a/setup.py
++++ b/setup.py
+@@ -201,7 +201,7 @@ setup(
+         'jsondiff>=1.2.0',
+         'jsonpatch>=1.32.0',
+         'jsonpointer>=1.9',
+-        'm2crypto>=0.31.0',
++        # m2crypto moved to extras_require['aboot'] - only needed for Arista aboot bootloader
+         'natsort>=6.2.1',  # 6.2.1 is the last version which supports Python 2. Can update once we no longer support Python 2
+         'netaddr>=0.8.0',
+         'netifaces>=0.10.7',
+@@ -221,6 +221,9 @@ setup(
+         'xmltodict==0.12.0',
+         'lazy-object-proxy',
+     ],
++    extras_require={
++        'aboot': ['m2crypto>=0.31.0'],  # Optional dependency for Arista aboot bootloader support
++    },
+     setup_requires= [
+         'pytest-runner',
+         'wheel'
+diff --git a/sonic_installer/bootloader/__init__.py b/sonic_installer/bootloader/__init__.py
+index d2872eb7..7064d4c8 100644
+--- a/sonic_installer/bootloader/__init__.py
++++ b/sonic_installer/bootloader/__init__.py
+@@ -1,16 +1,27 @@
+ 
+-from .aboot import AbootBootloader
+ from .grub import GrubBootloader
+ from .uboot import UbootBootloader
+ 
++# Try to import AbootBootloader, but make it optional if m2crypto is not available
++try:
++    from .aboot import AbootBootloader
++    _ABOOT_AVAILABLE = True
++except ImportError:
++    # m2crypto not available, aboot bootloader will not be available
++    _ABOOT_AVAILABLE = False
++    AbootBootloader = None
++
+ BOOTLOADERS = [
+-    AbootBootloader,
+     GrubBootloader,
+     UbootBootloader,
+ ]
+ 
++# Only add AbootBootloader if it's available
++if _ABOOT_AVAILABLE and AbootBootloader is not None:
++    BOOTLOADERS.insert(0, AbootBootloader)
++
+ def get_bootloader():
+     for bootloaderCls in BOOTLOADERS:
+-        if bootloaderCls.detect():
++        if bootloaderCls is not None and bootloaderCls.detect():
+             return bootloaderCls()
+     raise RuntimeError('Bootloader could not be detected')
+diff --git a/sonic_installer/bootloader/aboot.py b/sonic_installer/bootloader/aboot.py
+index 8884ab54..4b7a6320 100644
+--- a/sonic_installer/bootloader/aboot.py
++++ b/sonic_installer/bootloader/aboot.py
+@@ -13,7 +13,13 @@ from contextlib import contextmanager
+ 
+ import click
+ 
+-from M2Crypto import X509
++try:
++    from M2Crypto import X509
++    _M2CRYPTO_AVAILABLE = True
++except ImportError:
++    # m2crypto not available, secure boot features will not work
++    _M2CRYPTO_AVAILABLE = False
++    X509 = None
+ 
+ from sonic_py_common import device_info
+ from ..common import (
+@@ -221,6 +227,10 @@ class AbootBootloader(Bootloader):
+         return 'sonic_fips=1' in cmdline
+ 
+     def _verify_secureboot_image(self, image_path):
++        if not _M2CRYPTO_AVAILABLE:
++            # m2crypto not available, cannot verify secure boot images
++            sys.stderr.write('Warning: m2crypto not available, secure boot verification disabled\n')
++            return True
+         if is_secureboot():
+             cert = self.getCert(image_path)
+             return cert is not None
+@@ -228,6 +238,9 @@ class AbootBootloader(Bootloader):
+ 
+     @classmethod
+     def getCert(cls, swiFile):
++        if not _M2CRYPTO_AVAILABLE:
++            # m2crypto not available, cannot verify certificates
++            return None
+         with zipfile.ZipFile(swiFile, 'r') as swi:
+             try:
+                 sigInfo = swi.getinfo(cls.getSigFileName(swiFile))

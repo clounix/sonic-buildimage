@@ -31,6 +31,11 @@ COPY ["sources.list.{{ CONFIGURED_ARCH }}", "/etc/apt/sources.list"]
 COPY ["no_install_recommend_suggest", "/etc/apt/apt.conf.d"]
 COPY ["no-check-valid-until", "/etc/apt/apt.conf.d"]
 
+# Harden apt for flaky networks and ensure security mirror present
+RUN echo 'Acquire::Retries "5";\nAcquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::http::Pipeline-Depth "0";\nAcquire::https::Pipeline-Depth "0";' > /etc/apt/apt.conf.d/99-retries-timeout && \
+    grep -q "deb.debian.org/debian-security" /etc/apt/sources.list || \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
+
 # Update apt cache and
 # pre-install fundamental packages
 RUN apt-get update &&        \
@@ -101,7 +106,7 @@ RUN apt-get -y purge   \
 
 {% if docker_base_bullseye_debs.strip() -%}
 # Copy locally-built Debian package dependencies
-{{ copy_files("debs/", docker_base_bullseye_debs.split(' '), "/debs/") }}
+{{ copy_files("debs_dep/", docker_base_bullseye_debs.split(' '), "/debs/") }}
 
 # Install built Debian packages and implicitly install their dependencies
 {{ install_debian_packages(docker_base_bullseye_debs.split(' ')) }}
