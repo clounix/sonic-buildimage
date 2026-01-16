@@ -8,8 +8,8 @@
     branch = 202205
 [submodule "sonic-sairedis"]
 	path = src/sonic-sairedis
-	url = git@github.com:clounix/sonic-sairedis.git
-    branch = 202205.clounix
+	url =  https://github.com/sonic-net/sonic-sairedis.git
+        branch = 202205
 [submodule "sonic-swss"]
 	path = src/sonic-swss
 	url = https://github.com/sonic-net/sonic-swss
