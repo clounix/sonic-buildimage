@@ -117,7 +117,7 @@ MAKEFLAGS += -B
 CONFIGURED_ARCH := $(shell [ -f .arch ] && cat .arch || echo $(PLATFORM_ARCH))
 CONFIGURED_PLATFORM = $(if $(PLATFORM),$(PLATFORM),$(shell cat .platform 2>/dev/null))
 ifeq ($(CONFIGURED_ARCH),)
-    override CONFIGURED_ARCH = amd64
+    override CONFIGURED_ARCH = $(COMPILE_HOST_ARCH)
 endif
 ifeq ($(PLATFORM_ARCH),)
 	override PLATFORM_ARCH = $(CONFIGURED_ARCH)
