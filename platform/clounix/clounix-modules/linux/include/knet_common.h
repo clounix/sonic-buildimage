@@ -1,44 +1,13 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #ifndef __KNET_COMMON_H__
 #define __KNET_COMMON_H__
 
 #include "knet_types.h"
 
 #define CLX_DRIVER_NAME "clx_dev"
+
+#define KNET_DRV_VERSION_MAJOR    1
+#define KNET_DRV_VERSION_MINOR    19
+#define KNET_DRV_VERSION_REVISION 0
 
 #define CLX_MISC_MAJOR_NUM (10)
 #define CLX_MISC_MINOR_NUM (250)
@@ -55,13 +24,23 @@
 #define CLX_NETIF_NETLINK_MC_GRP_NUM_MAX (32)
 #define CLX_RX_RSN_BMP_SIZE              (16)
 
+#define CLX_SET_BITMAP(bitmap, mask_bitmap) (bitmap = ((bitmap) | (mask_bitmap)))
+#define CLX_CLR_BITMAP(bitmap, mask_bitmap) (bitmap = ((bitmap) & (~(mask_bitmap))))
+#define CLX_GET_BITMAP(flags, bit)          ((((flags) & (bit)) > 0) ? 1 : 0)
+
 /* interrupt */
 #define INTR_MODE_INTX 0
 #define INTR_MODE_MSI  1
 #define INTR_MODE_MSIX 2
 
-#define CLX_INTR_VALID_CODE  (0xABCD900D)
-#define CLX_INTR_INVALID_MSI (0xDEADDEAD)
+#define CLX_INTR_VALID_CODE     (0xABCD900D)
+#define CLX_INTR_DISCONNECT_ISR (0xDEADDEAD)
+
+struct clx_version_s {
+    uint32_t major;
+    uint32_t minor;
+    uint32_t revision;
+};
 
 /* ioctl structure */
 struct clx_ioctl_dma_buffer {
@@ -92,19 +71,24 @@ struct clx_pci_info_s {
 struct clx_dev_info_s {
     uint32_t pci_dev_num;
     struct clx_pci_info_s pci_info[CLX_MAX_CHIP_NUM];
+    struct clx_version_s drv_version;
 };
 
 /* intf attr */
 typedef enum {
-    NETIF_PORT_SPEED_1G = 1000,
-    NETIF_PORT_SPEED_10G = 10000,
-    NETIF_PORT_SPEED_25G = 25000,
-    NETIF_PORT_SPEED_40G = 40000,
-    NETIF_PORT_SPEED_50G = 50000,
-    NETIF_PORT_SPEED_100G = 100000,
-    NETIF_PORT_SPEED_200G = 200000,
-    NETIF_PORT_SPEED_400G = 400000,
-    NETIF_PORT_SPEED_800G = 800000,
+    NETIF_PORT_SPEED_10M = 10,      /* Speed 10m */
+    NETIF_PORT_SPEED_100M = 100,    /* Speed 100m */
+    NETIF_PORT_SPEED_1G = 1000,     /* Speed 1g */
+    NETIF_PORT_SPEED_2P5G = 2500,   /* Speed 2.5g */
+    NETIF_PORT_SPEED_5G = 5000,     /* Speed 5g */
+    NETIF_PORT_SPEED_10G = 10000,   /* Speed 10g */
+    NETIF_PORT_SPEED_25G = 25000,   /* Speed 25g */
+    NETIF_PORT_SPEED_40G = 40000,   /* Speed 40g */
+    NETIF_PORT_SPEED_50G = 50000,   /* Speed 50g */
+    NETIF_PORT_SPEED_100G = 100000, /* Speed 100g */
+    NETIF_PORT_SPEED_200G = 200000, /* Speed 200g */
+    NETIF_PORT_SPEED_400G = 400000, /* Speed 400g */
+    NETIF_PORT_SPEED_800G = 800000, /* Speed 800g */
     NETIF_PORT_SPEED_LAST
 } netif_port_speed_e;
 
@@ -163,13 +147,6 @@ struct clx_netif_netdev_cnt {
     clx_ioctl_error_no_t rc;
 };
 
-struct clx_netif_ioctl_rx_reason_cnt {
-    uint32_t intf_id;
-    uint32_t cpu_reason;
-    uint64_t pkt_cnts;
-    uint64_t byte_cnts;
-};
-
 struct clx_netif_ioctl_port_attr {
     uint32_t port_di;
     netif_port_speed_e speed;
@@ -179,6 +156,7 @@ struct clx_netif_ioctl_port_attr {
     uint32_t egr_sample_rate;
     uint8_t skip_port_state_event;
     uint32_t tc;
+    uint16_t pvid;
 };
 
 struct clx_netif_ioctl_intf {
@@ -199,6 +177,7 @@ struct clx_netif_ioctl_rx_packet {
     uint32_t num_fragments;
     uint32_t packet_len;
     uint32_t channel;
+    uint32_t rc;
     struct clx_netif_ioctl_rx_fragment fragments[];
 };
 
@@ -211,6 +190,12 @@ struct clx_ioctl_port_map_cookie {
     uint32_t port_di; /* only support unit port and local port */
     uint32_t slice;
     uint32_t slice_port;
+};
+
+struct clx_ioctl_port_attr_cookie {
+    uint32_t unit;
+    uint32_t port_di;
+    uint32_t pvid;
 };
 
 /* netlink */
@@ -276,8 +261,6 @@ struct profile_rule {
     struct clx_netif_rx_dst_netlink netlink;
     clx_ioctl_error_no_t rc;
 #ifdef __KERNEL__
-    void *virt_addr;
-    struct device *alloc_dev;
     struct list_head list;
 #endif
 };
@@ -285,12 +268,6 @@ struct profile_rule {
 struct clx_netif_ioctl_mod {
     uint32_t unit;
     clx_mac_t mod_dmac; /* mod mac  */
-};
-
-struct clx_pkt_rx_reason_cnt {
-    uint32_t cpu_reason;
-    uint64_t pkt_cnts;
-    uint64_t byte_cnts;
 };
 
 typedef enum {
@@ -334,11 +311,8 @@ typedef enum {
     CLX_IOCTL_TYPE_SET_PORT_MAP,
     CLX_IOCTL_TYPE_CLEAR_PORT_MAP,
 
-    /* cpu reason cnt */
-    CLX_IOCTL_TYPE_PKT_GET_REASON_CNT,
-    CLX_IOCTL_TYPE_PKT_CLEAR_REASON_CNT,
-    CLX_IOCTL_TYPE_NETIF_GET_REASON_CNT,
-    CLX_IOCTL_TYPE_NETIF_CLEAR_REASON_CNT,
+    CLX_IOCTL_TYPE_SET_PORT_ATTR,
+    CLX_IOCTL_TYPE_GET_PORT_ATTR,
 
     CLX_IOCTL_TYPE_SET_IFA_CFG,
     CLX_IOCTL_TYPE_GET_IFA_CFG,

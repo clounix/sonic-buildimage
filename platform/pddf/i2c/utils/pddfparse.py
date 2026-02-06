@@ -431,6 +431,17 @@ class PddfParse():
             # print("\n")
             if ret != 0:
                 return create_ret.append(ret)
+            # Add port index
+            port_index_sysfs = '/sys/bus/i2c/devices/{}-00{:02x}/port_index'.format(
+                int(dev['i2c']['topo_info']['parent_bus'], 0), int(dev['i2c']['topo_info']['dev_addr'], 0))
+
+            if os.path.exists(port_index_sysfs):
+                cmd = "echo {} > /sys/bus/i2c/devices/{}-00{:02x}/port_index".format(
+                    int(self.get_dev_idx(dev, ops)), int(dev['i2c']['topo_info']['parent_bus'], 0),
+                    int(dev['i2c']['topo_info']['dev_addr'], 0))
+            ret = self.runcmd(cmd)
+            if ret != 0:
+                return create_ret.append(ret)
             # Add port name
             port_name_sysfs = '/sys/bus/i2c/devices/{}-00{:02x}/port_name'.format(
                 int(dev['i2c']['topo_info']['parent_bus'], 0), int(dev['i2c']['topo_info']['dev_addr'], 0))
@@ -439,9 +450,9 @@ class PddfParse():
                 cmd = "echo {} > /sys/bus/i2c/devices/{}-00{:02x}/port_name".format(
                     dev['dev_info']['virt_parent'].lower(), int(dev['i2c']['topo_info']['parent_bus'], 0),
                     int(dev['i2c']['topo_info']['dev_addr'], 0))
-                ret = self.runcmd(cmd)
-                if ret != 0:
-                    return create_ret.append(ret)
+            ret = self.runcmd(cmd)
+            if ret != 0:
+                return create_ret.append(ret)
 
         return create_ret.append(ret)
 
@@ -530,13 +541,7 @@ class PddfParse():
         ret = self.create_device(dev['i2c']['dev_attr'], "pddf/devices/multifpgapci/{}/i2c".format(bdf), ops)
         if ret != 0:
             return create_ret.append(ret)
-
-        # MDIO specific data store
-        if 'mdio' in dev:
-            ret = self.create_device(dev['mdio']['dev_attr'], "pddf/devices/multifpgapci/{}/mdio".format(bdf), ops)
-            if ret != 0:
-                return create_ret.append(ret)
-
+        
         # TODO: add GPIO & SPI specific data stores
 
         cmd = "echo 'fpgapci_init' > /sys/kernel/pddf/devices/multifpgapci/{}/dev_ops".format(bdf)
@@ -549,47 +554,6 @@ class PddfParse():
             ret = self.runcmd(cmd)
             if ret != 0:
                 return create_ret.append(ret)
-
-        if 'mdio' in dev:
-            ret = self.create_mdio_bus(bdf, dev['mdio'], ops)
-            if ret != 0:
-                return create_ret.append(ret)
-
-        if 'gpio' in dev:
-            ret = self.create_multifpgapci_gpio_device(bdf, dev['gpio'], ops)
-            if ret != 0:
-                return create_ret.append(ret)
-
-        return create_ret.append(ret)
-
-    def create_mdio_bus(self, bdf, mdio_dev, ops):
-        for bus in range(int(mdio_dev['dev_attr']['num_virt_ch'], 16)):
-            cmd = "echo {} > /sys/kernel/pddf/devices/multifpgapci/{}/mdio/new_mdio_bus".format(bus, bdf)
-            ret = self.runcmd(cmd)
-            if ret != 0:
-                return ret
-
-        return 0
-
-    def create_multifpgapci_gpio_device(self, bdf, gpio_dev, ops):
-        create_ret = []
-        ret = 0
-
-        for line in gpio_dev.keys():
-            for attr in gpio_dev[line]['attr_list']:
-                ret = self.create_device(attr, "pddf/devices/multifpgapci/{}/gpio/line".format(bdf), ops)
-                if ret != 0:
-                    return create_ret.append(ret)
-
-            cmd = "echo 'init' > /sys/kernel/pddf/devices/multifpgapci/{}/gpio/line/create_line".format(bdf)
-            ret = self.runcmd(cmd)
-            if ret != 0:
-                return create_ret.append(ret)
-
-        cmd = "echo 'init' > /sys/kernel/pddf/devices/multifpgapci/{}/gpio/create_chip".format(bdf)
-        ret = self.runcmd(cmd)
-        if ret != 0:
-            return create_ret.append(ret)
 
         return create_ret.append(ret)
 
@@ -887,34 +851,50 @@ class PddfParse():
                     ret.append(dsysfs_path)
         return ret
 
-    # This is only valid for LM75
-    def show_attr_temp_sensor_device(self, dev, ops):
+    def show_attr_hwmon_device(self, dev, ops, data_sysfs_key):
         ret = []
+        if 'i2c' not in dev.keys():
+            return ret
         attr_name = ops['attr']
         attr_list = dev['i2c']['attr_list'] if 'i2c' in dev else []
-        KEY = "temp-sensors"
+        KEY = data_sysfs_key
         dsysfs_path = ""
 
         if KEY not in self.data_sysfs_obj:
             self.data_sysfs_obj[KEY] = []
 
+        # Current/Voltage sensors are oftentimes rails that are part of a DPM/DCDC
+        if "virt_parent" in dev['dev_info']:
+            i2c_dev = self.data[dev['dev_info']['virt_parent']]
+        else:
+            i2c_dev = dev
+
         for attr in attr_list:
             if attr_name == attr['attr_name'] or attr_name == 'all':
-                path = self.show_device_sysfs(dev, ops) + \
-                    "/%d-00%02x/" % (int(dev['i2c']['topo_info']['parent_bus'], 0),
-                                   int(dev['i2c']['topo_info']['dev_addr'], 0))
                 if 'drv_attr_name' in attr.keys():
                     real_name = attr['drv_attr_name']
                 else:
                     real_name = attr['attr_name']
 
-                if (os.path.exists(path)):
-                    full_path = glob.glob(path + 'hwmon/hwmon*/' + real_name)[0]
-                    dsysfs_path = full_path
-                    if dsysfs_path not in self.data_sysfs_obj[KEY]:
-                        self.data_sysfs_obj[KEY].append(dsysfs_path)
-                    ret.append(full_path)
+                if 'topo_info' in i2c_dev['i2c']:
+                    path = self.show_device_sysfs(i2c_dev, ops)+"/%d-00%02x/"%(int(i2c_dev['i2c']['topo_info']['parent_bus'], 0),
+                            int(i2c_dev['i2c']['topo_info']['dev_addr'], 0))
+                    if (os.path.exists(path)):
+                        full_path = glob.glob(path + 'hwmon/hwmon*/' + real_name)[0]
+                elif 'path_info' in i2c_dev['i2c']:
+                    path = i2c_dev['i2c']['path_info']['sysfs_base_path']
+                    if (os.path.exists(path)):
+                        full_path = "/".join([path, real_name])
+
+                dsysfs_path = full_path
+                if dsysfs_path not in self.data_sysfs_obj[KEY]:
+                    self.data_sysfs_obj[KEY].append(dsysfs_path)
+                ret.append(full_path)
+
         return ret
+
+    def show_attr_temp_sensor_device(self, dev, ops):
+        return self.show_attr_hwmon_device(dev, ops, "temp-sensors")
 
     def show_attr_asic_temp_sensor_device(self, dev, ops):
         # NO-OP
@@ -1843,7 +1823,19 @@ class PddfParse():
                            return ret
                  else:
                       val.extend(ret)
+        if 'port_mgr' in dev['i2c']:
+            for bus in dev['i2c']['port_mgr']:
+                ret = self.dev_parse(self.data[bus['dev']], ops)
+                if ret:
+                    if str(ret[0]).isdigit():
+                        if ret[0]!=0:
+                                # in case if 'create' functions
+                            return ret
+                    else:
+                        val.extend(ret)
+
         return val
+
 
     def multifpgapcisystem_parse(self, ops):
         val = []
@@ -1929,7 +1921,7 @@ class PddfParse():
         if attr['device_type'] == 'ASIC_TEMP_SENSOR':
             return self.asic_temp_sensor_parse(dev, ops)
 
-        if attr['device_type'] in ['SFP', 'SFP+', 'SFP28', 'QSFP', 'QSFP+', 'QSFP28', 'QSFP-DD', 'OSFP']:
+        if attr['device_type'] in ['SFP', 'SFP+', 'SFP28', 'QSFP', 'QSFP+', 'QSFP28', 'QSFP-DD', 'OSFP', 'DSFP']:
             return self.optic_parse(dev, ops)
 
         if attr['device_type'] == 'FPGAI2C':
@@ -2035,31 +2027,6 @@ class PddfParse():
                     return ret[0]
         return create_ret
 
-    def create_subtree(self, device_name):
-        subtree = self.data.get(device_name)
-        if not subtree:
-            print(f"Invalid device_name {device_name}")
-            return 1
-
-        ret = self.dev_parse(subtree, {"cmd": "create", "target": "all", "attr": "all"})
-        if ret:
-            if ret[0] != 0:
-                return ret[0]
-
-        return 0
-
-    def delete_subtree(self, device_name):
-        subtree = self.data.get(device_name)
-        if not subtree:
-            print(f"Invalid device_name {device_name}")
-            return 1
-
-        ret = self.dev_parse(self.data[device_name], {"cmd": "delete", "target": "all", "attr": "all"})
-        if ret:
-            if ret[0] != 0:
-                return ret[0]
-
-        return 0
 
     def delete_pddf_devices(self):
         self.dev_parse(self.data['SYSTEM'], {"cmd": "delete", "target": "all", "attr": "all"})
@@ -2302,10 +2269,6 @@ def main():
     parser.add_argument("--validate", action='store', help="Validate the device specific attribute data elements")
     parser.add_argument("--schema", action='store', nargs="+",  help="Schema Validation")
     parser.add_argument("--modules", action='store', nargs="+", help="Loaded modules validation")
-    parser.add_argument("--create-subtree", type=str,
-        help="Create a specified node and all its descendant nodes in the I2C topology.")
-    parser.add_argument("--delete-subtree", type=str,
-        help="Remove a specified node and all its descendant nodes from the I2C topology.")
 
     args = parser.parse_args()
 
@@ -2371,11 +2334,6 @@ def main():
     if args.modules:
         pddf_obj.modules_validation(args.modules[0])
 
-    if args.create_subtree:
-        sys.exit(pddf_obj.create_subtree(args.create_subtree))
-
-    if args.delete_subtree:
-        sys.exit(pddf_obj.delete_subtree(args.delete_subtree))
 
 if __name__ == "__main__":
     main()

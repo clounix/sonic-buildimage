@@ -6,6 +6,8 @@
 #include "knet_dev.h"
 #include "knet_dma.h"
 
+extern uint32_t intr_mode;
+
 /* INTx interrupt*/
 static irqreturn_t
 clx_intx_usr_handler(int irq, uint32_t unit)
@@ -17,7 +19,7 @@ clx_intx_usr_handler(int irq, uint32_t unit)
     info.irq = irq - ptr_clx_dev->pci_dev->irq;
     info.valid = CLX_INTR_VALID_CODE;
 
-    dbg_print(DBG_INTR, "in info:0x%lx,irq:%d\n", (unsigned long)&info, info.irq);
+    dbg_print(DBG_INTR, "in unit:%u info:0x%lx,irq:%d\n", unit, (unsigned long)&info, info.irq);
     spin_lock(&clx_misc_dev->fifo_lock);
     if (!kfifo_put(&clx_misc_dev->intr_fifo, info)) {
         spin_unlock(&clx_misc_dev->fifo_lock);
@@ -39,18 +41,16 @@ clx_intr_dma_handler(uint32_t unit)
     // 1. get channel irq status
     clx_intr_drv(unit)->read_dma_irq_status(unit, &channel_bmp);
 
-    dbg_print(DBG_INTR, "irq channel_bmp:0x%x\n", channel_bmp);
+    dbg_print(DBG_INTR, "unit:%u irq channel_bmp:0x%x\n", unit, channel_bmp);
 
     // 2. process
     for (channel = 0; channel < clx_dma_drv(unit)->channel_num; channel++) {
         if (!((0x1 << channel) & channel_bmp)) {
             continue;
         }
-        dbg_print(DBG_INTR, "irq channel:%d\n", channel);
+        dbg_print(DBG_INTR, "unit:%u irq channel:%d\n", unit, channel);
         clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
-        if (channel < (clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num)) {
-            clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
-        }
+        clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
         tasklet_schedule(&clx_dma_drv(unit)->clx_dma_intr[channel].dma_tasklets);
     }
 
@@ -64,9 +64,9 @@ static irqreturn_t
 clx_intr_handler(int irq, void *cookie)
 {
     uint32_t unit = (uint32_t)((clx_addr_t)cookie);
-    uint32_t usr_flag = 0;
+    int usr_flag = 0;
 
-    dbg_print(DBG_INTR, "irq handler irq:%d\n", irq);
+    dbg_print(DBG_INTR, "unit:%u irq handler irq:%d\n", unit, irq);
 
     if (clx_intr_drv(unit)->usr_interrupt_exist(unit)) {
         usr_flag = 1;
@@ -109,6 +109,7 @@ clx_interrupt_intx_init(uint32_t unit)
     rc =
         request_irq(pci_dev->irq, clx_intr_handler, 0, CLX_DRIVER_NAME, (void *)((clx_addr_t)unit));
 
+    dbg_print(DBG_INTR, "unit:%u init intx interrupt ok. irq=%d\n", unit, pci_dev->irq);
     return rc;
 }
 
@@ -126,8 +127,8 @@ clx_interrupt_intx_deinit(uint32_t unit)
     /* dma channel error */
     tasklet_kill(&clx_dma_drv(unit)->error_channel.dma_tasklet);
 
-    dbg_print(DBG_INTR, "free irq:%d\n", pci_dev->irq);
-    free_irq(pci_dev->irq, NULL);
+    dbg_print(DBG_INTR, "unit:%u free irq:%d\n", unit, pci_dev->irq);
+    free_irq(pci_dev->irq, (void *)((clx_addr_t)unit));
 }
 
 /* MSI interrupt*/
@@ -136,7 +137,8 @@ clx_msi_usr_handler(int irq, void *cookie)
 {
     clx_intr_info_t *info = (clx_intr_info_t *)cookie;
 
-    dbg_print(DBG_INTR, "in info:0x%lx,irq:%d\n", (unsigned long)info, info->irq);
+    dbg_print(DBG_INTR, "unit:%u in info:0x%lx,irq:%d\n", info->unit, (unsigned long)info,
+              info->irq);
     spin_lock(&clx_misc_dev->fifo_lock);
     if (!kfifo_put(&clx_misc_dev->intr_fifo, *info)) {
         spin_unlock(&clx_misc_dev->fifo_lock);
@@ -154,12 +156,16 @@ clx_interrupt_msi_init(uint32_t unit)
 {
     struct clx_pci_dev_s *ptr_clx_dev = clx_misc_dev->clx_pci_dev[unit];
     struct pci_dev *pci_dev = ptr_clx_dev->pci_dev;
-    uint32_t msi_cnt;
+    int32_t msi_cnt;
     int rc;
 
     msi_cnt = pci_alloc_irq_vectors(pci_dev, 1, clx_intr_drv(unit)->msi_cnt, PCI_IRQ_MSI);
     if (msi_cnt != clx_intr_drv(unit)->msi_cnt) {
-        dbg_print(DBG_ERR, "pci_alloc_irq_vectors failed. msi_cnt=%d\n", msi_cnt);
+        dbg_print(
+            DBG_ERR,
+            "pci_alloc_irq_vectors failed. support msi_cnt=%d, reg msi_cnt=%d msi_enabled=%d msix_enabled=%d current_state=%d no_msi=%d\n",
+            msi_cnt, clx_intr_drv(unit)->msi_cnt, pci_dev->msi_enabled, pci_dev->msix_enabled,
+            pci_dev->current_state, pci_dev->no_msi);
         return -EFAULT;
     }
 
@@ -169,73 +175,90 @@ clx_interrupt_msi_init(uint32_t unit)
         return rc;
     }
 
+    dbg_print(DBG_INTR, "init msi interrupt ok. unit=%d, irq=%d, msi_cnt=%d\n", unit, pci_dev->irq,
+              clx_intr_drv(unit)->msi_cnt);
     return 0;
 }
 
 static void
 clx_interrupt_msi_deinit(uint32_t unit)
 {
-    int i = 0;
-    struct pci_dev *pci_dev = clx_misc_dev->clx_pci_dev[unit]->pci_dev;
-    for (i = 0; i < clx_intr_drv(unit)->msi_cnt; i++) {
-        free_irq(pci_irq_vector(pci_dev, i), clx_intr_drv(unit)->msi_vector[i].msi_cookie);
-        kfree(clx_intr_drv(unit)->msi_vector[i].msi_cookie);
+    struct pci_dev *pci_dev = NULL;
+
+    if (clx_misc_dev->clx_pci_dev[unit] == NULL) {
+        dbg_print(DBG_INTR, "unit=%u, clx_misc_dev->clx_pci_dev[unit] is NULL\n", unit);
+        return;
     }
 
-    /* Must free the irq before disabling MSI */
-    pci_disable_msi(pci_dev);
+    pci_dev = clx_misc_dev->clx_pci_dev[unit]->pci_dev;
+
+    clx_intr_drv(unit)->unregister_msi_irq(unit);
+    pci_free_irq_vectors(pci_dev);
 }
 
 int
-clx_interrupt_init(uint32_t intr_mode)
+clx_interrupt_init(uint32_t unit, uint32_t int_mode)
 {
     int rc = 0;
-    uint32_t unit = 0;
 
-    for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        clx_intr_drv(unit)->intr_mode = intr_mode;
-        if (intr_mode == INTR_MODE_INTX) {
-            rc = clx_interrupt_intx_init(unit);
-            if (0 != rc) {
-                dbg_print(DBG_INTR, "Failed to init intx interrupt. unit=%d\n", unit);
-            }
-        } else if (intr_mode == INTR_MODE_MSI) {
-            rc = clx_interrupt_msi_init(unit);
-            if (0 != rc) {
-                dbg_print(DBG_INTR, "Failed to init msi interrupt. unit=%d\n", unit);
-            }
-        } else {
-            dbg_print(DBG_ERR, "Wrong interrupt mode. intr_mode = %d, unit=%d\n", intr_mode, unit);
-            rc = -EFAULT;
+    if (clx_intr_drv(unit)->intr_flags == INTR_FLAGS_INIT) {
+        dbg_print(DBG_INTR, "Interrupt is already initialized. unit=%d\n", unit);
+        return 0;
+    }
+    clx_intr_drv(unit)->intr_mode = int_mode;
+    if (int_mode == INTR_MODE_INTX) {
+        rc = clx_interrupt_intx_init(unit);
+        if (0 != rc) {
+            dbg_print(DBG_INTR, "Failed to init intx interrupt. unit=%d\n", unit);
         }
+    } else if (int_mode == INTR_MODE_MSI) {
+        rc = clx_interrupt_msi_init(unit);
+        if (0 != rc) {
+            dbg_print(DBG_INTR, "Failed to init msi interrupt. unit=%d\n", unit);
+        }
+    } else {
+        dbg_print(DBG_ERR, "Wrong interrupt mode. int_mode = %d, unit=%d\n", int_mode, unit);
+        rc = -EFAULT;
         return rc;
     }
+    clx_intr_drv(unit)->intr_flags = INTR_FLAGS_INIT;
+    dbg_print(DBG_INTR, "Interrupt is initialized. unit=%d\n", unit);
 
     return 0;
 }
 
 void
-clx_interrupt_deinit(void)
+clx_interrupt_deinit(uint32_t unit)
 {
-    uint32_t unit = 0;
-
-    for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        if (clx_intr_drv(unit)->intr_mode == INTR_MODE_INTX) {
-            clx_interrupt_intx_deinit(unit);
-        } else if (clx_intr_drv(unit)->intr_mode == INTR_MODE_MSI) {
-            clx_interrupt_msi_deinit(unit);
-        } else {
-            dbg_print(DBG_ERR, "Failed to init msi interrupt. unit=%d\n", unit);
-        }
+    if (clx_intr_drv(unit)->intr_flags == INTR_FLAGS_DEINIT) {
+        dbg_print(DBG_INTR, "Interrupt is not initialized. unit=%d\n", unit);
+        return;
     }
+
+    if (clx_intr_drv(unit)->intr_mode == INTR_MODE_INTX) {
+        clx_interrupt_intx_deinit(unit);
+    } else if (clx_intr_drv(unit)->intr_mode == INTR_MODE_MSI) {
+        clx_interrupt_msi_deinit(unit);
+    } else {
+        dbg_print(DBG_ERR, "Failed to init msi interrupt. unit=%d\n", unit);
+    }
+
+    clx_intr_drv(unit)->intr_flags = INTR_FLAGS_DEINIT;
 }
 
 int
 clx_intx_connect_isr(uint32_t unit, unsigned long arg)
 {
     struct clx_ioctl_intr_cookie kcookie;
+    int rc = 0;
 
-    kcookie.intr_mode = clx_intr_drv(unit)->intr_mode;
+    kcookie.intr_mode = intr_mode;
+    rc = clx_interrupt_init(unit, kcookie.intr_mode);
+    if (rc != 0) {
+        dbg_print(DBG_ERR, "unit:%u Failed to init interrupt, rc = %d\n", unit, rc);
+        return -EFAULT;
+    }
+
     if (copy_to_user((void __user *)arg, &kcookie, sizeof(struct clx_ioctl_intr_cookie)))
         return -EFAULT;
     return 0;
@@ -248,8 +271,8 @@ clx_disconnect_isr(uint32_t unit, unsigned long arg)
     unsigned long flags = 0;
 
     memset(&info, 0, sizeof(clx_intr_info_t));
-    info.valid = CLX_INTR_INVALID_MSI;
-    dbg_print(DBG_INTR, "in info:0x%lx, irq:%d\n", (unsigned long)&info, info.irq);
+    info.valid = CLX_INTR_DISCONNECT_ISR;
+    dbg_print(DBG_INTR, "unit:%u in info:0x%lx, irq:%d\n", unit, (unsigned long)&info, info.irq);
     spin_lock_irqsave(&clx_misc_dev->fifo_lock, flags);
     if (!kfifo_put(&clx_misc_dev->intr_fifo, info)) {
         spin_unlock(&clx_misc_dev->fifo_lock);
@@ -257,6 +280,8 @@ clx_disconnect_isr(uint32_t unit, unsigned long arg)
     }
     spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
     wake_up_interruptible(&clx_misc_dev->isr_wait_queue);
+
+    clx_interrupt_deinit(unit);
 
     return 0;
 }

@@ -54,7 +54,7 @@
 #include "pddf_client_defs.h"
 #include "pddf_i2c_algo.h"
 
-
+static int *log_level = &fpgapci_log_level;
 
 #define DEBUG 0
 int (*pddf_i2c_pci_add_numbered_bus)(struct i2c_adapter *, int) = NULL;
@@ -91,7 +91,12 @@ static int pddf_pci_add_adapter(struct pci_dev *dev)
 	int i;
 
     total_i2c_pci_bus = pddf_fpga_ops_data.virt_i2c_ch;
-    pddf_dbg(FPGA, KERN_INFO "[%s] total_i2c_pci_bus=%d\n", __FUNCTION__, total_i2c_pci_bus);
+	if(total_i2c_pci_bus  > I2C_PCI_MAX_BUS)
+	{
+		pddf_err(FPGA, "[%s] total_i2c_pci_bus %d Error!!!\n", __FUNCTION__,total_i2c_pci_bus);
+		return -EPERM;
+	}
+    pddf_dbg(FPGA, "[%s] total_i2c_pci_bus=%d\n", __FUNCTION__, total_i2c_pci_bus);
 #ifdef __STDC_LIB_EXT1__
     memset_s(&i2c_pci_adap, sizeof(i2c_pci_adap), 0, sizeof(i2c_pci_adap));
 #else
@@ -101,7 +106,7 @@ static int pddf_pci_add_adapter(struct pci_dev *dev)
 	for (i = 0 ; i < total_i2c_pci_bus; i ++) {
 
 		i2c_pci_adap[i].owner = THIS_MODULE;
-		i2c_pci_adap[i].class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+		i2c_pci_adap[i].class = I2C_CLASS_DEPRECATED;
 
 		/* /dev/i2c-xxx for FPGA LOGIC I2C channel  controller 1-7  */
 		i2c_pci_adap[i].nr = i + pddf_fpga_ops_data.virt_bus ;
@@ -114,10 +119,10 @@ static int pddf_pci_add_adapter(struct pci_dev *dev)
 
 		if( (pddf_i2c_pci_add_numbered_bus!=NULL) && (pddf_i2c_pci_add_numbered_bus( &i2c_pci_adap[ i ], i ) != 0 ))
 		{
-			pddf_dbg(FPGA, KERN_ERR "Cannot add bus %d to algorithm layer\n", i );
+			pddf_err(FPGA, "Cannot add bus %d to algorithm layer\n", i );
 			return( -ENODEV );
 		}
-		pddf_dbg(FPGA, KERN_INFO "[%s] Registered bus id: %s\n", __FUNCTION__, kobject_name(&i2c_pci_adap[ i ].dev.kobj));
+		pddf_dbg(FPGA, "[%s] Registered bus id: %s\n", __FUNCTION__, kobject_name(&i2c_pci_adap[i].dev.kobj));
 	}
 
 	return 0;
@@ -130,7 +135,54 @@ static void pddf_pci_del_adapter(void)
 		i2c_del_adapter(&i2c_pci_adap[i]);
 	}
 }
+/*start for poer mgr iic songqh20230728*/
+static int clounix_port_mgr_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+{
+	return num;
+}
+static unsigned int clounix_port_mgr_i2c_func(struct i2c_adapter *a)
+{
+    return I2C_FUNC_I2C | I2C_FUNC_SMBUS_I2C_BLOCK ;
+}
+static struct i2c_algorithm port_mgr_i2c_algo = {
+    .master_xfer = clounix_port_mgr_i2c_xfer,
+	.functionality = clounix_port_mgr_i2c_func,
+};
+static struct i2c_adapter i2c_port_mgr_adap[I2C_PCI_PORT_MGR_MAX_BUS];
+static int pddf_pci_add_port_mgr_adapter(struct pci_dev *dev)
+{
+	int i = 0;
+	
+	if(pddf_fpga_ops_data.port_mgr_port_num > I2C_PCI_PORT_MGR_MAX_BUS)
+	{
+		pddf_err(FPGA, "[%s]   port_num %d Error!!!\n", __FUNCTION__,pddf_fpga_ops_data.port_mgr_port_num);
+		return -EPERM;
+	}
+    for (i = 0 ; i < pddf_fpga_ops_data.port_mgr_port_num; i ++) {
+			i2c_port_mgr_adap[i].owner = THIS_MODULE;
+			i2c_port_mgr_adap[i].class = I2C_CLASS_DEPRECATED;
 
+			/* /dev/i2c-xxx for Port MGR virtual I2C channel  controller  */
+			i2c_port_mgr_adap[i].nr = i + pddf_fpga_ops_data.port_mgr_virt_bus;
+			sprintf( i2c_port_mgr_adap[i].name, "i2c-port-mgr%d", i+1 );
+            i2c_port_mgr_adap[i].algo = &port_mgr_i2c_algo;
+
+			/* set up the sysfs linkage to our parent device */
+			i2c_port_mgr_adap[i].dev.parent = &dev->dev;  
+			i2c_add_numbered_adapter(&i2c_port_mgr_adap[i]);
+			pddf_dbg(FPGA, "[%s] Registered bus id: %s\n", __FUNCTION__, kobject_name(&i2c_port_mgr_adap[i].dev.kobj));
+	}
+	return 0;
+}
+static void pddf_pci_del_port_mgr_adapter(void)
+{
+	int i;
+	for( i = 0; i < pddf_fpga_ops_data.port_mgr_port_num; i++ ){
+		    i2c_del_adapter(&i2c_port_mgr_adap[i]);
+	}
+	return ;
+}
+/*end for poer mgr iic  songqh20230728*/
 static int map_bars(struct fpgapci_devdata *pci_privdata, struct pci_dev *dev)
 {
 	unsigned long barFlags, barStart, barEnd, barLen;
@@ -140,7 +192,7 @@ static int map_bars(struct fpgapci_devdata *pci_privdata, struct pci_dev *dev)
 		if((barLen=pci_resource_len(dev, i)) !=0 && (barStart=pci_resource_start(dev, i)) !=0 ) {
 			barFlags = pci_resource_flags(dev, i);
 			barEnd = pci_resource_end(dev, i);
-			pddf_dbg(FPGA, KERN_INFO "[%s] PCI_BASE_ADDRESS_%d 0x%08lx-0x%08lx bar_len=0x%lx"
+			pddf_dbg(FPGA, "[%s] PCI_BASE_ADDRESS_%d 0x%08lx-0x%08lx bar_len=0x%lx"
 						" flags 0x%08lx IO_mapped=%s Mem_mapped=%s\n", __FUNCTION__,
 						i, barStart, barEnd, barLen, barFlags, (barFlags & IORESOURCE_IO)? "Yes": "No",
 						(barFlags & IORESOURCE_MEM)? "Yes" : "No");
@@ -151,19 +203,18 @@ static int map_bars(struct fpgapci_devdata *pci_privdata, struct pci_dev *dev)
 
 	if (FPGAPCI_BAR_INDEX != -1) {
 	    pci_privdata->bar_length = barLen;
-        pci_privdata->fpga_data_base_addr = ioremap_cache (barStart + pddf_fpga_ops_data.data_base_offset,
-                 pddf_fpga_ops_data.data_size);
+        pci_privdata->fpga_data_base_addr = ioremap (barStart + pddf_fpga_ops_data.data_base_offset,
+                 barLen);
         fpga_ctl_addr = pci_privdata->fpga_data_base_addr;
 
-        pci_privdata->fpga_i2c_ch_base_addr = ioremap_cache (barStart + pddf_fpga_ops_data.i2c_ch_base_offset,
-                 I2C_PCI_MAX_BUS * pddf_fpga_ops_data.i2c_ch_size);
+        pci_privdata->fpga_i2c_ch_base_addr =  pci_privdata->fpga_data_base_addr + pddf_fpga_ops_data.i2c_ch_base_offset;
         pci_privdata->max_fpga_i2c_ch = pddf_fpga_ops_data.virt_i2c_ch;
         pci_privdata->fpga_i2c_ch_size = pddf_fpga_ops_data.i2c_ch_size;
 	} else {
-		pddf_dbg(FPGA, KERN_INFO "[%s] Failed to find BAR\n", __FUNCTION__);
+		pddf_err(FPGA, "[%s] Failed to find BAR\n", __FUNCTION__);
 		return (-1);
 	}
-	pddf_dbg(FPGA, KERN_INFO "[%s] fpga_ctl_addr:0x%p fpga_data__base_addr:0x%p"
+	pddf_dbg(FPGA, "[%s] fpga_ctl_addr:0x%p fpga_data__base_addr:0x%p"
 		" bar_index[%d] fpgapci_bar_len:0x%08lx fpga_i2c_ch_base_addr:0x%p supported_i2c_ch=%d",
              __FUNCTION__, fpga_ctl_addr, pci_privdata->fpga_data_base_addr, FPGAPCI_BAR_INDEX,
 			pci_privdata->bar_length, pci_privdata->fpga_i2c_ch_base_addr, pci_privdata->max_fpga_i2c_ch);
@@ -194,12 +245,12 @@ static int pddf_pci_config_data(struct pci_dev *dev)
 
 	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &irqPin);
 	if(pci_read_config_byte(dev, PCI_INTERRUPT_LINE, &irqLine)) {
-		pddf_dbg(FPGA, KERN_ERR "\tPCI_INTERRUPT_LINE Error\n");
+		pddf_err(FPGA, "\tPCI_INTERRUPT_LINE Error\n");
 	}
 
-	pddf_dbg(FPGA, KERN_INFO "\t[venId, devId]=[0x%x;0x%x] [group, class]=[%x;%x]\n",
+	pddf_info(FPGA, "\t[venId, devId]=[0x%x;0x%x] [group, class]=[%x;%x]\n",
 			vendorId, deviceId, classProg, classDev);
-	pddf_dbg(FPGA, KERN_INFO "\trevsionId=0x%x, irq_line=0x%x, irq_support=%s\n",
+	pddf_info(FPGA, "\trevsionId=0x%x, irq_line=0x%x, irq_support=%s\n",
 			revisionId, irqLine, (irqPin == 0)? "No":"Yes");
 
       return (0);
@@ -213,7 +264,7 @@ static int pddf_fpgapci_probe(struct pci_dev *dev, const struct pci_device_id *i
 	pddf_dbg(FPGA, KERN_INFO "[%s]\n", __FUNCTION__);
 
 	if ((err = pci_enable_device(dev))) {
-		pddf_dbg(FPGA, KERN_ERR "[%s] pci_enable_device failed. dev:%s err:%#x\n",
+		pddf_err(FPGA, "[%s] pci_enable_device failed. dev:%s err:%#x\n",
 			__FUNCTION__, pci_name(dev), err);
 		return (err);
     }
@@ -225,7 +276,7 @@ static int pddf_fpgapci_probe(struct pci_dev *dev, const struct pci_device_id *i
          DRIVE_NAME shows up in /proc/iomem
       */
     if ((err = pci_request_regions(dev, DRIVER_NAME)) < 0) {
-		pddf_dbg(FPGA, KERN_ERR "[%s] pci_request_regions failed. dev:%s err:%#x\n",
+		pddf_err(FPGA, "[%s] pci_request_regions failed. dev:%s err:%#x\n",
 			__FUNCTION__, pci_name(dev), err);
 		goto error_pci_req;
     }
@@ -233,7 +284,7 @@ static int pddf_fpgapci_probe(struct pci_dev *dev, const struct pci_device_id *i
     pci_privdata = kzalloc(sizeof(struct fpgapci_devdata), GFP_KERNEL);
 
     if (!pci_privdata) {
-        pddf_dbg(FPGA, KERN_ERR "[%s] couldn't allocate pci_privdata  memory", __FUNCTION__);
+        pddf_err(FPGA, "[%s] couldn't allocate pci_privdata  memory", __FUNCTION__);
 		goto error_pci_req;
      }
 
@@ -242,10 +293,11 @@ static int pddf_fpgapci_probe(struct pci_dev *dev, const struct pci_device_id *i
     pddf_pci_config_data(dev);
 
     if (map_bars(pci_privdata, dev)) {
-        pddf_dbg(FPGA, KERN_ERR "error_map_bars\n");
+        pddf_err(FPGA, KERN_ERR "error_map_bars\n");
         goto error_map_bars;
     }
     pddf_pci_add_adapter(dev);
+	pddf_pci_add_port_mgr_adapter(dev);
 	return (0);
 
 /* ERROR HANDLING */
@@ -262,18 +314,19 @@ static void pddf_fpgapci_remove(struct pci_dev *dev)
 	struct fpgapci_devdata *pci_privdata = 0;
 
 	if (dev == 0) {
-		pddf_dbg(FPGA, KERN_ERR "[%s]: dev is 0\n", __FUNCTION__);
+		pddf_err(FPGA, "[%s]: dev is 0\n", __FUNCTION__);
 		return;
 	}
 
 	pci_privdata = (struct fpgapci_devdata*) dev_get_drvdata(&dev->dev);
 
 	if (pci_privdata == 0) {
-		pddf_dbg(FPGA, KERN_ERR "[%s]: pci_privdata is 0\n", __FUNCTION__);
+		pddf_err(FPGA, "[%s]: pci_privdata is 0\n", __FUNCTION__);
 		return;
 	}
 
 	pddf_pci_del_adapter();
+	pddf_pci_del_port_mgr_adapter();
 	free_bars (pci_privdata, dev);
 	pci_disable_device(dev);
 	pci_release_regions(dev);
@@ -287,14 +340,13 @@ int pddf_fpgapci_register(FPGA_OPS_DATA* ptr_ops_data)
 {
 
     memcpy(&pddf_fpga_ops_data, ptr_ops_data, sizeof(FPGA_OPS_DATA));
-#if DEBUG
-	pddf_dbg(FPGA, KERN_INFO "[%s]: pddf_fpga_ops_data vendor_id=0x%x device_id=0x%x virt_bus=0x%x "
-		" data_base_offset=0x%x data_size=0x%x i2c_ch_base_offset=0x%x i2c_ch_size=0x%x virt_i2c_ch=%d",
+	pddf_dbg(FPGA, "[%s]: pddf_fpga_ops_data vendor_id = 0x%x device_id=0x%x virt_bus=0x%x "
+		" data_base_offset = 0x%x data_size=0x%x i2c_ch_base_offset=0x%x i2c_ch_size=0x%x virt_i2c_ch=%d",
 			__FUNCTION__, pddf_fpga_ops_data.vendor_id, pddf_fpga_ops_data.device_id,
 			pddf_fpga_ops_data.virt_bus, pddf_fpga_ops_data.data_base_offset, pddf_fpga_ops_data.data_size,
             pddf_fpga_ops_data.i2c_ch_base_offset, pddf_fpga_ops_data.i2c_ch_size,
             pddf_fpga_ops_data.virt_i2c_ch);
-#endif
+
 	struct pci_device_id fpgapci_ids[2] = {
 		{PCI_DEVICE(pddf_fpga_ops_data.vendor_id, pddf_fpga_ops_data.device_id)},
 		{0, },
@@ -315,7 +367,7 @@ int pddf_fpgapci_register(FPGA_OPS_DATA* ptr_ops_data)
     pddf_fpgapci_driver.remove=pddf_fpgapci_remove;
 
     if (pci_register_driver(&pddf_fpgapci_driver)) {
-		pddf_dbg(FPGA, KERN_INFO "%s: pci_unregister_driver\n", __FUNCTION__);
+		pddf_err(FPGA, "%s: pci_unregister_driver\n", __FUNCTION__);
 		pci_unregister_driver(&pddf_fpgapci_driver);
 		return -ENODEV;
     }

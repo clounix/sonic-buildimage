@@ -22,7 +22,7 @@
 
 
 #define MAX_NUM_FAN 12
-#define MAX_FAN_ATTRS 128
+#define MAX_FAN_ATTRS 160
 #define ATTR_NAME_LEN 32
 #define STR_ATTR_SIZE 32
 #define DEV_TYPE_LEN 32
@@ -95,4 +95,7 @@ extern int board_i2c_cpld_write(unsigned short cpld_addr, u8 reg, u8 value);
 
 extern int board_i2c_fpga_read(unsigned short cpld_addr, u8 reg);
 extern int board_i2c_fpga_write(unsigned short cpld_addr, u8 reg, u8 value);
+
+extern int (*ptr_fpgapci_read)(uint32_t);
+extern int (*ptr_fpgapci_write)(uint32_t, uint32_t);
 #endif

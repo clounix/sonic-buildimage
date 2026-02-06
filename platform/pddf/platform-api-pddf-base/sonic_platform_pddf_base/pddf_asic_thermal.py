@@ -15,15 +15,13 @@ class PddfAsicThermal(ThermalBase):
 
     ASIC_TEMP_INFO = "ASIC_TEMPERATURE_INFO"
 
-    def get_thermal_obj_name(self):
-        return "ASIC_TEMP{}".format(self.thermal_index)
-
-    def __init__(self, index, position_offset, pddf_data=None):
+    def __init__(self, index, pddf_data=None):
         self.thermal_index = index + 1
-        self.thermal_position_in_parent = index + position_offset + 1
         # The sensors are 0-indexed in the DB.
         self.sensor_db_index = index
-        thermal_obj = pddf_data.data[self.get_thermal_obj_name()]
+        thermal_obj_name = "ASIC_TEMP{}".format(self.thermal_index)
+
+        thermal_obj = pddf_data.data[thermal_obj_name]
 
         self.thermal_name = thermal_obj['dev_attr']['display_name']
         self.high_threshold = thermal_obj['dev_attr']['temp1_high_threshold']
@@ -55,16 +53,10 @@ class PddfAsicThermal(ThermalBase):
         return float(data_dict["temperature_{}".format(self.sensor_db_index)])
 
     def get_high_threshold(self):
-        val = self.high_threshold
-        if val:
-            return float(val)
-        return None
+        return self.high_threshold
 
     def get_high_critical_threshold(self):
-        val = self.high_crit_threshold
-        if val:
-            return float(val)
-        return None
+        return self.high_crit_threshold
 
     def get_low_threshold(self):
         raise NotImplementedError
@@ -88,7 +80,7 @@ class PddfAsicThermal(ThermalBase):
             integer: The 1-based relative physical position in parent
             device or -1 if cannot determine the position
         """
-        return self.thermal_position_in_parent
+        return self.thermal_index
 
     def is_replaceable(self):
         """

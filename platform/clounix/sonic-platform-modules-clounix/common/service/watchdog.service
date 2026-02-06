@@ -1,0 +1,12 @@
+[Unit]
+Description=Platform watchdog service
+After=pddf-s3ip-init.service
+DefaultDependencies=no
+
+[Service]
+ExecStart=/usr/bin/python -u /usr/local/bin/watchdog.py
+ExecStopPost=/bin/bash -c "echo 0 > /sys_switch/watchdog/enable; echo 240 > /sys_switch/watchdog/timeout"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

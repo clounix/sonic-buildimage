@@ -1,78 +1,107 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #ifndef __NB_CHIP_H__
 #define __NB_CHIP_H__
 
-#define NB_DMA_SCRATCH                    0x051C1400
-#define NB_CTL_CHAIN_INTR_MSK             0x051C00BC
-#define NB_TOP_STA_TOP_LVL_INTR_RAW       0x051C00C0
-#define NB_TOP_STA_TOP_LVL_INTR           0x051C00C8
-#define NB_CFG_PDMA_CH_ENABLE             0X051C1404
-#define NB_CFG_PDMA_DESC_LOCATION         0x051C1408
-#define NB_CFG_PDMA_DESC_ENDIAN           0x051C140C
-#define NB_CFG_PDMA_CRC_EN                0x051C1434
-#define NB_CFG_PDMA_DATA_ENDIAN_SWAP      0x051C1410
-#define NB_CFG_AXI_PROTO_INFO             0x051C1414
-#define NB_CFG_AXI_FIFO_ALM_FULL          0x051C1418
-#define NB_CFG_AXI_TIMEOUT_THR            0x051C141C
-#define NB_CFG_AXI0_OUTSTD_SIZE           0x051C1428
-#define NB_CFG_AXI1_OUTSTD_SIZE           0x051C142C
-#define NB_CFG_FIFIO_PATH_SEL             0x051C1430
-#define NB_CFG_CRC_EN                     0x051C1434
-#define NB_CFG_P2H_RX_FIFO_ALM_FULL       0x051C1438
-#define NB_CFG_P2H_TX_FIFO_ALM_FULL       0x051C143c
-#define NB_CFG_P2E_RX_FIFO_ALM_FULL       0x051C1440
-#define NB_CFG_P2E_TX_FIFO_ALM_FULL       0x051C1444
-#define NB_CFG_TX_FIFO_TIMEOUT_THR        0x051C1448
-#define NB_CFG_SLV_TIMEOUT_THR            0x051C144C
-#define NB_CFG_PDMA2PCIE_INTR_MASK        0X051C14A4
-#define NB_CFW_PDMA2PCIE_INTR_CLR         0X051C14A8
-#define NB_CFW_PDMA2PCIE_INTR_TEST        0X051C14AC
-#define NB_STA_PDMA_NORMAL_INTR           0X051C14B4
-#define NB_CFG_PDMA_CH0_RING_BASE         0X051C14B8
-#define NB_CFG_PDMA_CH0_RING_SIZE         0X051C1558
-#define NB_CFG_PDMA_CH0_DESC_WORK_IDX     0X051C15A8
-#define NB_STA_PDMA_CH0_DESC_POP_IDX      0X051C15F8
-#define NB_CFG_PDMA_CH0_MODE              0x051C1648
-#define NB_CFW_PDMA_CH_RESET              0X051C174C
-#define NB_CFW_PDMA_CH_RESTART            0X051C1750
+#define NB_DMA_SCRATCH                0x051C1400
+#define NB_CTL_CHAIN_INTR_MSK         0x051C00BC
+#define NB_TOP_STA_TOP_LVL_INTR_RAW   0x051C00C0
+#define NB_TOP_STA_TOP_LVL_INTR       0x051C00C8
+#define NB_CFG_PDMA_CH_ENABLE         0X051C1404
+#define NB_CFG_PDMA_DESC_LOCATION     0x051C1408
+#define NB_CFG_PDMA_DESC_ENDIAN       0x051C140C
+#define NB_CFG_PDMA_CRC_EN            0x051C1434
+#define NB_CFG_PDMA_DATA_ENDIAN_SWAP  0x051C1410
+#define NB_CFG_AXI_PROTO_INFO         0x051C1414
+#define NB_CFG_AXI_FIFO_ALM_FULL      0x051C1418
+#define NB_CFG_AXI_TIMEOUT_THR        0x051C141C
+#define NB_CFG_AXI0_OUTSTD_SIZE       0x051C1428
+#define NB_CFG_AXI1_OUTSTD_SIZE       0x051C142C
+#define NB_CFG_FIFIO_PATH_SEL         0x051C1430
+#define NB_CFG_CRC_EN                 0x051C1434
+#define NB_CFG_P2H_RX_FIFO_ALM_FULL   0x051C1438
+#define NB_CFG_P2H_TX_FIFO_ALM_FULL   0x051C143c
+#define NB_CFG_P2E_RX_FIFO_ALM_FULL   0x051C1440
+#define NB_CFG_P2E_TX_FIFO_ALM_FULL   0x051C1444
+#define NB_CFG_TX_FIFO_TIMEOUT_THR    0x051C1448
+#define NB_CFG_SLV_TIMEOUT_THR        0x051C144C
+#define NB_CFG_PDMA2PCIE_INTR_MASK    0X051C14A4
+#define NB_CFW_PDMA2PCIE_INTR_CLR     0X051C14A8
+#define NB_CFW_PDMA2PCIE_INTR_TEST    0X051C14AC
+#define NB_STA_PDMA_NORMAL_INTR       0X051C14B4
+#define NB_CFG_PDMA_CH0_RING_BASE     0X051C14B8
+#define NB_CFG_PDMA_CH0_RING_SIZE     0X051C1558
+#define NB_CFG_PDMA_CH0_DESC_WORK_IDX 0X051C15A8
+#define NB_STA_PDMA_CH0_DESC_POP_IDX  0X051C15F8
+#define NB_CFG_PDMA_CH0_MODE          0x051C1648
+#define NB_CFW_PDMA_CH_RESET          0X051C174C
+#define NB_CFW_PDMA_CH_RESTART        0X051C1750
+#define NB_STA_PDMA_CH0_ERR_TYPE      0X051C17B0
+#define NB_STA_PDMA_CH0_OUTSTD_DESC   0X051C1800
+#define NB_STA_PDMA_CH0_RD_ERR_DESC   0X051C1850
+#define NB_STA_PDMA_CH0_WB_DESC       0X051C1A30
+#define NB_STA_PDMA_CH0_SRC_ERR_INFO  0X051C1C10
+#define NB_STA_PDMA_CH0_DST_ERR_INFO  0X051C1F30
+
 #define NB_CFG_PDMA2PCIE_INTR_MASK_ALL    0X051C2120
 #define NB_CFG_PDMA2PCIE_INTR_CH0_MASK    0X051C2124
 #define NB_IRQ_PDMA_ABNORMAL_CH0_INTR     0X051C216C
 #define NB_IRQ_PDMA_ABNORMAL_CH0_INTR_MSK 0X051C2170
+#define NB_CFG_PDMA_MISC                  0x051C2244
+
+#define NB_PDMA_CHANNEL_RD_DESC_ERROR (1 << 0)
+#define NB_PDMA_CHANNEL_WR_DESC_ERROR (1 << 1)
+#define NB_PDMA_CHANNEL_RD_DATA_ERROR (1 << 2)
+#define NB_PDMA_CHANNEL_WR_DATA_ERROR (1 << 3)
+#define NB_REG_RD_ERR_DES_SIZE        (0x18)
+#define NB_REG_WR_ERR_DES_SIZE        (0x18)
+#define NB_REG_RD_DATA_ERR_SIZE       (0x28)
+#define NB_REG_WR_DATA_ERR_SIZE       (0x18)
+
+typedef enum nb_dma_channel_e {
+    /* Packet DMA channels */
+    NB_DMA_CH_RX0 = 0,
+    NB_DMA_CH_PACKET_START = NB_DMA_CH_RX0,
+    NB_DMA_CH_RX1,
+    NB_DMA_CH_RX2,
+    NB_DMA_CH_RX3,
+    NB_DMA_CH_TX0,
+    NB_DMA_CH_TX1,
+    NB_DMA_CH_TX2,
+    NB_DMA_CH_TX3,
+    NB_DMA_CH_PACKET_END = NB_DMA_CH_TX3,
+
+    /* General DMA channels */
+    NB_DMA_CH_GEN0,
+    NB_DMA_CH_GEN_START = NB_DMA_CH_GEN0,
+    NB_DMA_CH_GEN1,
+    NB_DMA_CH_GEN2,
+    NB_DMA_CH_GEN3,
+    NB_DMA_CH_GEN4,
+    NB_DMA_CH_GEN5,
+    NB_DMA_CH_GEN6,
+    NB_DMA_CH_GEN7,
+    NB_DMA_CH_GEN_END = NB_DMA_CH_GEN7,
+
+    /* ECPU DMA channels */
+    NB_DMA_CH_ECPU_RX,
+    NB_DMA_CH_ECPU_TX,
+
+    /* FIFO DMA channels */
+    NB_DMA_CH_LRN_FIFO,
+    NB_DMA_CH_FIFO_START = NB_DMA_CH_LRN_FIFO,
+    NB_DMA_CH_IOAM_FIFO,
+    NB_DMA_CH_FIFO_END = NB_DMA_CH_IOAM_FIFO,
+
+    NB_DMA_CH_LAST
+} nb_dma_channel_t;
+
+/* ERROR LOG */
+#define NB_IRQ_CMST_RESP_ERR_INTR     0x051C001C
+#define NB_IRQ_CMST_RESP_ERR_INTR_MSK 0x051C0020
+#define NB_SYM_CMST_RESP_ERR_LOG      0x051C0028
+
+// PCX
+#define NB_CTL_EFUSE_VECTOR_SEL 0x51C025C
+#define NB_STA_EFUSE_VECTOR     0x51C0160
 
 #define NB_CHAIN_INTR_SIZE 32
 #define L2_FIFO_CHANNEL    18
@@ -93,20 +122,39 @@
           ((__channel__ - 2) * 4) :                                            \
           ((__channel__) * 4)))
 
-#define IRQ_PDMA_ABNORMAL_CHx_INTR(__channel__)                                \
+#define NB_IRQ_PDMA_ABNORMAL_CHx_INTR(__channel__)                             \
     (NB_IRQ_PDMA_ABNORMAL_CH0_INTR +                                           \
      ((__channel__) == L2_FIFO_CHANNEL || (__channel__) == IOAM_FIFO_CHANNEL ? \
           ((__channel__ - 2) * 0xC) :                                          \
           ((__channel__) * 0xC)))
 
-#define IRQ_PDMA_ABNORMAL_CHx_INTR_MSK(__channel__)                            \
+#define NB_IRQ_PDMA_ABNORMAL_CHx_INTR_MSK(__channel__)                         \
     (NB_IRQ_PDMA_ABNORMAL_CH0_INTR_MSK +                                       \
      ((__channel__) == L2_FIFO_CHANNEL || (__channel__) == IOAM_FIFO_CHANNEL ? \
           ((__channel__ - 2) * 0xC) :                                          \
           ((__channel__) * 0xC)))
 
-#define CHAIN28_SLV_INTR_REG (0x587FFFC)
-#define PDMA_ERROR_IRQ_BIT   (0x1 << 1)
+#define NB_CFG_PDMA_CHx_ERR_TYPE(__channel__)    (NB_STA_PDMA_CH0_ERR_TYPE + 0x4 * (__channel__))
+#define NB_CFG_PDMA_CHx_OUTSTD_DESC(__channel__) (NB_STA_PDMA_CH0_OUTSTD_DESC + 0x4 * (__channel__))
+#define NB_CFG_PDMA_CHx_RD_ERR_DESC(__channel__) \
+    (NB_STA_PDMA_CH0_RD_ERR_DESC + NB_REG_RD_ERR_DES_SIZE * (__channel__))
+#define NB_CFG_PDMA_CHx_WB_DESC(__channel__) \
+    (NB_STA_PDMA_CH0_WB_DESC + NB_REG_WR_ERR_DES_SIZE * (__channel__))
+#define NB_CFG_PDMA_CHx_SRC_ERR_INFO(__channel__) \
+    (NB_STA_PDMA_CH0_SRC_ERR_INFO + NB_REG_RD_DATA_ERR_SIZE * (__channel__))
+#define NB_CFG_PDMA_CHx_DST_ERR_INFO(__channel__) \
+    (NB_STA_PDMA_CH0_DST_ERR_INFO + NB_REG_WR_DATA_ERR_SIZE * (__channel__))
+
+#define NB_CHAIN28_SLV_INTR_REG (0x587FFFC)
+#define NB_PDMA_ERROR_IRQ_BIT   (0x1 << 1)
+
+#define NB_MAX_UNIT_NUM             (1)  /* max nb unit num*/
+#define NB_MAX_DIE_NUM_PER_UNIT     (1)  /* 1 die per unit*/
+#define NB_MAX_ASIC_NUM_PER_UNIT    (1)  /* 1 asic per unit*/
+#define NB_MAX_SLICE_NUM_PER_UNIT   (8)  /* 8 slices per die*/
+#define NB_PORTS_PER_SLICE          (40) /* 40 ports per slice*/
+#define NB_PKT_CPU_PORT              (256)
+#define NB_PKT_SRC_PORT(slice, port) (slice * NB_PORTS_PER_SLICE + port)
 
 #define NB_PKT_EMAC_SZ               (12)
 #define NB_PKT_PPH_HDR_SZ            (40)
@@ -115,20 +163,12 @@
 #define NB_PKT_TX_MAX_LEN            (NB_MAX_PKT_SIZE)
 #define NB_PKT_RX_MAX_LEN            (NB_MAX_PKT_SIZE + NB_PKT_PDMA_HDR_SZ) /* EPP tunnel header */
 #define NB_PKT_MIN_LEN               (64) /* Ethernet definition */
-#define NB_PKT_CPU_PORT              (256)
-#define NB_PKT_PORTNUM_PER_SLICE     (40)
-#define NB_PKT_SRC_PORT(slice, port) (slice * NB_PKT_PORTNUM_PER_SLICE + port)
-
-#define NB_SET_BITMAP(bitmap, mask_bitmap) (bitmap = ((bitmap) | (mask_bitmap)))
-#define NB_CLR_BITMAP(bitmap, mask_bitmap) (bitmap = ((bitmap) & (~(mask_bitmap))))
-#define NB_GET_BITMAP(flags, bit)          ((((flags) & (bit)) > 0) ? 1 : 0)
 
 /* cpu reason */
 #define NB_PKT_RX_MOD_REASON        (511)
 #define NB_PKT_RX_EGR_SFLOW_SAMPLER (480)
 #define NB_PKT_RX_IGR_SFLOW_SAMPLER (352)
-
-#define NB_PKT_RX_IFA2_REASON (495)
+#define NB_PKT_RX_IFA2_REASON       (495)
 
 typedef struct {
     uint32_t s_addr_lo : 32;
@@ -471,9 +511,9 @@ typedef struct {
     }
 
 // igr_acl_label bit10 bit6
-#define nb_pkt_pph_get_igr_acl_lable(ptr_pph) \
+#define nb_pkt_pph_get_igr_acl_label(ptr_pph) \
     ((ptr_pph != NULL) ? (ptr_pph->igr_acl_label_hi << 6 | ptr_pph->igr_acl_label_lo) : 0xffffffff)
-#define nb_pkt_pph_set_igr_acl_lable(ptr_pph, igr_acl_label)          \
+#define nb_pkt_pph_set_igr_acl_label(ptr_pph, igr_acl_label)          \
     {                                                                 \
         if (ptr_pph != NULL) {                                        \
             ptr_pph->igr_acl_label_hi = (igr_acl_label >> 6) & 0x3ff; \
@@ -752,9 +792,9 @@ typedef struct {
     }
 
 // igr_acl_label
-#define nb_pkt_pph_get_igr_acl_lable(ptr_pph) \
+#define nb_pkt_pph_get_igr_acl_label(ptr_pph) \
     ((ptr_pph != NULL) ? ptr_pph->igr_acl_label : 0xffffffff)
-#define nb_pkt_pph_set_igr_acl_lable(ptr_pph, igr_acl_label) \
+#define nb_pkt_pph_set_igr_acl_label(ptr_pph, igr_acl_label) \
     {                                                        \
         if (ptr_pph != NULL) {                               \
             ptr_pph->igr_acl_label = igr_acl_label;          \
@@ -807,12 +847,6 @@ typedef struct {
     }
 #endif
 #pragma pack(pop)
-
-int
-nb_init_dma_driver(uint32_t unit);
-
-void
-nb_cleanup_dma_driver(uint32_t unit);
 
 int
 nb_init_pkt_driver(uint32_t unit);

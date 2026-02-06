@@ -1,35 +1,17 @@
-#  Copyright Statement:
-#  --------------------
-#  This software and the information contained therein are protected by
-#  copyright and other intellectual property laws and terms herein is
-#  confidential. The software may not be copied and the information
-#  contained herein may not be used or disclosed except with the written
-#  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
+################################################################################
+# Copyright (C) 2024  Clounix, Inc.
 #
-#  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
-#  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
-#  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
-#  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
-#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-#  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
-#  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
-#  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
-#  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
-#  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
-#  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
-#  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of version 2 of the GNU General Public
+# License as published by the Free Software Foundation.
 #
-#  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
-#  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
-#  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
-#  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
-#  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
-#  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
-#  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
-#  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
-#
+# You should have received a copy of the GNU General Public License
+# version 2 along with this program.
 ################################################################################
 ################################################################################
 KERNEL_MODULE := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -46,19 +28,25 @@ KVERSION            ?= $(shell uname -r)
 OS_PATH             := /lib/modules/$(KVERSION)/build
 KNET_INC_PATH		:= $(KERNEL_MODULE)/linux/include/
 MT_INC_PATH			:= $(KERNEL_MODULE)/linux/include/nb/
+MT_INC_PATH			+= $(KERNEL_MODULE)/linux/include/kg/
 BUILD_OUTPUT_DIR    := $(KERNEL_MODULE)/build
 MODULE_OUTPUT_DIR   := $(BUILD_OUTPUT_DIR)/module
 
 all: compile install
 ################################################################################
 EXTRA_CFLAGS += -I$(KNET_INC_PATH)
-EXTRA_CFLAGS += -I$(MT_INC_PATH)
+EXTRA_CFLAGS += $(addprefix -I, $(MT_INC_PATH))
 EXTRA_CFLAGS += -DCLX_EN_NETIF
 EXTRA_CFLAGS += -DCLX_EN_DEBUG
 EXTRA_CFLAGS += -DCLX_LINUX_USER_MODE
 EXTRA_CFLAGS += -DCLX_EN_LITTLE_ENDIAN
 EXTRA_CFLAGS += -DCLX_EN_COMPILER_SUPPORT_FUNCTION
 EXTRA_CFLAGS += -DCLX_EN_COMPILER_SUPPORT_LONG_LONG
+
+NOUKFEF ?= 1
+ifeq ($(NOUKFEF),0)
+    EXTRA_CFLAGS += -DCLX_KNET_UKFEF
+endif
 
 ifeq ($(shell uname -m),x86_64)
 EXTRA_CFLAGS += -DCLX_EN_HOST_64_BIT_LITTLE_ENDIAN
@@ -95,9 +83,12 @@ DEV_OBJS_TOTAL             += linux/src/knet_buffer.o
 DEV_OBJS_TOTAL             += linux/src/knet_drv.o
 DEV_OBJS_TOTAL             += linux/src/knet_netif.o
 DEV_OBJS_TOTAL             += linux/src/knet_netlink.o
+DEV_OBJS_TOTAL             += linux/src/knet_fault_event.o
 
 CHIP_OBJS_TOTAL            := linux/src/nb/nb_chip.o
 CHIP_OBJS_TOTAL            += linux/src/nb/nb_drv.o
+CHIP_OBJS_TOTAL            += linux/src/kg/kg_chip.o
+CHIP_OBJS_TOTAL            += linux/src/kg/kg_drv.o
 
 
 obj-m                      := $(DEV_MODULE_NAME).o
@@ -113,11 +104,11 @@ folder:
 compile:: folder
 	touch $(BUILD_OUTPUT_DIR)/Makefile
 	touch $(KBUILD_EXTRA_SYMBOLS)
-	$(MAKE) -C $(OS_PATH) M=$(BUILD_OUTPUT_DIR) src=$(shell pwd) modules EXTRA_CFLAGS="$(EXTRA_CFLAGS)" KBUILD_EXTRA_SYMBOLS=$(KBUILD_EXTRA_SYMBOLS)
+	$(MAKE) -C $(OS_PATH) M=$(shell pwd) modules EXTRA_CFLAGS="$(EXTRA_CFLAGS)"
 
 install::
 	$(TEST_PATH) $(MODULE_OUTPUT_DIR) || $(MKDIR) $(MODULE_OUTPUT_DIR)
-	$(MV) $(BUILD_OUTPUT_DIR)/$(DEV_MODULE_NAME).ko $(MODULE_OUTPUT_DIR)/$(DEV_MODULE_NAME).ko
+	$(MV) $(shell pwd)/$(DEV_MODULE_NAME).ko $(MODULE_OUTPUT_DIR)/$(DEV_MODULE_NAME).ko
 
 clean::
 	$(RM) $(BUILD_OUTPUT_DIR)

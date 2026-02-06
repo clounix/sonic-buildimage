@@ -1,38 +1,3 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #ifndef __CLX_NETIF_H__
 #define __CLX_NETIF_H__
 
@@ -43,12 +8,13 @@
 #include <linux/netdevice.h>
 #include <net/genetlink.h>
 
-#define CLX_NETIF_MAX_NUM         (258)
-#define CLX_PROFILE_MAX_NUM       (258)
-#define CLX_NETLINK_MAX_NUM       (258)
+#define CLX_NETIF_MAX_NUM         (288)
+#define CLX_PROFILE_MAX_NUM       (288)
+#define CLX_NETLINK_MAX_NUM       (288)
 #define CLX_NETIF_PORT_DI_MAX_NUM (2048)
 #define CLX_NETIF_WAIT_RX_TIMEOUT (3000)
-#define CLX_NETIF_REASON_MAX      (512)
+#define CLX_NETIF_PKT_SEND_RETYR_NUM (100)
+#define CLX_NETIF_DFLT_VLAN       (1)
 
 #define IPPROTO_IFA 0x00FD /* IFA protocol */
 
@@ -91,6 +57,51 @@ struct ifa_header {
     __u8 max_length : 8; /* Maximum length field */
 };
 
+struct ifa_metadata {
+    union {
+        __be32 first_field;
+        struct {
+#if defined(__BIG_ENDIAN_BITFIELD)
+            __be32 lns:4,
+                   ip_ttl:8,
+                   device_id:20;
+#else
+            __be32 device_id:20,
+                   ip_ttl:8,
+                   lns:4;
+#endif
+        } first_bits;
+    };
+
+    union {
+        __be32 second_field;
+        struct {
+#if defined(__BIG_ENDIAN_BITFIELD)
+            __be32 egr_port_speed:4,
+                   congestion:2,
+                   queue_id:6,
+                   rx_timestamp_sec:20;
+#else
+            __be32 rx_timestamp_sec:20,
+                   queue_id:6,
+                   congestion:2,
+                   egr_port_speed:4;
+#endif
+        } second_bits;
+    };
+    __be16 egr_sys_port;
+    __be16 igr_sys_port;
+    __be32 rx_timestamp_nano_sec;
+    __be32 residence_time_nano_sec;
+    __be32 queue_xmit_byte_count;
+    __be16 queue_data;
+    __be16 queue_depth;
+    __be32 node_id;
+};
+
+#define IFA_GET_QUEUE_ID(second_field) \
+    ((ntohl(second_field) >> 20) & 0x3F)
+
 typedef struct clx_netif_ifa_cfg_s {
     uint32_t ip_prot; /* ifa protocol type in ipv4/v6 header */
     uint32_t node_id; /* node_id in metadata */
@@ -103,6 +114,7 @@ struct net_device_priv {
     uint32_t id;
     uint32_t port_di;
     uint16_t vlan;
+    uint16_t duplex;
     uint32_t speed;
     uint32_t tx_channel;
     uint32_t max_mtu;
@@ -112,9 +124,6 @@ struct net_device_priv {
     uint32_t igr_sample_rate;
     uint32_t egr_sample_rate;
     uint32_t tc;
-
-    /* cpu reason cnt*/
-    struct clx_netif_ioctl_rx_reason_cnt rx_reason_cnt[CLX_NETIF_REASON_MAX];
 };
 
 struct clx_netif_cnt {
@@ -131,6 +140,10 @@ struct netif_port {
     struct clx_netif_ioctl_intf intf;
     struct net_device *ptr_net_dev;
 };
+
+typedef struct {
+    uint16_t pvid;  // [kg] igress pph igr_vlan is invalid;
+} port_db_t;
 
 struct profile_list {
     struct list_head list;
@@ -156,6 +169,7 @@ struct netlink_rx_pkt_extra {
     uint16_t iifindex;
     uint16_t eifindex;
     netlink_psample_dir_e psample_dir;
+    uint32_t sample_rate;
     uint32_t igr_port_si;
 };
 
@@ -190,20 +204,23 @@ typedef struct {
     struct netif_port netif_db[CLX_NETIF_MAX_NUM];
     struct profile_list profile;
     struct netlink_list netlink;
+
     /* cnt */
     struct clx_netif_cnt cnt;
-    struct clx_pkt_rx_reason_cnt cpu_reason_cnt[CLX_NETIF_REASON_MAX];
 
     /* for mod dmac modify */
     bool enable_mod_dmac;
     clx_mac_t mod_dmac;
 
     /* port_di map */
-    uint32_t unit_num;
     uint32_t ports_num_unit;
     uint32_t slices_per_unit;
+    uint32_t unit_num;
+    uint32_t dies_per_unit;
+    uint32_t slices_per_die;
     uint32_t ports_per_slice;
-    uint32_t *ptr_port_map_db; /* [unit_num][slices_per_unit * ports_per_slice] */
+    uint32_t *ptr_port_map_db; /* [unit_num][dies_per_unit][slices_per_die * ports_per_slice] */
+    port_db_t port_db[CLX_NETIF_PORT_DI_MAX_NUM];
 } clx_netif_drv_cb_t;
 
 /* netdevice operation */
@@ -223,10 +240,6 @@ int
 clx_netif_get_netdev_cnt(uint32_t unit, unsigned long arg);
 int
 clx_netif_clear_netdev_cnt(uint32_t unit, unsigned long arg);
-int
-clx_netif_get_rx_reason_cnt(uint32_t unit, unsigned long arg);
-int
-clx_netif_clear_rx_reason_cnt(uint32_t unit, unsigned long arg);
 
 /* receive/send packet from/to sdk */
 int
@@ -239,6 +252,9 @@ struct sk_buff *
 netif_construct_skb_from_rx_packet(uint32_t unit,
                                    uint32_t port_di,
                                    struct dma_rx_packet *rx_packet);
+struct sk_buff *
+netif_construct_fast_skb_from_rx_packet(uint32_t unit, struct dma_rx_packet *rx_packet);
+
 int
 clx_netif_netdev_receive_skb(uint32_t unit, struct dma_rx_packet *rx_packet, uint32_t port_di);
 
@@ -280,6 +296,12 @@ int
 clx_netif_set_port_map(uint32_t unit, unsigned long arg);
 
 int
+clx_netif_set_port_attr(uint32_t unit, unsigned long arg);
+
+int
+clx_netif_get_port_attr(uint32_t unit, unsigned long arg);
+
+int
 clx_netif_init(void);
 void
 clx_netif_deinit(void);
@@ -290,12 +312,8 @@ print_packet(uint32_t loglvl, const unsigned char *data, size_t len);
 uint32_t
 clx_netif_di2id_lookup(uint32_t unit, uint32_t di);
 
-int
-clx_pkt_get_rx_reason_cnt(uint32_t unit, unsigned long arg);
-
-int
-clx_pkt_clear_rx_reason_cnt(uint32_t unit, unsigned long arg);
-
+void
+clx_netif_performance_test_rx(uint32_t unit, struct dma_rx_packet *rx_packet);
 int
 clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet, uint32_t port_di);
 
@@ -305,4 +323,18 @@ clx_netif_set_ifa_cfg(uint32_t unit, unsigned long arg);
 int
 clx_netif_get_ifa_cfg(uint32_t unit, unsigned long arg);
 
+netdev_tx_t
+clx_netif_fast_tx(uint32_t unit, struct sk_buff *ptr_skb, uint16_t di, uint8_t tc);
+
+void
+clx_netif_performance_test_tx(uint32_t unit, struct sk_buff *ptr_skb);
+
+void
+netif_process_skb_from_rx_packet(uint32_t unit,
+                                 uint32_t port_di,
+                                 struct dma_rx_packet *rx_packet,
+                                 struct sk_buff *ptr_merge_skb);
+
+struct net_device *
+clx_netif_get_netdev_from_sys_port(uint32_t unit, uint16_t sys_port);
 #endif // __CLX_NETIF_H__

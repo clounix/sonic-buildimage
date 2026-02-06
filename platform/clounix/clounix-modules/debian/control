@@ -6,6 +6,6 @@ Build-Depends: debhelper (>= 8.0.0), bzip2
 Standards-Version: 3.9.3
 
 Package: clounix-modules
-Architecture: amd64
+Architecture: any
 Description: kernel modules for clounix asic
 

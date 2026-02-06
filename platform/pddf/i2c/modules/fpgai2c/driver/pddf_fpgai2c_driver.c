@@ -19,10 +19,11 @@
 #include <linux/slab.h>
 #include <linux/list.h>
 #include <linux/dmi.h>
+#include "pddf_client_defs.h"
 #include "pddf_fpgai2c_defs.h"
 
 extern PDDF_FPGAI2C_DATA pddf_fpgai2c_data;
-
+static int *log_level = &fpgai2c_log_level;
 
 static LIST_HEAD(fpgai2c_client_list);
 static struct mutex	list_lock;
@@ -121,7 +122,7 @@ static void board_i2c_fpga_add_client(struct i2c_client *client)
 	struct fpgai2c_client_node *node = kzalloc(sizeof(struct fpgai2c_client_node), GFP_KERNEL);
 
 	if (!node) {
-		dev_dbg(&client->dev, "Can't allocate fpgai2c_client_node (0x%x)\n", client->addr);
+		pddf_err(FPGAI2C, "%s Can't allocate fpgai2c_client_node (0x%x)\n", dev_name(&client->dev), client->addr);
 		return;
 	}
 
@@ -164,7 +165,7 @@ static int board_i2c_fpga_probe(struct i2c_client *client,
 	int status;
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
-		dev_dbg(&client->dev, "i2c_check_functionality failed (0x%x)\n", client->addr);
+		pddf_err(FPGAI2C, "%s i2c_check_functionality failed (0x%x)\n", dev_name(&client->dev), client->addr);
 		status = -EIO;
 		goto exit;
 	}
@@ -175,7 +176,7 @@ static int board_i2c_fpga_probe(struct i2c_client *client,
         goto exit;
     }
 
-	dev_dbg(&client->dev, "chip found\n");
+	pddf_dbg(FPGAI2C,  "%s chip found\n", dev_name(&client->dev));
 	board_i2c_fpga_add_client(client);
 
 	return 0;

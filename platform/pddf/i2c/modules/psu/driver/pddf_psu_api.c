@@ -33,7 +33,7 @@
 #include "pddf_psu_defs.h"
 #include "pddf_psu_driver.h"
 
-
+static int *log_level = &psu_log_level;
 /*#define PSU_DEBUG*/
 #ifdef PSU_DEBUG
 #define psu_dbg(...) printk(__VA_ARGS__)
@@ -99,20 +99,19 @@ int psu_update_hw(struct device *dev, struct psu_attr_info *info, PSU_DATA_ATTR 
     {
         status = (sysfs_attr_data->pre_set)(client, udata, info);
         if (status!=0)
-            dev_warn(&client->dev, "%s: pre_set function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+            pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
     }
     if (sysfs_attr_data->do_set != NULL)
     {
         status = (sysfs_attr_data->do_set)(client, udata, info);
         if (status!=0)
-            dev_warn(&client->dev, "%s: do_set function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
-
+            pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
     }
     if (sysfs_attr_data->post_set != NULL)
     {
         status = (sysfs_attr_data->post_set)(client, udata, info);
         if (status!=0)
-            dev_warn(&client->dev, "%s: post_set function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+            pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
     }
 
     mutex_unlock(&info->update_lock);
@@ -131,27 +130,26 @@ int psu_update_attr(struct device *dev, struct psu_attr_info *data, PSU_DATA_ATT
 
     if (time_after(jiffies, data->last_updated + HZ + HZ / 2) || !data->valid)
     {
-        dev_dbg(&client->dev, "Starting update for %s\n", data->name);
+        pddf_dbg(PSU, "%s Starting update for %s\n", dev_name(&client->dev), data->name);
 
         sysfs_attr_data = udata->access_data;
         if (sysfs_attr_data->pre_get != NULL)
         {
             status = (sysfs_attr_data->pre_get)(client, udata, data);
             if (status!=0)
-                dev_warn(&client->dev, "%s: pre_get function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+                pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
         }
         if (sysfs_attr_data->do_get != NULL)
         {
             status = (sysfs_attr_data->do_get)(client, udata, data);
             if (status!=0)
-                dev_warn(&client->dev, "%s: do_get function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
-
+                pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
         }
         if (sysfs_attr_data->post_get != NULL)
         {
             status = (sysfs_attr_data->post_get)(client, udata, data);
             if (status!=0)
-                dev_warn(&client->dev, "%s: post_get function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+                pddf_err(PSU, "%s[%d]: %s fails for %s attribute. ret %d\n", __FUNCTION__, __LINE__, dev_name(&client->dev), udata->aname, status);
         }
 
         data->last_updated = jiffies;
@@ -181,7 +179,7 @@ static u8 psu_get_vout_mode(struct i2c_client *client)
 
     if (status < 0)
     {
-        printk(KERN_ERR "%s: Get PSU Vout mode failed\n", __func__);
+        pddf_err(PSU, "%s: Get PSU Vout mode failed\n", __func__);
         return 0;
     }
     else
@@ -193,7 +191,7 @@ static u8 psu_get_vout_mode(struct i2c_client *client)
 static long pmbus_linear11_to_int(u16 value, int multiplier)
 {
     s16 exponent;
-    s64 mantissa;
+    s32 mantissa;
 
     exponent = two_complement_to_int(value >> 11, 5, 0x1f);
     mantissa = two_complement_to_int(value & 0x7ff, 11, 0x7ff);
@@ -312,12 +310,12 @@ static long get_real_world_value(struct i2c_client *client,
     /* Default to linear11 if format is unknown or NULL */
     if (data_format)
     {
-        printk(KERN_WARNING "%s: Unknown data format '%s', defaulting to linear11\n",
+        pddf_err(PSU, "%s: Unknown data format '%s', defaulting to linear11\n",
                __func__, data_format);
     }
     else
     {
-        printk(KERN_WARNING "%s: NULL data format, defaulting to linear11\n", __func__);
+        pddf_err(PSU, "%s: NULL data format, defaulting to linear11\n", __func__);
     }
 
     return pmbus_linear11_to_int(reg_value, multiplier);
@@ -332,6 +330,7 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
     PSU_DATA_ATTR *usr_data = NULL;
     struct psu_attr_info *sysfs_attr_info = NULL;
     int i, status=0;
+    u16 value = 0;
     int multiplier = 1000;
     char new_str[ATTR_NAME_LEN] = "";
     PSU_SYSFS_ATTR_DATA *ptr = NULL;
@@ -350,7 +349,7 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
 
     if (sysfs_attr_info==NULL || usr_data==NULL)
     {
-        printk(KERN_ERR "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
+        pddf_err(PSU, "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
         goto exit;
     }
 
@@ -360,6 +359,7 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
     {
         case PSU_PRESENT:
         case PSU_POWER_GOOD:
+        case PSU_ACOK:
             status = sysfs_attr_info->val.intval;
             return sprintf(buf, "%d\n", status);
             break;
@@ -373,14 +373,15 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
         case PSU_V_OUT_MIN:
         case PSU_V_OUT_MAX:
         case PSU_I_OUT:
+        case PSU_I_OUT_MAX:
         case PSU_V_IN:
         case PSU_I_IN:
-        case PSU_P_OUT_MAX:
             multiplier = 1000;
             return sprintf(buf, "%ld\n", get_real_world_value(client, usr_data, sysfs_attr_info, "linear11", multiplier));
             break;
         case PSU_P_IN:
         case PSU_P_OUT:
+        case PSU_P_OUT_MAX:
             multiplier = 1000000;
             return sprintf(buf, "%ld\n", get_real_world_value(client, usr_data, sysfs_attr_info, "linear11", multiplier));
             break;
@@ -394,11 +395,17 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
         case PSU_TEMP2_HIGH_THRESHOLD:
         case PSU_TEMP3_INPUT:
         case PSU_TEMP3_HIGH_THRESHOLD:
+        case PSU_TEMP1_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP2_HIGH_CRIT_THRESHOLD:
+        case PSU_TEMP3_HIGH_CRIT_THRESHOLD:
             multiplier = 1000;
             return sprintf(buf, "%ld\n", get_real_world_value(client, usr_data, sysfs_attr_info, "linear11", multiplier));
             break;
+        case PSU_ALARM:
+            value = sysfs_attr_info->val.shortval;
+            return sprintf(buf, "%d\n", value);
         default:
-            printk(KERN_ERR "%s: Unable to find attribute index for %s\n", __FUNCTION__, usr_data->aname);
+            pddf_err(PSU, "%s: Unable to find attribute index for %s\n", __FUNCTION__, usr_data->aname);
             goto exit;
     }
 
@@ -427,7 +434,7 @@ ssize_t psu_store_default(struct device *dev, struct device_attribute *da, const
     }
 
     if (sysfs_attr_info==NULL || usr_data==NULL) {
-        printk(KERN_ERR "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
+        pddf_err(PSU, "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
         goto exit;
     }
 
@@ -448,13 +455,13 @@ int psu_multifpgapci_read(PSU_DATA_ATTR *adata, int *output) {
     struct pci_dev *pci_dev = NULL;
 
     if (ptr_multifpgapci_readpci == NULL) {
-        printk(KERN_ERR "PDDF_PSU: pddf_multifpgapci_module is not loaded");
+        pddf_err(PSU, "PDDF_PSU: pddf_multifpgapci_module is not loaded");
         return -1;
     }
 
     pci_dev = (struct pci_dev *)get_device_table(adata->devname);
     if (pci_dev == NULL) {
-        printk(KERN_ERR "PDDF_PSU: Unable to get pci_dev of %s for %s\n", adata->devname, adata->aname);
+        pddf_err(PSU, "PDDF_PSU: Unable to get pci_dev of %s for %s\n", adata->devname, adata->aname);
         return -1;
     }
     return ptr_multifpgapci_readpci(pci_dev, adata->offset, output);
@@ -473,6 +480,24 @@ int sonic_i2c_get_psu_byte_default(void *client, PSU_DATA_ATTR *adata, void *dat
         if (val < 0)
             return val;
     }
+	else if (strncmp(adata->devtype, "fpgapci", strlen("fpgapci")) == 0)
+    {
+        val = ptr_fpgapci_read(adata->devaddr);
+        if (val < 0)
+            return val;
+        padata->val.intval =  (((val >> adata->offset) & adata->mask) == adata->cmpval);
+        pddf_dbg(PSU, "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+        return 0;
+    }
+    else if (strncmp(adata->devtype, "lpc", strlen("lpc")) == 0)
+    {
+        val = lpc_cpld_read_reg(adata->devaddr);
+        if (val < 0)
+            return val;
+        padata->val.intval =  (((val >> adata->offset) & adata->mask) == adata->cmpval);
+        pddf_dbg(PSU, "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+        return 0;
+    }
     else if (strncmp(adata->devtype, "multifpgapci", strlen("multifpgapci")) == 0)
     {
         status = psu_multifpgapci_read(adata, &val);
@@ -481,15 +506,15 @@ int sonic_i2c_get_psu_byte_default(void *client, PSU_DATA_ATTR *adata, void *dat
     }
     else
     {
-        printk(KERN_ERR "%s: Unexpected devtype = ", __FUNCTION__, adata->devtype);
+        pddf_err(PSU, "%s: Unexpected devtype = ", __FUNCTION__, adata->devtype);
     }
 
     padata->val.intval =  ((val & adata->mask) == adata->cmpval);
-    psu_dbg(KERN_ERR "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
+    psu_dbg(PSU, "%s: byte_value = 0x%x\n", __FUNCTION__, padata->val.intval);
 
 ret:
     if (status) {
-        printk(KERN_ERR "%s: Error status = %d", __FUNCTION__, status);
+        pddf_err(PSU, "%s: Error status = %d", __FUNCTION__, status);
     }
 
     return status;
@@ -518,7 +543,7 @@ int sonic_i2c_get_psu_block_default(void *client, PSU_DATA_ATTR *adata, void *da
     if (status < 0)
     {
         buf[0] = '\0';
-        dev_dbg(&((struct i2c_client *)client)->dev, "unable to read block of data from (0x%x)\n", ((struct i2c_client *)client)->addr);
+        pddf_err(PSU, "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
     }
     else
     {
@@ -530,7 +555,7 @@ int sonic_i2c_get_psu_block_default(void *client, PSU_DATA_ATTR *adata, void *da
     else
         strncpy(padata->val.strval, buf, data_len);
 
-    psu_dbg(KERN_ERR "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
+    pddf_dbg(PSU, "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
     return 0;
 }
 
@@ -554,13 +579,13 @@ int sonic_i2c_get_psu_word_default(void *client, PSU_DATA_ATTR *adata, void *dat
     if (status < 0)
     {
         padata->val.shortval = 0;
-        dev_dbg(&((struct i2c_client *)client)->dev, "unable to read a word from (0x%x)\n", ((struct i2c_client *)client)->addr);
+        pddf_err(PSU, "%s unable to read a word from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
     }
     else
     {
         padata->val.shortval = status;
     }
 
-    psu_dbg(KERN_ERR "%s: word value : %d\n", __FUNCTION__, padata->val.shortval);
+    pddf_dbg(PSU, "%s: word value : %d\n", __FUNCTION__, padata->val.shortval);
     return 0;
 }

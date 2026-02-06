@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2023
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -179,7 +179,7 @@ enum {
 
 /* for MOD */
 enum {
-    NETIF_NL_ATTR_MOD_IGR_PORT= 0,
+    NETIF_NL_ATTR_MOD_IGR_PORT = 0,
 
     /* original data */
     NETIF_NL_ATTR_MOD_DATA,
@@ -206,7 +206,7 @@ netlink_get_header_len(uint32_t *msg_hdr_len, struct netlink_rx_cookie *ptr_cook
             nla_total_size(sizeof(uint32_t)) +            /* PSAMPLE_ATTR_SAMPLE_GROUP */
             nla_total_size(sizeof(uint32_t));             /* PSAMPLE_ATTR_GROUP_SEQ */
     } else if (ptr_cookies->netlink_type == NETLINK_RX_TYPE_MOD) {
-        *msg_hdr_len = nla_total_size(sizeof(uint32_t)); /* MOD_ATTR_IGR_PORT*/
+        *msg_hdr_len = nla_total_size(sizeof(uint32_t));  /* MOD_ATTR_IGR_PORT*/
     } else {
         *msg_hdr_len = 0;
     }
@@ -250,9 +250,9 @@ netlink_free_family_entry(uint32_t unit, uint32_t index)
 
 static int
 netlink_set_mod_skb(struct netif_netlink *ptr_netlink,
-                        struct sk_buff *ptr_ori_skb,
-                        struct netlink_rx_cookie *ptr_cookies,
-                        struct sk_buff *ptr_nl_skb)
+                    struct sk_buff *ptr_ori_skb,
+                    struct netlink_rx_cookie *ptr_cookies,
+                    struct sk_buff *ptr_nl_skb)
 {
     void *ptr_nl_hdr = NULL;
     uint32_t data_len;
@@ -292,10 +292,6 @@ netlink_set_sflow_skb(struct netif_netlink *ptr_netlink,
                       struct netlink_rx_cookie *ptr_cookies,
                       struct sk_buff *ptr_nl_skb)
 {
-    uint16_t iifindex;
-    uint16_t eifindex;
-    struct net_device_priv *ptr_priv;
-    uint32_t rate;
     void *ptr_nl_hdr = NULL;
     uint32_t data_len;
     int rc = 0;
@@ -311,22 +307,11 @@ netlink_set_sflow_skb(struct netif_netlink *ptr_netlink,
         return -EFAULT;
     }
 
-    iifindex = ptr_cookies->pkt.iifindex;
-    eifindex = ptr_cookies->pkt.eifindex;
-
-    nla_put_u16(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_IIFINDEX, (uint16_t)iifindex);
-    nla_put_u16(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_OIFINDEX, (uint16_t)eifindex);
+    nla_put_u16(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_IIFINDEX, ptr_cookies->pkt.iifindex);
+    nla_put_u16(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_OIFINDEX, ptr_cookies->pkt.eifindex);
 
     /* meta header */
-    /* use the igr port id as the index for the database to get sample rate */
-    ptr_priv = netdev_priv(ptr_ori_skb->dev);
-    if (ptr_cookies->pkt.psample_dir == NETIF_NL_PKT_PSAMPLE_INGRESS) {
-        rate = ptr_priv->igr_sample_rate;
-    } else {
-        /* sample rate is anyone of port when egr_port is not valid */
-        rate = ptr_priv->egr_sample_rate;
-    }
-    nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_SAMPLE_RATE, rate);
+    nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_SAMPLE_RATE, ptr_cookies->pkt.sample_rate);
     nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_ORIGSIZE, data_len);
     nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_SAMPLE_GROUP, ptr_cookies->pkt.psample_dir);
     nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_PSAMPLE_GROUP_SEQ,
@@ -414,8 +399,8 @@ netlink_get_mcgroup_id_by_name(uint32_t unit,
     }
 
     if (0 != rc) {
-        dbg_print(DBG_NETLINK, "[DBG] find mcgrp %s failed in family %s\n", ptr_mcgrp_name,
-                  netlink->family_entry.name);
+        dbg_print(DBG_NETLINK, "[DBG] find mcgrp %s failed in family %s. unit=%u\n", ptr_mcgrp_name,
+                  netlink->family_entry.name, unit);
     }
 
     return (rc);
@@ -507,21 +492,21 @@ netlink_forward_rx_packet(uint32_t unit,
 
     netlink = netlink_get_netlink_by_name(unit, ptr_cookies->nl->family_name);
     if (!netlink) {
-        dbg_print(DBG_NETLINK, "Netlink with family name %s not found.\n",
-                  ptr_cookies->nl->family_name);
+        dbg_print(DBG_NETLINK, "Netlink with family name %s not found. unit=%u\n",
+                  ptr_cookies->nl->family_name, unit);
         return -ENODATA;
     }
 
     rc = netlink_get_mcgroup_id_by_name(unit, netlink, ptr_cookies->nl->mc_grp_name, &mcgrp_id);
     if (0 != rc) {
-        dbg_print(DBG_NETLINK, "Find mcgrp %s failed in family %s\n", ptr_cookies->nl->mc_grp_name,
-                  ptr_cookies->nl->family_name);
+        dbg_print(DBG_NETLINK, "Find mcgrp %s failed in family %s. unit=%u\n",
+                  ptr_cookies->nl->mc_grp_name, ptr_cookies->nl->family_name, unit);
         return rc;
     }
 
     ptr_nl_skb = netlink_alloc_new_skb(netlink, ptr_ori_skb, ptr_cookies);
     if (!ptr_nl_skb) {
-        dbg_print(DBG_NETLINK, "Failed to alloc netlink skb.\n");
+        dbg_print(DBG_NETLINK, "Failed to alloc netlink skb. unit=%u\n", unit);
         return -ENOMEM;
     }
 
@@ -529,7 +514,7 @@ netlink_forward_rx_packet(uint32_t unit,
 
     rc = netlink_set_netlink_skb(netlink, ptr_ori_skb, ptr_cookies, ptr_nl_skb);
     if (0 != rc) {
-        dbg_print(DBG_NETLINK, "Failed to allocate netlink skb.rc = %d.\n", rc);
+        dbg_print(DBG_NETLINK, "Failed to allocate netlink skb.rc = %d. unit=%u\n", rc, unit);
         nlmsg_free(ptr_nl_skb);
         return rc;
     }
@@ -538,7 +523,7 @@ netlink_forward_rx_packet(uint32_t unit,
 
     rc = netlink_send_skb(&netlink->family_entry, mcgrp_id, ptr_nl_skb);
     if (0 != rc) {
-        dbg_print(DBG_NETLINK, "Failed to send netlink skb.rc = %d.\n", rc);
+        dbg_print(DBG_NETLINK, "Failed to send netlink skb.rc = %d. unit=%u\n", rc, unit);
         return rc;
     }
 
@@ -581,7 +566,8 @@ clx_netif_create_netlink(uint32_t unit, unsigned long arg)
         return -ENOMEM;
     }
 
-    dbg_print(DBG_NETLINK, "Create netlink family name:%s.\n", new_netlink->family_entry.name);
+    dbg_print(DBG_NETLINK, "Create netlink family name:%s. unit=%u\n",
+              new_netlink->family_entry.name, unit);
     for (idx = 0; idx < knetlink.mc_grp_num; idx++) {
         memcpy(ptr_nl_mcgrp[idx].name, knetlink.mc_grp_name[idx], CLX_NETLINK_NAME_LEN);
         dbg_print(DBG_NETLINK, "     - mcgrp%d: %s\n", idx, ptr_nl_mcgrp[idx].name);
@@ -592,8 +578,8 @@ clx_netif_create_netlink(uint32_t unit, unsigned long arg)
     /* register the family to kernel */
     rc = genl_register_family(&new_netlink->family_entry);
     if (0 != rc) {
-        dbg_print(DBG_NETLINK, "[DBG] register netlink family failed, name=%s, rc=%d\n",
-                  knetlink.family_name, rc);
+        dbg_print(DBG_NETLINK, "[DBG] register netlink family failed, name=%s, rc=%d. unit=%u\n",
+                  knetlink.family_name, rc, unit);
         kfree(ptr_nl_mcgrp);
         kfree(new_netlink);
         return -EFAULT;
@@ -603,7 +589,7 @@ clx_netif_create_netlink(uint32_t unit, unsigned long arg)
     spin_lock_irqsave(&clx_netif_drv(unit)->netlink.lock, flags);
     rc = netlink_alloc_family_entry(unit, &new_netlink->id);
     if (rc != 0) {
-        dbg_print(DBG_NETLINK, "No valid netlink entry_id.\n");
+        dbg_print(DBG_NETLINK, "No valid netlink entry_id. unit=%u\n", unit);
         kfree(ptr_nl_mcgrp);
         kfree(new_netlink);
         return rc;
@@ -612,7 +598,7 @@ clx_netif_create_netlink(uint32_t unit, unsigned long arg)
     spin_unlock_irqrestore(&clx_netif_drv(unit)->netlink.lock, flags);
 
     if (copy_to_user(&user_netlink->id, &new_netlink->id, sizeof(new_netlink->id))) {
-        dbg_print(DBG_ERR, "Failed to copy netlink id to user space\n");
+        dbg_print(DBG_ERR, "Failed to copy netlink id to user space. unit=%u\n", unit);
         genl_unregister_family(&new_netlink->family_entry);
         kfree(ptr_nl_mcgrp);
         kfree(new_netlink);
@@ -654,14 +640,15 @@ clx_netif_destroy_netlink(uint32_t unit, unsigned long arg)
             list_del(&netlink->list);
             kfree(netlink);
             found = true;
-            dbg_print(DBG_PROFILE, "Netlink with ID %u destroyed successfully\n", entry_idx);
+            dbg_print(DBG_NETLINK, "Netlink with ID %u destroyed successfully. unit=%u\n",
+                      entry_idx, unit);
             break;
         }
     }
     spin_unlock_irqrestore(&clx_netif_drv(unit)->netlink.lock, flags);
 
     if (!found) {
-        dbg_print(DBG_PROFILE, "Profile netlink with ID %u not found\n", entry_idx);
+        dbg_print(DBG_NETLINK, "Profile netlink with ID %u not found. unit=%u\n", entry_idx, unit);
         return -ENOENT;
     }
 
@@ -677,7 +664,7 @@ clx_netif_ioctl_netlink_destroy_all(uint32_t unit)
     spin_lock_irqsave(&clx_netif_drv(unit)->netlink.lock, flags);
     list_for_each_entry_safe(netlink, tmp, &clx_netif_drv(unit)->netlink.list, list)
     {
-        dbg_print(DBG_NETLINK, "Destroy netlink with ID %u.\n", netlink->id);
+        dbg_print(DBG_NETLINK, "Destroy netlink with ID %u. unit=%u\n", netlink->id, unit);
         /* unregister Netlink family */
         genl_unregister_family(&netlink->family_entry);
         /* free mcgrps */
@@ -706,7 +693,7 @@ clx_netif_get_netlink(uint32_t unit, unsigned long arg)
     uint32_t netlink_id, idx;
 
     if (copy_from_user(&netlink_id, &user_netlink->id, sizeof(uint32_t))) {
-        dbg_print(DBG_ERR, "Failed to copy netlink from user space\n");
+        dbg_print(DBG_ERR, "Failed to copy netlink from user space. unit=%u\n", unit);
         return -EFAULT;
     }
 
@@ -721,7 +708,8 @@ clx_netif_get_netlink(uint32_t unit, unsigned long arg)
     spin_unlock_irqrestore(&clx_netif_drv(unit)->netlink.lock, flags);
 
     if (found) {
-        dbg_print(DBG_NETLINK, "Found netlink with ID %u successfully\n", netlink_id);
+        dbg_print(DBG_NETLINK, "Found netlink with ID %u successfully. unit=%u\n", netlink_id,
+                  unit);
         knetlink.id = netlink->id;
         knetlink.mc_grp_num = netlink->family_entry.n_mcgrps;
         memcpy(knetlink.family_name, netlink->family_entry.name, CLX_NETLINK_NAME_LEN);
@@ -731,14 +719,14 @@ clx_netif_get_netlink(uint32_t unit, unsigned long arg)
         }
 
         if (copy_to_user(user_netlink, &knetlink, sizeof(struct clx_netif_ioctl_netlink))) {
-            dbg_print(DBG_ERR, "Failed to copy netlink to user space\n");
+            dbg_print(DBG_ERR, "Failed to copy netlink to user space. unit=%u\n", unit);
             return -EFAULT;
         }
     } else {
-        dbg_print(DBG_NETLINK, "Netlink with ID %u not found\n", netlink_id);
+        dbg_print(DBG_NETLINK, "Netlink with ID %u not found. unit=%u\n", netlink_id, unit);
         knetlink.rc = CLX_IOCTL_E_ENTRY_NOT_FOUND;
         if (copy_to_user(user_netlink, &knetlink, sizeof(struct clx_netif_ioctl_netlink))) {
-            dbg_print(DBG_ERR, "Failed to copy netlink to user space\n");
+            dbg_print(DBG_ERR, "Failed to copy netlink to user space. unit=%u\n", unit);
             return -EFAULT;
         }
         return 0;
@@ -754,7 +742,7 @@ clx_netif_set_pkt_mod(uint32_t unit, unsigned long arg)
     clx_mac_t mac;
 
     if (copy_from_user(mac, ptr_user_mac, sizeof(clx_mac_t))) {
-        dbg_print(DBG_ERR, "Failed to copy mod mac from user space\n");
+        dbg_print(DBG_ERR, "Failed to copy mod mac from user space. unit=%u\n", unit);
         return -EFAULT;
     }
 
@@ -775,7 +763,7 @@ clx_netif_get_pkt_mod(uint32_t unit, unsigned long arg)
     unsigned char __user *ptr_user_mac = (void __user *)arg;
 
     if (copy_to_user(ptr_user_mac, clx_netif_drv(unit)->mod_dmac, sizeof(clx_mac_t))) {
-        dbg_print(DBG_ERR, "Failed to copy mod mac to user space\n");
+        dbg_print(DBG_ERR, "Failed to copy mod mac to user space. unit=%u\n", unit);
         return -EFAULT;
     }
 
@@ -804,7 +792,7 @@ netif_netlink_reveive_skb(uint32_t unit,
     /* send the packet to netlink mcgroup */
     rc = netlink_forward_rx_packet(unit, ptr_skb, ptr_data);
     if (rc != 0) {
-        dbg_print(DBG_NETLINK, "Failed to forward rx packet. rc:%d\n", rc);
+        dbg_print(DBG_NETLINK, "Failed to forward rx packet. rc:%d. unit=%u\n", rc, unit);
     }
     spin_unlock_irqrestore(&clx_netif_drv(unit)->netlink.lock, flags);
 

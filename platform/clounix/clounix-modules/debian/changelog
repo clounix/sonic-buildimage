@@ -1,4 +1,10 @@
-clounix-modules (2.1.1) unstable; urgency=low
+clounix-modules (2.2.x) unstable; urgency=low
+
+  * Support KG & NB
+
+ -- Support <zhoujd@clounix.com>  Fri, 16 Jan 2026 15:54:00 +0800
+
+clounix-modules (2.2.1) unstable; urgency=low
 
   * Upgrade ko version to 3.0.0
 

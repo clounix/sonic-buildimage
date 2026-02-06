@@ -29,6 +29,7 @@
 #include <linux/jiffies.h>
 #include <linux/errno.h>
 #include <linux/i2c.h>
+#include "pddf_client_defs.h"
 #include "pddf_i2c_algo.h"
 
 #define DEBUG 0
@@ -70,6 +71,8 @@ enum {
 #define FPGAI2C_REG_STAT_ARBLOST    0x20
 #define FPGAI2C_REG_STAT_BUSY       0x40
 #define FPGAI2C_REG_STAT_NACK       0x80
+
+static int *log_level = &fpgapci_log_level;
 
 struct fpgalogic_i2c {
     void __iomem *base;
@@ -260,7 +263,7 @@ static int fpgai2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 
          usleep_range(5, 15);
      }
-     printk("[%s] ERROR STATE_ERROR\n", __FUNCTION__);
+     pddf_err(FPGA, "[%s] ERROR STATE_ERROR\n", __FUNCTION__);
 
      i2c->state = STATE_ERROR;
 
@@ -302,7 +305,7 @@ static int fpgai2c_init(struct fpgalogic_i2c *i2c)
 
     diff = i2c->ip_clock_khz / (5 * (prescale + 1)) - i2c->bus_clock_khz;
     if (abs(diff) > i2c->bus_clock_khz / 10) {
-        printk("[%s] ERROR Unsupported clock settings: core: %d KHz, bus: %d KHz\n",
+        pddf_err(FPGA, "[%s] ERROR Unsupported clock settings: core: %d KHz, bus: %d KHz\n",
             __FUNCTION__, i2c->ip_clock_khz, i2c->bus_clock_khz);
         return -EINVAL;
     }
@@ -325,18 +328,16 @@ static int adap_data_init(struct i2c_adapter *adap, int i2c_ch_index)
     pci_privdata = (struct fpgapci_devdata*) dev_get_drvdata(adap->dev.parent);
 
     if (pci_privdata == 0) {
-        printk("[%s]: ERROR pci_privdata is 0\n", __FUNCTION__);
+        pddf_err(FPGA, "[%s]: ERROR pci_privdata is 0\n", __FUNCTION__);
         return -1;
     }
-#if DEBUG
-    pddf_dbg(FPGA, KERN_INFO "[%s] index: [%d] fpga_data__base_addr:0x%0x8lx"
-        " fpgapci_bar_len:0x%08lx fpga_i2c_ch_base_addr:0x%08lx ch_size=0x%x supported_i2c_ch=%d",
+    pddf_info(FPGA, "[%s] index: [%d] fpga_data__base_addr:0x%p"
+        " fpgapci_bar_len:0x%08lx fpga_i2c_ch_base_addr:0x%p ch_size=0x%x supported_i2c_ch=%d",
              __FUNCTION__, i2c_ch_index, pci_privdata->fpga_data_base_addr,
             pci_privdata->bar_length, pci_privdata->fpga_i2c_ch_base_addr,
             pci_privdata->fpga_i2c_ch_size, pci_privdata->max_fpga_i2c_ch);
-#endif
     if (i2c_ch_index >= pci_privdata->max_fpga_i2c_ch || pci_privdata->max_fpga_i2c_ch > I2C_PCI_MAX_BUS) {
-        printk("[%s]: ERROR i2c_ch_index=%d max_ch_index=%d out of range: %d\n",
+        pddf_err(FPGA, "[%s]: ERROR i2c_ch_index=%d max_ch_index=%d out of range: %d\n",
              __FUNCTION__, i2c_ch_index, pci_privdata->max_fpga_i2c_ch, I2C_PCI_MAX_BUS);
         return -1;
     }
@@ -393,7 +394,7 @@ int board_i2c_fpgapci_write(uint32_t offset, uint32_t value)
 
 static int __init pddf_xilinx_device_7021_algo_init(void)
 {
-    pddf_dbg(FPGA, KERN_INFO "[%s]\n", __FUNCTION__);
+    pddf_dbg(FPGA, "[%s]\n", __FUNCTION__);
     pddf_i2c_pci_add_numbered_bus = pddf_i2c_pci_add_numbered_bus_default;
     ptr_fpgapci_read = board_i2c_fpgapci_read;
     ptr_fpgapci_write = board_i2c_fpgapci_write;
@@ -402,7 +403,7 @@ static int __init pddf_xilinx_device_7021_algo_init(void)
 
 static void __exit pddf_xilinx_device_7021_algo_exit(void)
 {
-    pddf_dbg(FPGA, KERN_INFO "[%s]\n", __FUNCTION__);
+    pddf_dbg(FPGA, "[%s]\n", __FUNCTION__);
 
     pddf_i2c_pci_add_numbered_bus = NULL;
     ptr_fpgapci_read = NULL;

@@ -9,8 +9,9 @@
 #include "pddf_client_defs.h"
 
 /* max number of adapters */
-#define I2C_PCI_MAX_BUS 512
+#define I2C_PCI_MAX_BUS 16
 
+#define I2C_PCI_PORT_MGR_MAX_BUS 72
 /**
  * struct fpgapci_devdata - PCI device data structure
  * support one device per PCIe

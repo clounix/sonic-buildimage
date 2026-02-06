@@ -1,38 +1,3 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #ifndef __CLX_DMA_H__
 #define __CLX_DMA_H__
 
@@ -40,6 +5,7 @@
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kfifo.h>
+#include <linux/wait.h>
 
 typedef struct {
     uint32_t unit;
@@ -103,6 +69,11 @@ typedef int (*clx_dma_alloc_rx_frag)(uint32_t unit,
                                      uint32_t channel,
                                      uint32_t pop_idx,
                                      struct dma_rx_packet *rx_packet);
+typedef int (*clx_dma_desc_set)(uint32_t unit);
+typedef int (*clx_dma_txfifo_data_splice_cfg)(uint32_t unit, uint32_t channel, bool data_splice_en, bool pph_big_endian, bool data_big_endian);
+typedef int (*clx_dma_dbg_descriptor_show)(uint32_t unit, uint32_t channel, uint32_t desc_idx, char *buf);
+typedef int (*clx_dma_dbg_reg_show)(uint32_t unit, uint32_t channel, char *buf);
+
 typedef struct {
     struct tasklet_struct dma_tasklets;
     clx_tasklet_func dma_handler;
@@ -156,6 +127,9 @@ typedef struct {
     clx_dma_channel_set2 free_ring_base;
     clx_dma_channel_set alloc_rx_buffer;
     clx_dma_channel_set free_rx_buffer;
+    clx_dma_desc_set set_descriptor_cfg;
+    clx_dma_txfifo_data_splice_cfg txfifo_data_splice_cfg;
+    clx_dma_channel_op rxfifo_cfg_set;
 
     clx_dma_alloc_rx_frag alloc_rx_frag;
     clx_dma_prepare_pph prepare_pph;
@@ -172,6 +146,9 @@ typedef struct {
     clx_dma_intr_t *clx_dma_intr;
     clx_dma_channl_error_t error_channel;
 
+    /* debug */
+    clx_dma_dbg_descriptor_show dbg_descriptor_show;
+    clx_dma_dbg_reg_show dbg_reg_show;
 } clx_dma_drv_cb_t;
 
 int
@@ -220,6 +197,13 @@ clx_ioctl_rx_start(uint32_t unit, unsigned long arg);
 int
 clx_ioctl_rx_stop(uint32_t unit, unsigned long arg);
 
+void
+dma_general_tasklet_func(unsigned long data);
+
 int
 nb_handle_ifa_pkt(const uint32_t unit, struct dma_rx_packet *rx_packet);
+
+int
+clx_dma_channel_restart(uint32_t unit, uint32_t channel);
+
 #endif // __CLX_DMA_H__

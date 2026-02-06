@@ -32,6 +32,8 @@
 #include "pddf_client_defs.h"
 #include "pddf_fpgai2c_defs.h"
 
+static int *log_level = &fpgai2c_log_level;
+
 PDDF_FPGAI2C_DATA pddf_fpgai2c_data={0};
 EXPORT_SYMBOL(pddf_fpgai2c_data);
 
@@ -72,7 +74,7 @@ static ssize_t store_pddf_fpgai2c_data(struct device *dev, struct device_attribu
         mutex_lock(&pddf_fpgai2c_data.fpga_lock);
         *(unsigned short *)(ptr->addr) = (unsigned short)num;
         mutex_unlock(&pddf_fpgai2c_data.fpga_lock);
-        pddf_dbg(FPGAI2C, KERN_ERR "Stored value: 0x%x, num: 0x%x\n", *(int*)(ptr->addr), num);
+        pddf_dbg(FPGAI2C, "Stored value: 0x%x, num: 0x%x\n", *(int*)(ptr->addr), num);
     }
 
     return count;
@@ -82,7 +84,7 @@ ssize_t show_pddf_fpgai2c_data(struct device *dev, struct device_attribute *da, 
 {
     int ret = 0;
     PDDF_ATTR *ptr = (PDDF_ATTR *)da;
-    pddf_dbg(FPGAI2C, KERN_ERR "[ READ ] DATA ATTR PTR TYPE:%d, ADDR=%p\n", ptr->type, ptr->addr);
+    pddf_dbg(FPGAI2C, "[ READ ] DATA ATTR PTR TYPE:%d, ADDR=%p\n", ptr->type, ptr->addr);
 
     mutex_lock(&pddf_fpgai2c_data.fpga_lock);
     ret = sprintf(buf, "0x%x\n", *(unsigned short *)(ptr->addr));
@@ -102,6 +104,10 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 	if (strncmp(buf, "add", strlen(buf)-1)==0)
 	{
 		adapter = i2c_get_adapter(device_ptr->parent_bus);
+		if (!adapter) {
+               pddf_err(FPGAI2C, "Parent adapter (%d) not found\n", device_ptr->parent_bus);
+               return -ENODEV;
+        }
 
 		if (strncmp(device_ptr->dev_type, "i2c_fpga", strlen("i2c_fpga"))==0)
 		{
@@ -116,7 +122,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 
 			if (!IS_ERR(client_ptr)) {
 				i2c_put_adapter(adapter);
-				pddf_dbg(FPGAI2C, KERN_ERR "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+				pddf_dbg(FPGAI2C, "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 				add_device_table(device_ptr->i2c_name, (void*)client_ptr);
 			}
 			else {
@@ -127,7 +133,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		}
 		else
 		{
-			printk(KERN_ERR "%s: Unsupported type of fpga device id - unable to add i2c client\n", __FUNCTION__);
+			pddf_err(FPGAI2C, "%s: Unsupported type of fpga device id - unable to add i2c client\n", __FUNCTION__);
 		}
 	}
 	else if (strncmp(buf, "delete", strlen(buf)-1)==0)
@@ -136,18 +142,18 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		client_ptr = (struct i2c_client *)get_device_table(device_ptr->i2c_name);
 		if (client_ptr)
 		{
-			pddf_dbg(FPGAI2C, KERN_ERR "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+			pddf_dbg(FPGAI2C, "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 			i2c_unregister_device(client_ptr);
 			delete_device_table(device_ptr->i2c_name);
 		}
 		else
 		{
-			printk(KERN_ERR "Unable to get the client handle for %s\n", device_ptr->i2c_name);
+			pddf_err(FPGAI2C, "Unable to get the client handle for %s\n", device_ptr->i2c_name);
 		}
 	}
 	else
 	{
-		printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+		pddf_err(FPGAI2C, "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
 	}
 
 free_data:

@@ -32,6 +32,9 @@
 #include "pddf_client_defs.h"
 #include "pddf_cpld_defs.h"
 
+
+static int *log_level = &cpld_log_level;
+
 PDDF_CPLD_DATA pddf_cpld_data={0};
 EXPORT_SYMBOL(pddf_cpld_data);
 
@@ -72,7 +75,7 @@ static ssize_t store_pddf_cpld_data(struct device *dev, struct device_attribute 
         mutex_lock(&pddf_cpld_data.cpld_lock);
         *(unsigned short *)(ptr->addr) = (unsigned short)num;
         mutex_unlock(&pddf_cpld_data.cpld_lock);
-        pddf_dbg(CPLD, KERN_ERR "Stored value: 0x%x, num: 0x%x\n", *(int*)(ptr->addr), num);
+        pddf_dbg(CPLD, "Stored value: 0x%x, num: 0x%x\n", *(int*)(ptr->addr), num);
     }
 
     return count;
@@ -82,7 +85,7 @@ static ssize_t show_pddf_cpld_data(struct device *dev, struct device_attribute *
 {
     int ret = 0;
     PDDF_ATTR *ptr = (PDDF_ATTR *)da;
-    pddf_dbg(CPLD, KERN_ERR "[ READ ] DATA ATTR PTR TYPE:%d, ADDR=%p\n", ptr->type, ptr->addr);
+    pddf_dbg(CPLD, "[ READ ] DATA ATTR PTR TYPE:%d, ADDR=%p\n", ptr->type, ptr->addr);
 
     mutex_lock(&pddf_cpld_data.cpld_lock);
     ret = sprintf(buf, "0x%x\n", *(unsigned short *)(ptr->addr));
@@ -103,7 +106,11 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 	if (strncmp(buf, "add", strlen(buf)-1)==0)
 	{
 		adapter = i2c_get_adapter(device_ptr->parent_bus);
-		
+        if (!adapter) 
+		{
+                    pddf_err(CPLD, "Parent adapter (%d) not found\n", device_ptr->parent_bus);
+            return -ENODEV;
+        }
 		if (strncmp(device_ptr->dev_type, "i2c_cpld", strlen("i2c_cpld"))==0)
 		{
 			pddf_cpld_name = (char *)kzalloc(CPLD_CLIENT_NAME_LEN, GFP_KERNEL);
@@ -120,7 +127,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 
 			if (!IS_ERR(client_ptr)) {
 				i2c_put_adapter(adapter);
-				pddf_dbg(CPLD, KERN_ERR "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+                pddf_err(CPLD, "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 				add_device_table(device_ptr->i2c_name, (void*)client_ptr);
 			}
 			else {
@@ -131,7 +138,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		}
 		else
 		{
-			printk(KERN_ERR "%s: Unsupported type of cpld - unable to add i2c client\n", __FUNCTION__);
+            pddf_err(CPLD, "%s: Unsupported type of cpld - unable to add i2c client\n", __FUNCTION__);
 		}
 	}
 	else if (strncmp(buf, "delete", strlen(buf)-1)==0)
@@ -140,18 +147,18 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		client_ptr = (struct i2c_client *)get_device_table(device_ptr->i2c_name);
 		if (client_ptr)
 		{
-			pddf_dbg(CPLD, KERN_ERR "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+            pddf_err(CPLD, "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 			i2c_unregister_device(client_ptr);
 			delete_device_table(device_ptr->i2c_name);
 		}
 		else
 		{
-			printk(KERN_ERR "Unable to get the client handle for %s\n", device_ptr->i2c_name);
+            pddf_err(CPLD, "Unable to get the client handle for %s\n", device_ptr->i2c_name);
 		}
 	}
 	else
 	{
-		printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+		pddf_err(CPLD, "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
 	}
 	goto clear_data;
 
@@ -212,7 +219,7 @@ void __exit cpld_data_exit(void)
 	sysfs_remove_group(cpld_kobj, &pddf_cpld_client_data_group);
 	sysfs_remove_group(cpld_kobj, &pddf_clients_data_group);
     kobject_put(cpld_kobj);
-    pddf_dbg(CPLD, KERN_ERR "%s: Removed the kobjects for 'cpld'\n",__FUNCTION__);
+    pddf_dbg(CPLD, "%s: Removed the kobjects for 'cpld'\n",__FUNCTION__);
     return;
 }
 

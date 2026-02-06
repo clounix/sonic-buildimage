@@ -36,6 +36,8 @@
 
 #define DRVNAME "pddf_fan"
 
+static int *log_level = &fan_log_level;
+
 struct pddf_ops_t pddf_fan_ops = {
 	.pre_init = NULL,
 	.post_init = NULL,
@@ -272,6 +274,130 @@ EXPORT_SYMBOL(data_fan_part_num);
 FAN_SYSFS_ATTR_DATA data_fan_hw_version = {FAN_HW_VERSION, S_IRUGO, fan_show_string, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan_hw_version);
 
+FAN_SYSFS_ATTR_DATA data_fan_eepromwp = {FAN_EEPROMWP, S_IRUGO | S_IWUSR, fan_show_default, NULL, sonic_i2c_get_fan_eepromwp_default, NULL, fan_store_default, NULL, sonic_i2c_set_fan_eepromwp_default, NULL, NULL};
+EXPORT_SYMBOL(data_fan_eepromwp);
+
+/* speed target & tolerance */
+
+/* speed target & tolerance */
+FAN_SYSFS_ATTR_DATA data_fan1_speed_target = {FAN1_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_speed_target = {FAN2_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_speed_target = {FAN3_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_speed_target = {FAN4_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_speed_target = {FAN5_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan6_speed_target = {FAN6_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan7_speed_target = {FAN7_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan8_speed_target = {FAN8_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_speed_target);
+EXPORT_SYMBOL(data_fan2_speed_target);
+EXPORT_SYMBOL(data_fan3_speed_target);
+EXPORT_SYMBOL(data_fan4_speed_target);
+EXPORT_SYMBOL(data_fan5_speed_target);
+EXPORT_SYMBOL(data_fan6_speed_target);
+EXPORT_SYMBOL(data_fan7_speed_target);
+EXPORT_SYMBOL(data_fan8_speed_target);
+
+FAN_SYSFS_ATTR_DATA data_fan1_speed_tolerance = {FAN1_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_speed_tolerance = {FAN2_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_speed_tolerance = {FAN3_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_speed_tolerance = {FAN4_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_speed_tolerance = {FAN5_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan6_speed_tolerance = {FAN6_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan7_speed_tolerance = {FAN7_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan8_speed_tolerance = {FAN8_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_speed_tolerance);
+EXPORT_SYMBOL(data_fan2_speed_tolerance);
+EXPORT_SYMBOL(data_fan3_speed_tolerance);
+EXPORT_SYMBOL(data_fan4_speed_tolerance);
+EXPORT_SYMBOL(data_fan5_speed_tolerance);
+EXPORT_SYMBOL(data_fan6_speed_tolerance);
+EXPORT_SYMBOL(data_fan7_speed_tolerance);
+EXPORT_SYMBOL(data_fan8_speed_tolerance);
+
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l0  = {FAN_SPEED_TARGET_F_L0 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l1  = {FAN_SPEED_TARGET_F_L1 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l2  = {FAN_SPEED_TARGET_F_L2 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l3  = {FAN_SPEED_TARGET_F_L3 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l4  = {FAN_SPEED_TARGET_F_L4 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l5  = {FAN_SPEED_TARGET_F_L5 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l6  = {FAN_SPEED_TARGET_F_L6 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l7  = {FAN_SPEED_TARGET_F_L7 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l8  = {FAN_SPEED_TARGET_F_L8 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l9  = {FAN_SPEED_TARGET_F_L9 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l10 = {FAN_SPEED_TARGET_F_L10, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l11 = {FAN_SPEED_TARGET_F_L11, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l12 = {FAN_SPEED_TARGET_F_L12, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l13 = {FAN_SPEED_TARGET_F_L13, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l14 = {FAN_SPEED_TARGET_F_L14, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l15 = {FAN_SPEED_TARGET_F_L15, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan_speed_target_f_l0);
+EXPORT_SYMBOL(data_fan_speed_target_f_l1);
+EXPORT_SYMBOL(data_fan_speed_target_f_l2);
+EXPORT_SYMBOL(data_fan_speed_target_f_l3);
+EXPORT_SYMBOL(data_fan_speed_target_f_l4);
+EXPORT_SYMBOL(data_fan_speed_target_f_l5);
+EXPORT_SYMBOL(data_fan_speed_target_f_l6);
+EXPORT_SYMBOL(data_fan_speed_target_f_l7);
+EXPORT_SYMBOL(data_fan_speed_target_f_l8);
+EXPORT_SYMBOL(data_fan_speed_target_f_l9);
+EXPORT_SYMBOL(data_fan_speed_target_f_l10);
+EXPORT_SYMBOL(data_fan_speed_target_f_l11);
+EXPORT_SYMBOL(data_fan_speed_target_f_l12);
+EXPORT_SYMBOL(data_fan_speed_target_f_l13);
+EXPORT_SYMBOL(data_fan_speed_target_f_l14);
+EXPORT_SYMBOL(data_fan_speed_target_f_l15);
+
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l0  = {FAN_SPEED_TARGET_F_L0 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l1  = {FAN_SPEED_TARGET_F_L1 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l2  = {FAN_SPEED_TARGET_F_L2 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l3  = {FAN_SPEED_TARGET_F_L3 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l4  = {FAN_SPEED_TARGET_F_L4 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l5  = {FAN_SPEED_TARGET_F_L5 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l6  = {FAN_SPEED_TARGET_F_L6 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l7  = {FAN_SPEED_TARGET_F_L7 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l8  = {FAN_SPEED_TARGET_F_L8 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l9  = {FAN_SPEED_TARGET_F_L9 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l10 = {FAN_SPEED_TARGET_F_L10, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l11 = {FAN_SPEED_TARGET_F_L11, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l12 = {FAN_SPEED_TARGET_F_L12, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l13 = {FAN_SPEED_TARGET_F_L13, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l14 = {FAN_SPEED_TARGET_F_L14, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan_speed_target_r_l15 = {FAN_SPEED_TARGET_F_L15, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan_speed_target_r_l0);
+EXPORT_SYMBOL(data_fan_speed_target_r_l1);
+EXPORT_SYMBOL(data_fan_speed_target_r_l2);
+EXPORT_SYMBOL(data_fan_speed_target_r_l3);
+EXPORT_SYMBOL(data_fan_speed_target_r_l4);
+EXPORT_SYMBOL(data_fan_speed_target_r_l5);
+EXPORT_SYMBOL(data_fan_speed_target_r_l6);
+EXPORT_SYMBOL(data_fan_speed_target_r_l7);
+EXPORT_SYMBOL(data_fan_speed_target_r_l8);
+EXPORT_SYMBOL(data_fan_speed_target_r_l9);
+EXPORT_SYMBOL(data_fan_speed_target_r_l10);
+EXPORT_SYMBOL(data_fan_speed_target_r_l11);
+EXPORT_SYMBOL(data_fan_speed_target_r_l12);
+EXPORT_SYMBOL(data_fan_speed_target_r_l13);
+EXPORT_SYMBOL(data_fan_speed_target_r_l14);
+EXPORT_SYMBOL(data_fan_speed_target_r_l15);
+
+FAN_SYSFS_ATTR_DATA data_fan1_sn = {FAN1_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_sn = {FAN2_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_sn = {FAN3_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_sn = {FAN4_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_sn);
+EXPORT_SYMBOL(data_fan2_sn);
+EXPORT_SYMBOL(data_fan3_sn);
+EXPORT_SYMBOL(data_fan4_sn);
+
+FAN_SYSFS_ATTR_DATA data_fan1_pn = {FAN1_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_pn = {FAN2_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_pn = {FAN3_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_pn = {FAN4_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_pn);
+EXPORT_SYMBOL(data_fan2_pn);
+EXPORT_SYMBOL(data_fan3_pn);
+EXPORT_SYMBOL(data_fan4_pn);
+
 FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
 {
 	{ "fan1_present", &data_fan1_present},
@@ -375,6 +501,63 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan_serial_num", &data_fan_serial_num},
     { "fan_part_num", &data_fan_part_num},
     { "fan_hw_version", &data_fan_hw_version},
+    { "fan_eepromwp", &data_fan_eepromwp},
+    { "fan1_speed_target", &data_fan1_speed_target},
+    { "fan2_speed_target", &data_fan2_speed_target},
+    { "fan3_speed_target", &data_fan3_speed_target},
+    { "fan4_speed_target", &data_fan4_speed_target},
+    { "fan5_speed_target", &data_fan5_speed_target},
+    { "fan6_speed_target", &data_fan6_speed_target},
+    { "fan7_speed_target", &data_fan7_speed_target},
+    { "fan8_speed_target", &data_fan8_speed_target},
+    { "fan1_speed_tolerance", &data_fan1_speed_tolerance},
+    { "fan2_speed_tolerance", &data_fan2_speed_tolerance},
+    { "fan3_speed_tolerance", &data_fan3_speed_tolerance},
+    { "fan4_speed_tolerance", &data_fan4_speed_tolerance},
+    { "fan5_speed_tolerance", &data_fan5_speed_tolerance},
+    { "fan6_speed_tolerance", &data_fan6_speed_tolerance},
+    { "fan7_speed_tolerance", &data_fan7_speed_tolerance},
+    { "fan8_speed_tolerance", &data_fan8_speed_tolerance},
+    { "fan_speed_target_f_l0", &data_fan_speed_target_f_l0 },
+    { "fan_speed_target_f_l1", &data_fan_speed_target_f_l1 },
+    { "fan_speed_target_f_l2", &data_fan_speed_target_f_l2 },
+    { "fan_speed_target_f_l3", &data_fan_speed_target_f_l3 },
+    { "fan_speed_target_f_l4", &data_fan_speed_target_f_l4 },
+    { "fan_speed_target_f_l5", &data_fan_speed_target_f_l5 },
+    { "fan_speed_target_f_l6", &data_fan_speed_target_f_l6 },
+    { "fan_speed_target_f_l7", &data_fan_speed_target_f_l7 },
+    { "fan_speed_target_f_l8", &data_fan_speed_target_f_l8 },
+    { "fan_speed_target_f_l9", &data_fan_speed_target_f_l9 },
+    { "fan_speed_target_f_l10", &data_fan_speed_target_f_l10},
+    { "fan_speed_target_f_l11", &data_fan_speed_target_f_l11},
+    { "fan_speed_target_f_l12", &data_fan_speed_target_f_l12},
+    { "fan_speed_target_f_l13", &data_fan_speed_target_f_l13},
+    { "fan_speed_target_f_l14", &data_fan_speed_target_f_l14},
+    { "fan_speed_target_f_l15", &data_fan_speed_target_f_l15},
+    { "fan_speed_target_r_l0", &data_fan_speed_target_r_l0 },
+    { "fan_speed_target_r_l1", &data_fan_speed_target_r_l1 },
+    { "fan_speed_target_r_l2", &data_fan_speed_target_r_l2 },
+    { "fan_speed_target_r_l3", &data_fan_speed_target_r_l3 },
+    { "fan_speed_target_r_l4", &data_fan_speed_target_r_l4 },
+    { "fan_speed_target_r_l5", &data_fan_speed_target_r_l5 },
+    { "fan_speed_target_r_l6", &data_fan_speed_target_r_l6 },
+    { "fan_speed_target_r_l7", &data_fan_speed_target_r_l7 },
+    { "fan_speed_target_r_l8", &data_fan_speed_target_r_l8 },
+    { "fan_speed_target_r_l9", &data_fan_speed_target_r_l9 },
+    { "fan_speed_target_r_l10", &data_fan_speed_target_r_l10},
+    { "fan_speed_target_r_l11", &data_fan_speed_target_r_l11},
+    { "fan_speed_target_r_l12", &data_fan_speed_target_r_l12},
+    { "fan_speed_target_r_l13", &data_fan_speed_target_r_l13},
+    { "fan_speed_target_r_l14", &data_fan_speed_target_r_l14},
+    { "fan_speed_target_r_l15", &data_fan_speed_target_r_l15},
+    { "fan1_sn", &data_fan1_sn},
+    { "fan2_sn", &data_fan2_sn},
+    { "fan3_sn", &data_fan3_sn},
+    { "fan4_sn", &data_fan4_sn},
+    { "fan1_pn", &data_fan1_pn},
+    { "fan2_pn", &data_fan2_pn},
+    { "fan3_pn", &data_fan3_pn},
+    { "fan4_pn", &data_fan4_pn}
 };
 
 void *get_fan_access_data(char *name)
@@ -407,7 +590,7 @@ static int pddf_fan_probe(struct i2c_client *client,
     int idx = 0;
 
 	if (client == NULL) {
-        printk("NULL Client.. \n");
+        pddf_err(FAN, "NULL Client.. \n");
         goto exit;
     }
 
@@ -431,8 +614,7 @@ static int pddf_fan_probe(struct i2c_client *client,
     }
 
     i2c_set_clientdata(client, data);
-    dev_info(&client->dev, "chip found\n");
-
+    pddf_dbg(FAN, "%s chip found\n", dev_name(&client->dev));
 
 	/*Take control of the platform data*/
 	fan_platform_data = (FAN_PDATA *)(client->dev.platform_data);
@@ -447,7 +629,7 @@ static int pddf_fan_probe(struct i2c_client *client,
 		sysfs_data_entry = get_fan_access_data(data_attr->aname);
 		if (sysfs_data_entry == NULL)
 		{
-			printk(KERN_ERR "%s: Wrong attribute name provided by user '%s'\n", __FUNCTION__, data_attr->aname);
+			pddf_err(FAN, "%s: Wrong attribute name provided by user '%s'\n", __FUNCTION__, data_attr->aname);
 			continue;
 		}
 			
@@ -488,7 +670,7 @@ static int pddf_fan_probe(struct i2c_client *client,
 		    extra_sysfs_data_entry = get_fan_access_data(new_default_str);
             if (extra_sysfs_data_entry == NULL)
             {
-                printk(KERN_ERR "%s: Invalid name for extra default attribute '%s'. No access data exists\n", __FUNCTION__, new_default_str);
+                pddf_err(FAN, "%s: Invalid name for extra default attribute '%s'. No access data exists\n", __FUNCTION__, new_default_str);
                 continue;
             }
 			dy_ptr = (struct sensor_device_attribute *)kzalloc(sizeof(struct sensor_device_attribute)+ATTR_NAME_LEN, GFP_KERNEL);
@@ -544,7 +726,7 @@ exit_free:
         struct sensor_device_attribute *ptr = (struct sensor_device_attribute *)data->fan_attribute_list[i];
         kfree(ptr);
     }
-    pddf_dbg(FAN, KERN_ERR "%s: Freed all the memory allocated for attributes\n", __FUNCTION__);
+    pddf_err(FAN, "%s: Freed all the memory allocated for attributes\n", __FUNCTION__);
     kfree(data);
 exit:
     return status;
@@ -562,7 +744,7 @@ static void pddf_fan_remove(struct i2c_client *client)
 	{
 		ret = (pddf_fan_ops.pre_remove)(client);
 		if (ret!=0)
-			printk(KERN_ERR "FAN pre_remove function failed\n");
+			pddf_err(FAN, "pre_remove function failed\n");
 	}
 
     hwmon_device_unregister(data->hwmon_dev);
@@ -572,15 +754,15 @@ static void pddf_fan_remove(struct i2c_client *client)
         ptr = (struct sensor_device_attribute *)data->fan_attribute_list[i];
         kfree(ptr);
     }
-    pddf_dbg(FAN, KERN_ERR "%s: Freed all the memory allocated for attributes\n", __FUNCTION__);
+    pddf_dbg(FAN, "%s: Freed all the memory allocated for attributes\n", __FUNCTION__);
     kfree(data);
 
 	if (platdata_sub) {
-		printk(KERN_DEBUG "%s: Freeing platform subdata\n", __FUNCTION__);
+		pddf_err(FAN,"%s: Freeing platform subdata\n", __FUNCTION__);
 		kfree(platdata_sub);
 	}
 	if (platdata) {
-		printk(KERN_DEBUG "%s: Freeing platform data\n", __FUNCTION__);
+		pddf_err(FAN,"%s: Freeing platform data\n", __FUNCTION__);
 		kfree(platdata);
 	}
 
@@ -588,7 +770,7 @@ static void pddf_fan_remove(struct i2c_client *client)
     {
         ret = (pddf_fan_ops.post_remove)(client);
         if (ret!=0)
-            printk(KERN_ERR "FAN post_remove function failed\n");
+            pddf_err(FAN, "FAN post_remove function failed\n");
     }
 
 }

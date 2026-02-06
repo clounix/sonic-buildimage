@@ -22,13 +22,14 @@
 
 
 #define ATTR_NAME_LEN 32
-#define MAX_ATTRS 32
+#define MAX_ATTRS 128
 
 
 /* SYSSTATUS CLIENT DATA - PLATFORM DATA FOR SYSSTATUS CLIENT */
 typedef struct SYSSTATUS_ADDR_ATTR
 {
     char aname[ATTR_NAME_LEN];  // attr name
+    char devtype[32]; ;
     uint32_t devaddr;
     uint32_t offset;
     uint32_t mask;

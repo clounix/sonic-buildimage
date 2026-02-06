@@ -1,38 +1,3 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #include <linux/pci.h>
 #include <linux/types.h>
 #include <linux/device.h>
@@ -41,6 +6,7 @@
 
 #include "knet_pci.h"
 #include "knet_dev.h"
+#include "knet_fault_event.h"
 
 static uint32_t
 clx_get_pci_mmio_info(struct pci_dev *dev)
@@ -58,6 +24,8 @@ clx_get_pci_mmio_info(struct pci_dev *dev)
         if (pci_dev_data->bar_virt == NULL) {
             rc = -1;
             dbg_print(DBG_INFO, "enable pci dev failed, rc=%d\n", rc);
+            pci_release_region(dev, clx_pci_cb(pci_dev_data->unit)->mmio_bar);
+            return rc;
         }
     }
 
@@ -76,9 +44,17 @@ clx_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
     rc = pci_enable_device(dev);
     if (rc != 0) {
         dbg_print(DBG_CRIT, "enable pci dev failed, rc=%d\n", rc);
+        knet_fault_event_report(KNET_FAULT_EVENT_KENT_PCI_PROBE_FAIL);
+        return rc;
     }
 
     pci_dev_data = (struct clx_pci_dev_s *)kmalloc(sizeof(struct clx_pci_dev_s), GFP_ATOMIC);
+    if (NULL == pci_dev_data) {
+        dbg_print(DBG_CRIT, "Failed to allocate memory for pci_dev_data\n");
+        pci_disable_device(dev);
+        return -ENOMEM;
+    }
+    memset(pci_dev_data, 0, sizeof(struct clx_pci_dev_s));
 
     pci_read_config_word(dev, PCI_DEVICE_ID, &pci_dev_data->device_id);
     pci_read_config_word(dev, PCI_VENDOR_ID, &pci_dev_data->vendor_id);
@@ -91,7 +67,10 @@ clx_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 
     rc = clx_drv_init(pci_dev_data->unit, dev);
     if (rc != 0) {
+        dbg_print(DBG_ERR, "clx_drv_init failed, rc=%d\n", rc);
+        pci_disable_device(dev);
         kfree(pci_dev_data);
+        knet_fault_event_report(KNET_FAULT_EVENT_KENT_PCI_PROBE_FAIL);
         return rc;
     }
     clx_get_pci_mmio_info(dev);
@@ -102,6 +81,11 @@ clx_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
                                   DMA_BIT_MASK(clx_pci_cb(pci_dev_data->unit)->dma_bit_mask))) {
         dbg_print(DBG_ERR, "dma_set_mask_and_coherent failed.dma_bit_mask:%d\n",
                   clx_pci_cb(pci_dev_data->unit)->dma_bit_mask);
+        pci_disable_device(dev);
+        clx_drv_cleanup(pci_dev_data->unit, dev);
+        kfree(pci_dev_data);
+        knet_fault_event_report(KNET_FAULT_EVENT_KENT_PCI_PROBE_FAIL);
+        return -ENOMEM;
     }
 
     pci_set_master(dev);
@@ -113,6 +97,8 @@ static void
 clx_pci_remove(struct pci_dev *dev)
 {
     struct clx_pci_dev_s *pci_dev_data = (struct clx_pci_dev_s *)pci_get_drvdata(dev);
+
+    IOUNMAP_API(pci_dev_data->bar_virt);
     pci_release_region(dev, clx_pci_cb(pci_dev_data->unit)->mmio_bar);
     pci_disable_device(dev);
     clx_drv_cleanup(pci_dev_data->unit, dev);
@@ -214,6 +200,9 @@ clx_ioctl_get_pci_dev_info(uint32_t unit, unsigned long arg)
     }
 
     ioc_dev_info.pci_dev_num = unit;
+    ioc_dev_info.drv_version.major = KNET_DRV_VERSION_MAJOR;
+    ioc_dev_info.drv_version.minor = KNET_DRV_VERSION_MINOR;
+    ioc_dev_info.drv_version.revision = KNET_DRV_VERSION_REVISION;
 
     // Copy data back to user space
     if (copy_to_user((void __user *)arg, &ioc_dev_info, sizeof(ioc_dev_info)))

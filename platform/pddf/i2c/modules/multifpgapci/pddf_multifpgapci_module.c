@@ -25,6 +25,8 @@
 #include "pddf_client_defs.h"
 #include "pddf_multifpgapci_defs.h"
 
+static int *log_level = &multifpgapci_log_level;
+
 #define MAX_PCI_IDS 16
 
 static struct kobject *multifpgapci_kobj = NULL;
@@ -66,14 +68,12 @@ ssize_t dev_operation(struct device *dev, struct device_attribute *da,
 		} else {
 			pddf_dbg(
 				MULTIFPGA,
-				KERN_ERR
 				"PDDF_ERROR %s: No FPGA PCI IDs are registered yet\n",
 				__FUNCTION__);
 			return -EINVAL;
 		}
 	} else {
 		pddf_dbg(MULTIFPGA,
-			 KERN_ERR
 			 "PDDF_ERROR %s: Invalid value for dev_ops %s\n",
 			 __FUNCTION__, buf);
 		return -EINVAL;
@@ -96,14 +96,12 @@ int add_fpgapci_id(unsigned short vendor, unsigned short device)
 		// Null-terminate the array
 		fpgapci_ids[num_pci_ids] = (struct pci_device_id){ 0 };
 		pddf_dbg(MULTIFPGA,
-			 KERN_INFO
 			 "%s Registered vendor: 0x%04x, device: 0x%04x\n",
 			 __FUNCTION__, vendor, device);
 		return 0;
 	} else {
 		pddf_dbg(
 			MULTIFPGA,
-			KERN_ERR
 			"PDDF_ERROR %s: Maximum number of FPGA PCI IDs reached\n",
 			__FUNCTION__);
 		return -1;
@@ -138,7 +136,6 @@ ssize_t register_pci_device_id(struct device *dev, struct device_attribute *da,
 	}
 
 	pddf_dbg(MULTIFPGA,
-		 KERN_ERR
 		 "%s Failed to register pci device ids, unexpected format\n",
 		 __FUNCTION__);
 	return -EINVAL;
@@ -154,7 +151,7 @@ int __init pddf_multifpgapci_module_init(void)
 	device_kobj = get_device_i2c_kobj();
 	if (!device_kobj) {
 		pddf_dbg(MULTIFPGA,
-			 KERN_ERR "%s get_device_i2c_kobj failed ..\n",
+			"%s get_device_i2c_kobj failed ..\n",
 			 __FUNCTION__);
 		return -ENOMEM;
 	}
@@ -162,7 +159,7 @@ int __init pddf_multifpgapci_module_init(void)
 	multifpgapci_kobj = kobject_create_and_add("multifpgapci", device_kobj);
 	if (!multifpgapci_kobj) {
 		pddf_dbg(MULTIFPGA,
-			 KERN_ERR "%s create multifpgapci kobj failed ..\n",
+			"%s create multifpgapci kobj failed ..\n",
 			 __FUNCTION__);
 		return -ENOMEM;
 	}
@@ -170,7 +167,6 @@ int __init pddf_multifpgapci_module_init(void)
 	ret = sysfs_create_group(multifpgapci_kobj, &attr_group_multifpgapci);
 	if (ret) {
 		pddf_dbg(MULTIFPGA,
-			 KERN_ERR
 			 "%s create multifpgapci sysfs attributes failed ..\n",
 			 __FUNCTION__);
 		return ret;
@@ -181,7 +177,7 @@ int __init pddf_multifpgapci_module_init(void)
 
 void __exit pddf_multifpgapci_module_exit(void)
 {
-	pddf_dbg(MULTIFPGA, KERN_INFO "%s ..\n", __FUNCTION__);
+	pddf_dbg(MULTIFPGA, "%s ..\n", __FUNCTION__);
 	KOBJ_FREE(multifpgapci_kobj)
 	return;
 }

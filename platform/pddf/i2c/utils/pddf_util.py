@@ -29,6 +29,7 @@ SONIC_CFGGEN_PATH = '/usr/local/bin/sonic-cfggen'
 HWSKU_KEY = 'DEVICE_METADATA.localhost.hwsku'
 PLATFORM_KEY = 'DEVICE_METADATA.localhost.platform'
 
+NOT_FOUND_DEV = "No such device"
 PROJECT_NAME = 'PDDF'
 version = '1.1'
 verbose = False
@@ -36,9 +37,8 @@ DEBUG = False
 args = []
 ALL_DEVICE = {}               
 FORCE = 0
+kos = []
 perm_kos = []
-std_kos = []
-custom_kos = []
 devs = []
 
 # Instantiate the class pddf_obj
@@ -74,13 +74,16 @@ def main():
     
     # generate the KOS list from pddf device JSON file
     if 'std_perm_kos' in pddf_obj.data['PLATFORM'].keys():
+       kos.extend(pddf_obj.data['PLATFORM']['std_perm_kos'])
        perm_kos.extend(pddf_obj.data['PLATFORM']['std_perm_kos'])
+    kos.extend(pddf_obj.data['PLATFORM']['std_kos'])
+    kos.extend(pddf_obj.data['PLATFORM']['pddf_kos'])
 
-    std_kos.extend(pddf_obj.data['PLATFORM']['std_kos'])
-    std_kos.extend(pddf_obj.data['PLATFORM']['pddf_kos'])
+    kos = ['modprobe '+i for i in kos]
 
     if 'custom_kos' in pddf_obj.data['PLATFORM']:
-        custom_kos.extend(pddf_obj.data['PLATFORM']['custom_kos'])
+        custom_kos = pddf_obj.data['PLATFORM']['custom_kos']
+        kos.extend(['modprobe -f '+i for i in custom_kos])
 
     for opt, arg in options:
         if opt in ('-h', '--help'):
@@ -351,28 +354,15 @@ def driver_install():
             # Don't exit but continue
 
     log_os_system("depmod", 1)
-
-    # Load "normal" kos first
-    for mod in perm_kos + std_kos:
-        status, output = log_os_system("modprobe " + mod, 1)
-        if status:
-            print("driver_install() failed with error %d"%status)
-            if FORCE == 0:
-                return status
-
-    # Load "custom" kos now.  On failure, retry with force flag.  Force flag is not
-    # allowed to be used on signed modules so do not try that first.
-    for mod in custom_kos:
-        status, output = log_os_system("modprobe " + mod, 1)
-        if not status:
+    for i in range(0,len(kos)):
+        status, output = log_os_system(kos[i], 1)
+        if NOT_FOUND_DEV in output:
+            print(output)
             continue
-
-        print("driver_install() failed with error %d retrying with force"%status)
-        status, output = log_os_system("modprobe -f " + mod, 1)
-        if status:
-            print("driver_install(force) failed with error %d"%status)
-            if FORCE == 0:
-                return status
+        elif status:
+            print("driver_install() failed with error %d"%status)
+            if FORCE == 0:        
+                return status       
 
     output = config_pddf_utils()
     if output:
@@ -396,12 +386,14 @@ def driver_uninstall():
     if status:
         print("cleanup_pddf_utils() failed with error %d"%status)
 
-    for mod in std_kos + custom_kos:
-        # do not remove i2c-i801 modules
-        if "i2c-i801" in mod:
+    for i in range(0,len(kos)):
+        # if it is in perm_kos, do not remove
+        if (kos[-(i+1)].split())[-1] in perm_kos or 'i2c-i801' in kos[-(i+1)]:
             continue
 
-        status, output = log_os_system("modprobe -rq " + mod, 1)
+        rm = kos[-(i+1)].replace("modprobe", "modprobe -rq")
+        rm = rm.replace("insmod", "rmmod")        
+        status, output = log_os_system(rm, 1)
         if status:
             print("driver_uninstall() failed with error %d"%status)
             if FORCE == 0:        
@@ -498,7 +490,10 @@ def do_uninstall():
         status = driver_uninstall()
         if status:
             if FORCE == 0:        
-                return  status                          
+                return  status     
+    # Check if S3IP support is enabled, if yes, stop the service in no block mode
+    if 'enable_s3ip' in pddf_obj.data['PLATFORM'].keys() and pddf_obj.data['PLATFORM']['enable_s3ip'] == 'yes':
+        log_os_system('systemctl stop --no-block pddf-s3ip-init.service', 1)                     
     return       
 
 def do_switch_pddf():

@@ -22,28 +22,67 @@
 
 #include <linux/i2c.h>
 
-#define PSU "PDDF_PSU"
-#define LED "PDDF_LED"
-#define FAN "PDDF_FAN"
-#define CLIENT "PDDF_CLIENT"
-#define CPLD "PDDF_CPLD"
-#define CPLDMUX "PDDF_CPLDMUX"
-#define FPGAI2C "PDDF_FPGAI2C"
-#define MUX "PDDF_MUX"
-#define GPIO "PDDF_GPIO"
-#define SYSSTATUS "PDDF_SYSSTATUS"
-#define XCVR "PDDF_XCVR"
-#define FPGA "PDDF_FPGAPCI"
+#define PSU "PDDF_PSU "
+#define LED "PDDF_LED "
+#define FAN "PDDF_FAN "
+#define CLIENT "PDDF_CLIENT "
+#define CPLD "PDDF_CPLD "
+#define CPLDMUX "PDDF_CPLDMUX "
+#define FPGAI2C "PDDF_FPGAI2C "
+#define MUX "PDDF_MUX "
+#define GPIO "PDDF_GPIO "
+#define SYSSTATUS "PDDF_SYSSTATUS "
+#define XCVR "PDDF_XCVR "
+#define FPGA "PDDF_FPGAPCI "
 #define MULTIFPGA "PDDF_MULTIFPGAPCI"
-
+#define LPC "PDDF_LPC "
+#define WDT "PDDF_WDT "
 
 #define PDDF_DEBUG
 #ifdef PDDF_DEBUG
-#define pddf_dbg(filter,...) printk("%s\t", filter); printk(KERN_CONT __VA_ARGS__)
+#define pddf_log(filter, ...) \
+    printk("%s\t", filter); \
+    printk(KERN_CONT __VA_ARGS__)
 #else
-#define pddf_dbg(...) 
+#define pddf_log(...)
 #endif
 
+enum log_type {
+    LOG_OFF,
+    LOG_ERR,
+    LOG_INFO,
+    LOG_DEBUG,
+};
+
+#define pddf_dbg(filter, ...) \
+    if (*log_level >= LOG_DEBUG) { \
+        pddf_log(filter, __VA_ARGS__); \
+    }
+
+#define pddf_info(filter, ...) \
+    if (*log_level >= LOG_INFO) { \
+        pddf_log(filter, __VA_ARGS__); \
+    }
+
+#define pddf_err(filter, ...) \
+    if (*log_level >= LOG_ERR) { \
+        pddf_log(filter, KERN_ALERT __VA_ARGS__); \
+    }
+
+extern int cpld_log_level;
+extern int cpldmux_log_level;
+extern int fpgai2c_log_level;
+extern int fpgapci_log_level;
+extern int lpc_log_level;
+extern int xcvr_log_level;
+extern int mux_log_level;
+extern int gpio_log_level;
+extern int psu_log_level;
+extern int fan_log_level;
+extern int led_log_level;
+extern int sysstat_log_level;
+extern int wdt_log_level;
+extern int multifpgapci_log_level;
 
 #define GEN_NAME_SIZE 32
 #define ERR_STR_SIZE 128

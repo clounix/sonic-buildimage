@@ -32,6 +32,7 @@
 #include "pddf_client_defs.h"
 #include "pddf_mux_defs.h"
 
+static int *log_level = &mux_log_level;
 
 static ssize_t do_device_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
 extern void* get_device_table(char *name);
@@ -68,12 +69,16 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 	if (strncmp(buf, "add", strlen(buf)-1)==0)
 	{
 		/* Supported types are pca_9540, pca_9542, pca_9543, pca_9544, pca_9545, pca_9546, pca_9547, pca_9548,
-		 * pca_9846, pca_9847, pca_9848, pca_9849
+		 * pca_9846, pca_9847, pca_9848, pca_9849 pca9641
 		 */
 		if ( (strncmp(device_ptr->dev_type, "pca954", 6) == 0) ||
-				(strncmp(device_ptr->dev_type, "pca984", 6) == 0) )
+				(strncmp(device_ptr->dev_type, "pca984", 6) == 0) || (strncmp(device_ptr->dev_type, "pca9641", 7) == 0) )
 		{
 			adapter = i2c_get_adapter(device_ptr->parent_bus);
+            if (!adapter) {
+                pddf_err(MUX, "Parent adapter (%d) not found\n", device_ptr->parent_bus);
+                return -ENODEV;
+            }
 			board_info = (struct i2c_board_info) {
 				.platform_data = NULL,
 			};
@@ -87,7 +92,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 			if (!IS_ERR(client_ptr))
 			{
 				i2c_put_adapter(adapter);
-				pddf_dbg(MUX, KERN_ERR "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+				pddf_dbg(MUX, "Created %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 				add_device_table(device_ptr->i2c_name, (void*)client_ptr);
 			}
 			else
@@ -98,7 +103,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		}
 		else
 		{
-			printk(KERN_ERR "%s: Unknown type of mux device %s\n", __FUNCTION__, device_ptr->dev_type);
+			pddf_err(MUX, "%s: Unknown type of mux device %s\n", __FUNCTION__, device_ptr->dev_type);
 		}
 	}
 	else if (strncmp(buf, "delete", strlen(buf)-1)==0)
@@ -107,19 +112,19 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		client_ptr = (struct i2c_client *)get_device_table(device_ptr->i2c_name);
 		if (client_ptr)
 		{
-			pddf_dbg(MUX, KERN_ERR "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
+			pddf_dbg(MUX, "Removing %s client: 0x%p\n", device_ptr->i2c_name, (void *)client_ptr);
 			i2c_unregister_device(client_ptr);
 			/*TODO: Nullyfy the platform data*/
 			delete_device_table(device_ptr->i2c_name);
 		}
 		else
 		{
-			printk(KERN_ERR "Unable to get the client handle for %s\n", device_ptr->i2c_name);
+			pddf_err(MUX, "Unable to get the client handle for %s\n", device_ptr->i2c_name);
 		}
 	}
 	else
 	{
-		printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+		pddf_err(MUX, "%s: Invalid value for dev_ops %s", __FUNCTION__, buf);
 	}
 
 free_data:
@@ -165,7 +170,7 @@ int __init mux_data_init(void)
         kobject_put(mux_kobj);
         return ret;
     }
-	pddf_dbg(MUX, "CREATED MUX DATA SYSFS GROUP\n");
+	pddf_info(MUX, "CREATED MUX DATA SYSFS GROUP\n");
 
 	return ret;
 }
@@ -176,7 +181,7 @@ void __exit mux_data_exit(void)
 	sysfs_remove_group(mux_kobj, &pddf_mux_client_data_group);
 	sysfs_remove_group(mux_kobj, &pddf_clients_data_group);
 	kobject_put(mux_kobj);
-	pddf_dbg(MUX, KERN_ERR "%s: Removed the kobjects for 'mux'\n",__FUNCTION__);
+	pddf_info(MUX, "%s: Removed the kobjects for 'mux'\n",__FUNCTION__);
 	return;
 }
 

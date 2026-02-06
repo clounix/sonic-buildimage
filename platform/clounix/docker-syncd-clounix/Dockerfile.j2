@@ -33,7 +33,7 @@ debs/{{ deb }}{{' '}}
 {%- endfor %}
 
 COPY ["update_libc++", "update_libc++"]
-RUN  cp update_libc++/* /usr/lib/x86_64-linux-gnu/  
+RUN  cp update_libc++/* /usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH`/  
 
 ##RUN dpkg -i \
 ##{% for deb in docker_syncd_clounix_pydebs.split(' ') -%}
@@ -52,7 +52,9 @@ COPY ["ipython_config.json", "/etc/ipython/"]
 
 RUN apt-get install -y build-essential      \
                        libc-dev             \
+{% if CONFIGURED_ARCH == "amd64" %}\
                        libc6-dev-i386
+{% endif %}
 
 
 ## Clean up

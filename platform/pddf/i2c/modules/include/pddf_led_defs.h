@@ -33,7 +33,7 @@ struct kobject *cur_state_kobj=NULL;
  * space JSON data file
  *****************************************/
 #define NAME_SIZE 32
-#define VALUE_SIZE 5
+#define VALUE_SIZE 8
 typedef enum {
     STATUS_LED_COLOR_OFF=0,
     STATUS_LED_COLOR_GREEN=1,
@@ -118,6 +118,7 @@ typedef struct
 
 typedef enum{
 	LED_SYS,
+	LED_SYS_PSU,
 	LED_PSU,
 	LED_FAN,
 	LED_FANTRAY,
@@ -131,6 +132,7 @@ typedef enum{
 char* LED_TYPE_STR[LED_TYPE_MAX] = 
 {
 	"LED_SYS",
+	"LED_SYS_PSU",
 	"LED_PSU",
 	"LED_FAN",
 	"LED_FANTRAY",

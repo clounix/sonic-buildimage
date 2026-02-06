@@ -32,6 +32,80 @@
 #include "pddf_client_defs.h"
 
 
+static int pddf_client_log_level = LOG_INFO;
+static int *log_level = &pddf_client_log_level;
+module_param_named(loglevel, pddf_client_log_level, int, 0640);
+MODULE_PARM_DESC(loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int cpld_log_level = LOG_INFO;
+EXPORT_SYMBOL(cpld_log_level);
+module_param_named(cpld_loglevel, cpld_log_level, int, 0640);
+MODULE_PARM_DESC(cpld_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int cpldmux_log_level = LOG_INFO;
+EXPORT_SYMBOL(cpldmux_log_level);
+module_param_named(cpldmux_loglevel, cpldmux_log_level, int, 0640);
+MODULE_PARM_DESC(cpldmux_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int fpgai2c_log_level = LOG_INFO;
+EXPORT_SYMBOL(fpgai2c_log_level);
+module_param_named(fpgai2c_loglevel, fpgai2c_log_level, int, 0640);
+MODULE_PARM_DESC(fpgai2c_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int fpgapci_log_level = LOG_INFO;
+EXPORT_SYMBOL(fpgapci_log_level);
+module_param_named(fpgapci_loglevel, fpgapci_log_level, int, 0640);
+MODULE_PARM_DESC(fpgapci_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int lpc_log_level = LOG_INFO;
+EXPORT_SYMBOL(lpc_log_level);
+module_param_named(lpc_loglevel, lpc_log_level, int, 0640);
+MODULE_PARM_DESC(lpc_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int xcvr_log_level = LOG_INFO;
+EXPORT_SYMBOL(xcvr_log_level);
+module_param_named(xcvr_loglevel, xcvr_log_level, int, 0640);
+MODULE_PARM_DESC(xcvr_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int mux_log_level = LOG_INFO;
+EXPORT_SYMBOL(mux_log_level);
+module_param_named(mux_loglevel, mux_log_level, int, 0640);
+MODULE_PARM_DESC(mux_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int gpio_log_level = LOG_INFO;
+EXPORT_SYMBOL(gpio_log_level);
+module_param_named(gpio_loglevel, gpio_log_level, int, 0640);
+MODULE_PARM_DESC(gpio_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int psu_log_level = LOG_INFO;
+EXPORT_SYMBOL(psu_log_level);
+module_param_named(psu_loglevel, psu_log_level, int, 0640);
+MODULE_PARM_DESC(psu_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int fan_log_level = LOG_INFO;
+EXPORT_SYMBOL(fan_log_level);
+module_param_named(fan_loglevel, fan_log_level, int, 0640);
+MODULE_PARM_DESC(fan_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int led_log_level = LOG_INFO;
+EXPORT_SYMBOL(led_log_level);
+module_param_named(led_loglevel, led_log_level, int, 0640);
+MODULE_PARM_DESC(led_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int sysstat_log_level = LOG_INFO;
+EXPORT_SYMBOL(sysstat_log_level);
+module_param_named(sysstat_loglevel, sysstat_log_level, int, 0640);
+MODULE_PARM_DESC(sysstat_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int wdt_log_level = LOG_INFO;
+EXPORT_SYMBOL(wdt_log_level);
+module_param_named(wdt_loglevel, wdt_log_level, int, 0640);
+MODULE_PARM_DESC(wdt_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
+
+int multifpgapci_log_level = LOG_INFO;
+EXPORT_SYMBOL(multifpgapci_log_level);
+module_param_named(multifpgapci_loglevel, multifpgapci_log_level, int, 0640);
+MODULE_PARM_DESC(multifpgapci_loglevel, "driver log level, 0:off 1:err 2:info 3:debug.");
 
 NEW_DEV_ATTR pddf_data={0};
 EXPORT_SYMBOL(pddf_data);
@@ -222,7 +296,7 @@ void add_device_table(char *name, void *ptr)
     if(!hdev)return;
     strcpy(hdev->name, name);
     hdev->data = ptr;
-    pddf_dbg(CLIENT, KERN_ERR "%s: Adding ptr 0x%p to the hash table\n", __FUNCTION__, ptr);
+    pddf_dbg(CLIENT, "%s: Adding ptr 0x%p to the hash table\n", __FUNCTION__, ptr);
     hash_add(htable, &hdev->node, get_hash(hdev->name));
 }
 EXPORT_SYMBOL(add_device_table);
@@ -249,7 +323,7 @@ void delete_device_table(char *name)
     
     hash_for_each(htable, i, dev, node) {
         if(strcmp(dev->name, name)==0) {
-            pddf_dbg(CLIENT, KERN_ERR "found entry to delete: %s  0x%p\n", dev->name, dev->data);
+            pddf_dbg(CLIENT, "found entry to delete: %s  0x%p\n", dev->name, dev->data);
             hash_del(&(dev->node));
         }
     }
@@ -262,7 +336,7 @@ void traverse_device_table(void )
     PDEVICE *dev=NULL;
     int i=0;
     hash_for_each(htable, i, dev, node) {
-        pddf_dbg(CLIENT, KERN_ERR "Entry[%d]: %s : 0x%p\n", i, dev->name, dev->data);
+        pddf_dbg(CLIENT, "Entry[%d]: %s : 0x%p\n", i, dev->name, dev->data);
     }
     showall = i;
 }
@@ -317,7 +391,7 @@ void __exit pddf_data_exit(void)
 
     kobject_put(device_kobj);
     kobject_put(pddf_kobj);
-    pddf_dbg(CLIENT, KERN_ERR "%s: Removed the kernle object for 'pddf' and 'device' \n", __FUNCTION__);
+    pddf_dbg(CLIENT, "%s: Removed the kernle object for 'pddf' and 'device' \n", __FUNCTION__);
     return;
 }
 

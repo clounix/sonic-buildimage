@@ -1,0 +1,13 @@
+{
+    "chassis": {
+        "CLX2000-48Y8C": {
+            "component": {
+                "CPLD-1":{},
+                "CPLD-2":{},
+                "CPLD-3":{},
+                "FPGA": {},
+                "BIOS": {}
+            }
+        }
+    }
+}

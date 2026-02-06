@@ -74,50 +74,54 @@ class PddfChassis(ChassisBase):
 
 
         # FANs
-        for i in range(self.platform_inventory.get('num_fantrays', 0)):
+        for i in range(self.platform_inventory['num_fantrays']):
             fandrawer = FanDrawer(i, self.pddf_obj, self.plugin_data)
             self._fan_drawer_list.append(fandrawer)
             self._fan_list.extend(fandrawer._fan_list)
 
         # PSUs
-        for i in range(self.platform_inventory.get('num_psus', 0)):
+        for i in range(self.platform_inventory['num_psus']):
             psu = Psu(i, self.pddf_obj, self.plugin_data)
             self._psu_list.append(psu)
 
         # OPTICs
-        for index in range(self.platform_inventory.get('num_ports', 0)):
+        for index in range(self.platform_inventory['num_ports']):
             sfp = Sfp(index, self.pddf_obj, self.plugin_data)
             self._sfp_list.append(sfp)
 
         # THERMALs
-        for i in range(self.platform_inventory.get('num_temps', 0)):
+        for i in range(self.platform_inventory['num_temps']):
             thermal = Thermal(i, self.pddf_obj, self.plugin_data)
             self._thermal_list.append(thermal)
 
         if voltage_sensor_present:
             # VOLTAGE SENSORs
-            for i in range(self.platform_inventory.get('num_voltage_sensors', 0)):
+            num_voltage_sensors = self.platform_inventory.get('num_voltage_sensors', 0)
+            for i in range(num_voltage_sensors):
                 voltage = VoltageSensor(i, self.pddf_obj, self.plugin_data)
                 self._voltage_sensor_list.append(voltage)
 
         if current_sensor_present:
             # CURRENT SENSORs
-            for i in range(self.platform_inventory.get('num_current_sensors', 0)):
+            num_current_sensors = self.platform_inventory.get('num_current_sensors', 0)
+            for i in range(num_current_sensors):
                 current = CurrentSensor(i, self.pddf_obj, self.plugin_data)
                 self._current_sensor_list.append(current)
 
         if asicthermal_present:
             # ASIC Thermal
-            position_offset = len(self._thermal_list)
-            for i in range(self.platform_inventory.get('num_asic_temps', 0)):
-                asicthermal = AsicThermal(i, position_offset, self.pddf_obj)
+            num_asic_temps = self.platform_inventory.get('num_asic_temps', 0)
+            for i in range(num_asic_temps):
+                asicthermal = AsicThermal(i, self.pddf_obj)
                 self._thermal_list.append(asicthermal)
 
         if component_present:
             # Components (Programmables)
-            for i in range(self.platform_inventory.get('num_components', 0)):
+            num_components = self.platform_inventory.get('num_components', 0)
+            for i in range(num_components):
                 component = Component(i, self.pddf_obj, self.plugin_data)
                 self._component_list.append(component)
+
 
     def get_name(self):
         """
@@ -169,16 +173,6 @@ class PddfChassis(ChassisBase):
             'XX:XX:XX:XX:XX:XX'
         """
         return self._eeprom.base_mac_addr()
-
-    def get_revision(self):
-        """
-        Retrieves the hardware revision for the chassis
-
-        Returns:
-            A string containing the hardware revision for this
-            chassis.
-        """
-        return self._eeprom.revision_str()
 
     def get_serial(self):
         """

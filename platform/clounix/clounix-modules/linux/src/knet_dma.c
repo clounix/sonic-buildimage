@@ -1,40 +1,6 @@
-/*******************************************************************************
- *  Copyright Statement:
- *  --------------------
- *  This software and the information contained therein are protected by
- *  copyright and other intellectual property laws and terms herein is
- *  confidential. The software may not be copied and the information
- *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
- *
- *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
- *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
- *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
- *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
- *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
- *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
- *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
- *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
- *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
- *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
- *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
- *
- *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
- *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
- *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
- *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
- *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
- *
- *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
- *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
- *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
- *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
- *
- *******************************************************************************/
-
 #include "knet_dev.h"
 #include "knet_pci.h"
+#include "knet_fault_event.h"
 #include <linux/pci.h>
 #include <linux/skbuff.h>
 
@@ -100,14 +66,15 @@ dma_alloc_retry_work(struct work_struct *work)
     uint32_t unit = channel->unit;
     uint32_t channel_id = channel->channel;
     int ret;
-    dbg_print(DBG_RX, "Processing alloc retry for unit %u, channel %u, failed_indx:%d\n", unit,
+    dbg_print(DBG_RX, "unit:%u Processing alloc retry for channel %u, failed_indx:%d\n", unit,
               channel_id, channel->failed_index);
 
     channel->alloc_fail_count++;
     while (1) {
         ret = clx_dma_drv(unit)->alloc_rx_buffer(unit, channel_id, channel->failed_index);
         if (ret != 0) {
-            printk(KERN_WARNING "DMA RX: alloc_rx_buffer retry failed, retrying...\n");
+            printk(KERN_WARNING "unit:%u DMA RX: alloc_rx_buffer retry failed, retrying...\n",
+                   unit);
             msleep(10);
             channel->retry_count++;
             continue;
@@ -123,10 +90,28 @@ dma_alloc_retry_work(struct work_struct *work)
         clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel_id);
         dbg_print(
             DBG_RX,
-            "DMA RX: alloc_rx_buffer succeeded, work_idx updated to %d.failed cnt:%d, retry cnt:%d\n",
-            channel->work_idx, channel->alloc_fail_count, channel->retry_count);
+            "unit:%u DMA RX: alloc_rx_buffer succeeded, work_idx updated to %d.failed cnt:%d, retry cnt:%d\n",
+            unit, channel->work_idx, channel->alloc_fail_count, channel->retry_count);
         break;
     }
+}
+
+int
+clx_dma_channel_restart(uint32_t unit, uint32_t channel)
+{
+    /* 1. mask/clear the dma interrupt */
+    clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
+    clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
+
+    clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
+
+    /* 2. restart the dma channel */
+    clx_dma_drv(unit)->restart_channel(unit, channel);
+
+    /* 3. unmask the dma interrupt */
+    clx_intr_drv(unit)->unmask_dma_channel_error_irq(unit, channel);
+    clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
+    return 0;
 }
 
 int
@@ -189,19 +174,39 @@ clx_dma_init(void)
                 clx_dma_drv(unit)->dma_channel[channel].work_idx = clx_dma_drv(unit)->ring_size - 1;
                 clx_dma_drv(unit)->set_work_idx(unit, channel,
                                                 clx_dma_drv(unit)->dma_channel[channel].work_idx);
-            }
+                if(NULL != clx_dma_drv(unit)->rxfifo_cfg_set) {
+                    clx_dma_drv(unit)->rxfifo_cfg_set(unit, channel);
+                }
+            } else {
+                /* set txfifo data splice for cpu tx channel */
+                if(NULL != clx_dma_drv(unit)->txfifo_data_splice_cfg) {
+                    if(0 != clx_dma_drv(unit)->txfifo_data_splice_cfg(unit, channel, true, false, false)) {
+                        dbg_print(DBG_ERR, "unit:%u, channel:%d, failed to set txfifo data splice cfg\n", unit, channel);
+                        return -1;
+                    }
+                }
 
-            /* 4. unmask the dma interrupt */
-            clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
-            clx_intr_drv(unit)->unmask_dma_channel_error_irq(unit, channel);
+                clx_dma_drv(unit)->dma_channel[channel].work_idx = 0;
+                clx_dma_drv(unit)->set_work_idx(unit, channel,
+                                                clx_dma_drv(unit)->dma_channel[channel].work_idx);
 
-            /* 5. enable the tx dma channel */
-            if (channel >= clx_dma_drv(unit)->rx_channel_num) {
+                /* 4. unmask the dma interrupt */
+                clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
+                clx_intr_drv(unit)->unmask_dma_channel_error_irq(unit, channel);
+
+                /* 5. enable the dma channel */
                 clx_dma_drv(unit)->enable_channel(unit, channel);
-                dbg_print(DBG_INFO, "channel:%d work_idx:%d, pop_idx:%d\n", channel,
-                          clx_dma_drv(unit)->dma_channel[channel].work_idx,
-                          clx_dma_drv(unit)->dma_channel[channel].pop_idx);
+
             }
+
+            dbg_print(DBG_INFO, "unit:%u channel:%d work_idx:%d, pop_idx:%d\n", unit, channel,
+                      clx_dma_drv(unit)->dma_channel[channel].work_idx,
+                      clx_dma_drv(unit)->dma_channel[channel].pop_idx);
+        }
+
+        /* set desc num thredshould and ae thredshould */
+        if (NULL != clx_dma_drv(unit)->set_descriptor_cfg) {
+            clx_dma_drv(unit)->set_descriptor_cfg(unit);
         }
     }
 
@@ -220,6 +225,10 @@ clx_dma_deinit(void)
              channel++) {
             /* 1. disable the dma channel */
             clx_dma_drv(unit)->disable_channel(unit, channel);
+            clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
+            clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
+            clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
+            clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
 
             if (channel < clx_dma_drv(unit)->rx_channel_num) {
                 for (desc_idx = 0; desc_idx < clx_dma_drv(unit)->ring_size; desc_idx++) {
@@ -241,6 +250,8 @@ dma_enable_channel(uint32_t unit)
 {
     uint32_t channel;
     for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
+        clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
+        clx_intr_drv(unit)->unmask_dma_channel_error_irq(unit, channel);
         clx_dma_drv(unit)->enable_channel(unit, channel);
     }
     return 0;
@@ -252,6 +263,11 @@ dma_disable_channel(uint32_t unit)
     uint32_t channel;
     for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
         clx_dma_drv(unit)->disable_channel(unit, channel);
+        clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
+        clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
+        clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
+        clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
+
     }
     return 0;
 }
@@ -262,7 +278,8 @@ dma_alloc_rx_packet(uint32_t unit)
     struct dma_rx_packet *rx_packet = NULL;
     rx_packet = (struct dma_rx_packet *)kmalloc(sizeof(struct dma_rx_packet), GFP_ATOMIC);
     if (!rx_packet) {
-        dbg_print(DBG_CRIT, "Failed to allocate packet context\n");
+        dbg_print(DBG_CRIT, "unit:%u Failed to allocate packet context\n", unit);
+        knet_fault_event_report(KNET_FAULT_EVENT_KENT_DMA_ALLOC_FAIL);
         return NULL;
     }
     memset(rx_packet, 0x0, sizeof(struct dma_rx_packet));
@@ -276,7 +293,7 @@ dma_free_rx_packet(uint32_t unit, struct dma_rx_packet *rx_packet, bool delete_s
     struct dma_rx_frag_buffer *rx_frag, *tmp;
 
     if (NULL == rx_packet) {
-        dbg_print(DBG_WARN, "rx_packet param error!\n");
+        dbg_print(DBG_WARN, "unit:%u rx_packet param error!\n", unit);
         return -EINVAL;
     }
 
@@ -287,7 +304,7 @@ dma_free_rx_packet(uint32_t unit, struct dma_rx_packet *rx_packet, bool delete_s
                 dev_kfree_skb_any(rx_frag->ptr_skb);
                 rx_frag->ptr_skb = NULL;
             } else {
-                dbg_print(DBG_CRIT, "rx_frag->ptr_skb is NULL!\n");
+                dbg_print(DBG_CRIT, "unit:%u rx_frag->ptr_skb is NULL!\n", unit);
             }
         }
         rx_packet->list_count--;
@@ -342,8 +359,10 @@ dma_rx_tasklet_func(unsigned long data)
     spin_lock(&ptr_channel->lock);
     pop_idx = ptr_channel->pop_idx;
     work_idx = ptr_channel->work_idx;
-    dbg_print(DBG_RX, "sw1 pop:%d,work:%d\n", ptr_channel->pop_idx, ptr_channel->work_idx);
+    dbg_print(DBG_RX, "unit:%u sw1 pop:%d,work:%d\n", unit, ptr_channel->pop_idx,
+              ptr_channel->work_idx);
     clx_dma_drv(unit)->dma_channel[channel].cnt.interrupts++;
+    clx_misc_dev->test_perf.interrupt_count++; // Track interrupt count
 
     while (desc_processed++ < clx_dma_drv(unit)->ring_size) {
         if (ptr_channel->current_packet == NULL) {
@@ -358,8 +377,9 @@ dma_rx_tasklet_func(unsigned long data)
             break;
         }
 
-        dbg_print(DBG_RX, "rx_packet, rx_complete:%d, list_count:%d, packet_len:%d\n",
+        dbg_print(DBG_RX, "unit:%u rx_packet, rx_complete:%d, list_count:%d, packet_len:%d\n", unit,
                   rx_packet->rx_complete, rx_packet->list_count, rx_packet->packet_len);
+
         rc = clx_dma_drv(unit)->alloc_rx_buffer(unit, channel, pop_idx);
         pop_idx++;
         pop_idx %= clx_dma_drv(unit)->ring_size;
@@ -367,7 +387,7 @@ dma_rx_tasklet_func(unsigned long data)
         if (0 != rc) {
             ptr_channel->alloc_failed = true;
             ptr_channel->failed_index = (work_idx + 1) % clx_dma_drv(unit)->ring_size;
-            dbg_print(DBG_RX, "alloc failed pop:%d,work:%d\n", pop_idx, work_idx);
+            dbg_print(DBG_ERR, "unit:%u alloc failed pop:%d,work:%d\n", unit, pop_idx, work_idx);
 
             break;
         }
@@ -380,8 +400,9 @@ dma_rx_tasklet_func(unsigned long data)
         /* get the packet destination */
         ret = clx_netif_drv(unit)->get_pkt_dst(unit, rx_packet, &port_di, &reason);
         if (0 != ret) {
-            kfree(rx_packet);
-            continue;
+            dma_free_rx_packet(unit, rx_packet, true);
+            ptr_channel->current_packet = NULL;
+            break;
         }
 
         rule = clx_netif_match_profile(unit, port_di, reason, rx_packet);
@@ -395,32 +416,33 @@ dma_rx_tasklet_func(unsigned long data)
             case ACTION_NETDEV:
                 ret = clx_netif_netdev_receive_skb(unit, rx_packet, port_di);
                 if (0 != ret) {
-                    dbg_print(DBG_RX, "netdev_receive_skb failed. unit=%d, port_di=%d, ret=%d\n",
+                    dbg_print(DBG_ERR, "unit:%u netdev_receive_skb failed. port_di=%d, ret=%d\n",
                               unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                 }
                 break;
-
             case ACTION_NETLINK:
                 ret = clx_netif_drv(unit)->parse_netlink_info(unit, rx_packet, &netlink_cookie);
                 if (0 != ret) {
-                    dbg_print(DBG_RX, "parse_netlink_info failed. unit=%d, ret=%d\n", unit, ret);
+                    dbg_print(DBG_ERR, "unit:%u parse_netlink_info failed. ret=%d\n", unit, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
                 netlink_cookie.nl = &rule->netlink;
                 ret = netif_netlink_reveive_skb(unit, rx_packet, port_di, &netlink_cookie);
                 if (0 != ret) {
-                    dbg_print(DBG_RX, "netlink_reveive_skb failed. unit=%d, port_di=%d, ret=%d\n",
+                    dbg_print(DBG_ERR, "unit:%u netlink_reveive_skb failed. port_di=%d, ret=%d\n",
                               unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
                 break;
             case ACTION_SDK:
-                dbg_print(DBG_RX, "enqueue size:%d\n", clx_dma_drv(unit)->rx_queue.queue_size);
+                dbg_print(DBG_RX, "unit:%u enqueue size:%d\n", unit,
+                          clx_dma_drv(unit)->rx_queue.queue_size);
                 ret = clx_dma_rx_packet_queue_enqueue(&clx_dma_drv(unit)->rx_queue, rx_packet);
                 if (ret != 0) {
+                    dbg_print(DBG_ERR, "unit:%u enqueue failed. ret=%d\n", unit, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
@@ -432,7 +454,7 @@ dma_rx_tasklet_func(unsigned long data)
                 ret = clx_netif_netdev_receive_send_ifa(unit, rx_packet, port_di);
                 if (0 != ret) {
                     dbg_print(
-                        DBG_RX,
+                        DBG_ERR,
                         "clx_netif_netdev_receive_send_ifa failed. unit=%d, port_di=%d, ret=%d\n",
                         unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
@@ -448,7 +470,8 @@ dma_rx_tasklet_func(unsigned long data)
     ptr_channel->pop_idx = pop_idx;
     ptr_channel->work_idx = work_idx;
     clx_dma_drv(unit)->set_work_idx(unit, channel, ptr_channel->work_idx);
-    dbg_print(DBG_RX, "sw2 pop:%d,work:%d\n", ptr_channel->pop_idx, ptr_channel->work_idx);
+    dbg_print(DBG_RX, "unit:%u sw2pop:%d,work:%d\n", unit, ptr_channel->pop_idx,
+              ptr_channel->work_idx);
     spin_unlock(&ptr_channel->lock);
     if (ptr_channel->alloc_failed) {
         schedule_work(&ptr_channel->alloc_work); // schedule work
@@ -467,6 +490,7 @@ dma_tx_tasklet_func(unsigned long data)
 
     spin_lock(&ptr_channel->lock);
     clx_dma_drv(unit)->dma_channel[channel].cnt.interrupts++;
+    clx_misc_dev->test_perf.interrupt_count++; // Track interrupt count
 
     clx_dma_drv(unit)->tx_callback(unit, channel);
     clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
@@ -480,14 +504,8 @@ dma_error_tasklet_func(unsigned long data)
 int
 clx_ioctl_rx_start(uint32_t unit, unsigned long arg)
 {
-    uint32_t channel;
     for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
-            clx_dma_drv(unit)->enable_channel(unit, channel);
-            dbg_print(DBG_INFO, "channel:%d work_idx:%d, pop_idx:%d\n", channel,
-                      clx_dma_drv(unit)->dma_channel[channel].work_idx,
-                      clx_dma_drv(unit)->dma_channel[channel].pop_idx);
-        }
+        dma_enable_channel(unit);
     }
     return 0;
 }
@@ -495,11 +513,8 @@ clx_ioctl_rx_start(uint32_t unit, unsigned long arg)
 int
 clx_ioctl_rx_stop(uint32_t unit, unsigned long arg)
 {
-    uint32_t channel;
     for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
-            clx_dma_drv(unit)->disable_channel(unit, channel);
-        }
+        dma_disable_channel(unit);
     }
     return 0;
 }
@@ -514,7 +529,7 @@ clx_ioctl_get_rx_cnt(uint32_t unit, unsigned long arg)
         return -EFAULT;
 
     if (k_cnt.channel >= clx_dma_drv(unit)->rx_channel_num) {
-        dbg_print(DBG_TX, "***Error***, rx channel %u is out of valid range (0-%u)\n",
+        dbg_print(DBG_TX, "unit:%u ***Error***, rx channel %u is out of valid range (0-%u)\n", unit,
                   k_cnt.channel, clx_dma_drv(unit)->rx_channel_num - 1);
         return -EINVAL;
     }
@@ -543,7 +558,7 @@ clx_ioctl_get_tx_cnt(uint32_t unit, unsigned long arg)
         return -EFAULT;
 
     if (k_cnt.channel >= clx_dma_drv(unit)->tx_channel_num + clx_dma_drv(unit)->rx_channel_num) {
-        dbg_print(DBG_TX, "***Error***, tx channel %u is out of valid range (4-%u)\n",
+        dbg_print(DBG_TX, "unit:%u ***Error***, tx channel %u is out of valid range (4-%u)\n", unit,
                   k_cnt.channel,
                   clx_dma_drv(unit)->tx_channel_num + clx_dma_drv(unit)->rx_channel_num - 1);
         return -EINVAL;
@@ -569,8 +584,8 @@ clx_ioctl_clear_rx_cnt(uint32_t unit, unsigned long arg)
 
     // Validate the channel index
     if (channel >= clx_dma_drv(unit)->rx_channel_num) {
-        dbg_print(DBG_RX, "***Error***, rx channel %u is out of valid range (0-%u)\n", channel,
-                  clx_dma_drv(unit)->rx_channel_num - 1);
+        dbg_print(DBG_RX, "unit:%u ***Error***, rx channel %u is out of valid range (0-%u)\n", unit,
+                  channel, clx_dma_drv(unit)->rx_channel_num - 1);
         return -EINVAL;
     }
 
@@ -594,7 +609,8 @@ clx_ioctl_clear_tx_cnt(uint32_t unit, unsigned long arg)
 
     // Validate the channel index
     if (channel >= clx_dma_drv(unit)->tx_channel_num + clx_dma_drv(unit)->rx_channel_num) {
-        dbg_print(DBG_TX, "***Error***, tx channel %u is out of valid range (4-%u)\n", channel,
+        dbg_print(DBG_TX, "unit:%u ***Error***, tx channel %u is out of valid range (4-%u)\n", unit,
+                  channel,
                   clx_dma_drv(unit)->tx_channel_num + clx_dma_drv(unit)->rx_channel_num - 1);
         return -EINVAL;
     }
@@ -602,4 +618,12 @@ clx_ioctl_clear_tx_cnt(uint32_t unit, unsigned long arg)
     memset(&clx_dma_drv(unit)->dma_channel[channel].cnt, 0x0, sizeof(struct clx_dma_channel_cnt));
 
     return 0;
+}
+
+void
+dma_general_tasklet_func(unsigned long data)
+{
+    clx_dma_channel_cookie_t channel_cookie = *(clx_dma_channel_cookie_t *)data;
+    dbg_print(DBG_DEBUG, "dma_general_tasklet_func unit:%d, channel:%d\n", channel_cookie.unit,
+              channel_cookie.channel);
 }

@@ -28,6 +28,8 @@
 #include "pddf_client_defs.h"
 #include "pddf_fpgapci_defs.h"
 
+static int *log_level = &fpgapci_log_level;
+
 FPGA_OPS_DATA tmp_pddf_fpga_ops_data={0};
 extern int pddf_fpgapci_register(FPGA_OPS_DATA *ptr);
 
@@ -52,6 +54,10 @@ PDDF_DATA_ATTR(i2c_ch_size, S_IWUSR|S_IRUGO, show_pddf_data,
                 store_pddf_data, PDDF_UINT32, sizeof(uint32_t), (void*)&tmp_pddf_fpga_ops_data.i2c_ch_size, NULL);
 PDDF_DATA_ATTR(virt_i2c_ch, S_IWUSR|S_IRUGO, show_pddf_data,
                 store_pddf_data, PDDF_UINT32, sizeof(uint32_t), (void*)&tmp_pddf_fpga_ops_data.virt_i2c_ch, NULL);
+PDDF_DATA_ATTR(port_mgr_virt_bus, S_IWUSR|S_IRUGO, show_pddf_data,
+                store_pddf_data, PDDF_UINT32, sizeof(uint32_t), (void*)&tmp_pddf_fpga_ops_data.port_mgr_virt_bus, NULL);
+PDDF_DATA_ATTR(port_mgr_port_num, S_IWUSR|S_IRUGO, show_pddf_data,
+                store_pddf_data, PDDF_INT_DEC, sizeof(uint32_t), (void*)&tmp_pddf_fpga_ops_data.port_mgr_port_num, NULL);
 PDDF_DATA_ATTR(dev_ops , S_IWUSR|S_IRUGO, show_pddf_data,
                 dev_operation, PDDF_CHAR, NAME_SIZE, (void*)&tmp_pddf_fpga_ops_data, NULL);
 
@@ -64,6 +70,8 @@ struct attribute* attrs_fpgapci[]={
 	&attr_i2c_ch_base_offset.dev_attr.attr,
 	&attr_i2c_ch_size.dev_attr.attr,
 	&attr_virt_i2c_ch.dev_attr.attr,
+    &attr_port_mgr_virt_bus.dev_attr.attr,
+    &attr_port_mgr_port_num.dev_attr.attr,
 	&attr_dev_ops.dev_attr.attr,
 	NULL,
 };
@@ -73,20 +81,26 @@ struct attribute_group attr_group_fpgapci={
 
 ssize_t dev_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count)
 {
-	if(strncmp(buf, "fpgapci_init", strlen("fpgapci_init"))==0 ) {
-		struct pddf_data_attribute *_ptr = (struct pddf_data_attribute *)da;
-		FPGA_OPS_DATA* pddf_fpga_ops_data=(FPGA_OPS_DATA*)_ptr->addr;
-		pddf_dbg(FPGA, KERN_INFO "%s: pddf_fpga_ops_data vendor_id=0x%x device_id=0x%x virt_bus=0x%x:%d "
-              " data_base_offset=0x%x data_size=0x%x i2c_ch_base_offset=0x%x i2c_ch_size=0x%x virt_i2c_ch=%d",
-		      __FUNCTION__, pddf_fpga_ops_data->vendor_id, pddf_fpga_ops_data->device_id,
+    struct pddf_data_attribute *_ptr = NULL;
+    FPGA_OPS_DATA *pddf_fpga_ops_data = NULL;
+
+    if(strncmp(buf, "fpgapci_init", strlen("fpgapci_init"))==0 ) {
+        _ptr = (struct pddf_data_attribute *)da;
+        pddf_fpga_ops_data = (FPGA_OPS_DATA*)(_ptr->addr);
+
+        pddf_dbg(FPGA, "%s: pddf_fpga_ops_data vendor_id=0x%x device_id=0x%x virt_bus=0x%x:%d "
+              " data_base_offset=0x%x data_size=0x%x i2c_ch_base_offset=0x%x i2c_ch_size=0x%x virt_i2c_ch=%d"
+               " port_mgr_virt_bus=0x%x port_mgr_port_num = %d ",
+              __FUNCTION__, pddf_fpga_ops_data->vendor_id, pddf_fpga_ops_data->device_id,
               pddf_fpga_ops_data->virt_bus, pddf_fpga_ops_data->virt_bus,
               pddf_fpga_ops_data->data_base_offset, pddf_fpga_ops_data->data_size,
-              pddf_fpga_ops_data->i2c_ch_base_offset, pddf_fpga_ops_data->i2c_ch_size, pddf_fpga_ops_data->virt_i2c_ch);
+              pddf_fpga_ops_data->i2c_ch_base_offset, pddf_fpga_ops_data->i2c_ch_size, pddf_fpga_ops_data->virt_i2c_ch,
+              pddf_fpga_ops_data->port_mgr_virt_bus,pddf_fpga_ops_data->port_mgr_port_num);
 
 		pddf_fpgapci_register(pddf_fpga_ops_data);
 	}
 	else {
-		pddf_dbg(FPGA, KERN_ERR "PDDF_ERROR %s: Invalid value for dev_ops %s\n", __FUNCTION__, buf);
+        pddf_err(FPGA, "PDDF_ERROR %s: Invalid value for dev_ops %s\n", __FUNCTION__, buf);
 	}
 	return(count);
 }
@@ -105,19 +119,19 @@ int __init pddf_fpga_data_init(void)
 
         device_kobj = get_device_i2c_kobj();
         if(!device_kobj) {
-		pddf_dbg(FPGA, KERN_ERR "%s get_device_i2c_kobj failed ..\n", __FUNCTION__);
+        pddf_err(FPGA, "%s get_device_i2c_kobj failed ..\n", __FUNCTION__);
                 return -ENOMEM;
 	}
 	fpgapci_kobj = kobject_create_and_add("fpgapci", device_kobj);
 	if(!fpgapci_kobj) {
-		pddf_dbg(FPGA, KERN_ERR "%s create fpgapci kobj failed ..\n", __FUNCTION__);
+        pddf_err(FPGA, "%s create fpgapci kobj failed ..\n", __FUNCTION__);
 		return -ENOMEM;
 	}
 
 	ret = sysfs_create_group(fpgapci_kobj, &attr_group_fpgapci);
 	if (ret)
 	{
-		pddf_dbg(FPGA, KERN_ERR "%s create fpga sysfs attributes failed ..\n", __FUNCTION__);
+        pddf_err(FPGA, "%s create fpga sysfs attributes failed ..\n", __FUNCTION__);
 		return ret;
 	}
 
@@ -128,9 +142,9 @@ int __init pddf_fpga_data_init(void)
 
 void  __exit pddf_fpga_data_exit(void)
 {
-	pddf_dbg(FPGA, KERN_INFO "%s ..\n", __FUNCTION__);
-	KOBJ_FREE(fpgapci_kobj)
-	return;
+    pddf_dbg(FPGA, "%s ..\n", __FUNCTION__);
+    KOBJ_FREE(fpgapci_kobj)
+    return;
 }
 
 

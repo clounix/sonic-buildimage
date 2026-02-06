@@ -20,10 +20,12 @@
 #include <linux/slab.h>
 #include <linux/list.h>
 #include <linux/dmi.h>
+#include "pddf_client_defs.h"
 #include "pddf_cpld_defs.h"
 
 extern PDDF_CPLD_DATA pddf_cpld_data;
 
+static int *log_level = &cpld_log_level;
 
 static LIST_HEAD(cpld_client_list);
 static struct mutex	 list_lock;
@@ -172,13 +174,13 @@ static void board_i2c_cpld_add_client(struct i2c_client *client)
 	struct cpld_client_node *node = kzalloc(sizeof(struct cpld_client_node), GFP_KERNEL);
 	
 	if (!node) {
-		dev_dbg(&client->dev, "Can't allocate cpld_client_node (0x%x)\n", client->addr);
+		pddf_dbg(CPLD, "%s Can't allocate cpld_client_node (0x%x)\n", dev_name(&client->dev), client->addr);
 		return;
 	}
 	
 	node->client = client;
 	strcpy(node->name, (char *)client->dev.platform_data);
-	dev_dbg(&client->dev, "Adding %s to the cpld client list\n", node->name);
+	pddf_dbg(CPLD, "%s Adding %s to the cpld client list\n", dev_name(&client->dev), node->name);
 
 	mutex_lock(&list_lock);
 	list_add(&node->list, &cpld_client_list);
@@ -217,7 +219,7 @@ static int board_i2c_cpld_probe(struct i2c_client *client,
 	int status;
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
-		dev_dbg(&client->dev, "i2c_check_functionality failed (0x%x)\n", client->addr);
+		pddf_dbg(CPLD, "%s i2c_check_functionality failed (0x%x)\n", dev_name(&client->dev), client->addr);
 		status = -EIO;
 		goto exit;
 	}
@@ -228,7 +230,7 @@ static int board_i2c_cpld_probe(struct i2c_client *client,
         goto exit;
     }
 
-	dev_dbg(&client->dev, "chip found\n");
+	pddf_dbg(CPLD, "%s chip found\n", dev_name(&client->dev));
 	board_i2c_cpld_add_client(client);
 	
 	return 0;

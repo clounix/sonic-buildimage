@@ -34,6 +34,8 @@
 #include "pddf_client_defs.h"
 #include "pddf_cpldmux_defs.h"
 
+static int *log_level = &cpldmux_log_level;
+
 PDDF_CPLDMUX_DATA pddf_cpldmux_data={0};
 PDDF_CPLDMUX_CHAN_DATA pddf_cpldmux_chan_data={0};
 EXPORT_SYMBOL(pddf_cpldmux_data);
@@ -87,7 +89,7 @@ static ssize_t do_chan_operation(struct device *dev, struct device_attribute *da
     PDDF_CPLDMUX_DATA *cpldmux_data = (PDDF_CPLDMUX_DATA *)(ptr->addr);
     int index;
 
-    pddf_dbg(CPLDMUX, KERN_ERR "%s: Adding channel %d\n", __FUNCTION__, pddf_cpldmux_chan_data.chan_num);
+    pddf_dbg(CPLDMUX, "%s: Adding channel %d\n", __FUNCTION__, pddf_cpldmux_chan_data.chan_num);
     index = pddf_cpldmux_chan_data.chan_num;
     cpldmux_data->chan_data[index] = pddf_cpldmux_chan_data;
 
@@ -117,7 +119,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 					sizeof(PDDF_CPLDMUX_CHAN_DATA),
 			GFP_KERNEL);
 		if (!cpldmux_platform_data) {
-			printk("%s(%d): kzalloc failure.\n", __func__,
+			pddf_err(CPLDMUX, "%s(%d): kzalloc failure.\n", __func__,
 			       __LINE__);
 			goto clear_data;
 		}
@@ -136,12 +138,13 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		plat_dev = platform_device_alloc(device_ptr->dev_type,
 						 device_ptr->dev_id);
 		if (!plat_dev) {
-			printk("%s(%d): platform_device_alloc failure.\n",
+			pddf_err(CPLDMUX, "%s(%d): platform_device_alloc failure.\n",
 			       __func__, __LINE__);
 			goto free_data;
 		}
 
 		plat_dev->dev.platform_data = cpldmux_platform_data;
+		pddf_info(CPLDMUX, "Creating a %s platform_device 0x%p, platform_data 0x%p\n", plat_dev->name, (void *)plat_dev, (void *)cpldmux_platform_data);
 		if (strncmp(device_ptr->dev_type, "cpld_mux",
 			    strlen("cpld_mux")) == 0) {
 			cpldmux_platform_data->dev_type = CPLD_MUX;
@@ -149,13 +152,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 			client_ptr = (struct i2c_client *)get_device_table(
 				cpldmux_data->cpld_name);
 			if (client_ptr == NULL) {
-				pddf_dbg(
-					CPLDMUX,
-					KERN_ERR
-					"Unable to get the CPLD client %s for %s cpldmux\n",
-					cpldmux_data->cpld_name,
-					device_ptr->i2c_name);
-				printk(KERN_ERR
+				pddf_err(CPLDMUX,
 				       "Unable to get the CPLD client %s for %s cpldmux\n",
 				       cpldmux_data->cpld_name,
 				       device_ptr->i2c_name);
@@ -169,7 +166,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 				cpldmux_data->cpld_name
 			);
 			if (pci_dev == NULL) {
-				printk(KERN_ERR
+				pddf_err(CPLDMUX,
 				       "PDDF_CPLDMUX: Unable to get pci_dev of %s for %s\n",
 				       cpldmux_data->cpld_name,
 				       device_ptr->i2c_name);
@@ -182,17 +179,15 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 			       __FUNCTION__);
 			goto free_data;
 		}
-		pddf_dbg(
+		pddf_info(
 			CPLDMUX,
-			KERN_ERR
 			"Creating a %s platform_device 0x%p, platform_data 0x%p\n",
 			plat_dev->name, (void *)plat_dev,
 			(void *)cpldmux_platform_data);
 		ret = platform_device_add(plat_dev);
 		if (ret) {
-			pddf_dbg(
+			pddf_err(
 				CPLDMUX,
-				KERN_ERR
 				"Unable to create cpld_mux (%s) device: Error %d\n",
 				device_ptr->i2c_name, ret);
 			goto free_data;
@@ -207,20 +202,20 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 		plat_dev = (struct platform_device *)get_device_table(device_ptr->i2c_name);
 		if (plat_dev)
 		{
-			pddf_dbg(CPLDMUX, KERN_ERR "Removing %s device: 0x%p\n", device_ptr->i2c_name, (void *)plat_dev);
-			pddf_dbg(CPLDMUX, KERN_ERR "Freeing the memory held by device: 0x%p\n", (void *)plat_dev);
+			pddf_dbg(CPLDMUX, "Removing %s device: 0x%p\n", device_ptr->i2c_name, (void *)plat_dev);
+            pddf_dbg(CPLDMUX, "Freeing the memory held by device: 0x%p\n", (void *)plat_dev);
 			pci_dev_put(((PDDF_CPLDMUX_PDATA *)plat_dev->dev.platform_data)->fpga_pci_dev);
 			platform_device_del(plat_dev);
 			delete_device_table(device_ptr->i2c_name);
 		}
 		else
 		{
-			printk(KERN_ERR "Unable to get the client handle for %s\n", device_ptr->i2c_name);
+			pddf_err(CPLDMUX, "Unable to get the client handle for %s\n", device_ptr->i2c_name);
 		}
 	}
 	else
 	{
-		printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+		pddf_err(CPLDMUX, "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
 	}
     goto clear_data;
 
@@ -229,9 +224,8 @@ free_data:
     cpldmux_platform_data = plat_dev->dev.platform_data;
     if (cpldmux_platform_data)
     {
-        printk(KERN_ERR "%s: Unable to register a cpldmux device. Freeing the platform data\n", __FUNCTION__);
+        pddf_err(CPLDMUX, "%s: Unable to register a cpldmux device. Freeing the platform data\n", __FUNCTION__);
         kfree(cpldmux_platform_data);
-        plat_dev->dev.platform_data = NULL;
     }
 
     /* Put the platform device structure */
@@ -279,7 +273,7 @@ int __init cpldmux_data_init(void)
         kobject_put(cpldmux_kobj);
         return ret;
     }
-    pddf_dbg(CPLDMUX, "CREATED PDDF I2C CLIENTS CREATION SYSFS GROUP\n");
+    pddf_info(CPLDMUX, "CREATED PDDF I2C CLIENTS CREATION SYSFS GROUP\n");
     return ret;
 }
 
@@ -289,7 +283,7 @@ void __exit cpldmux_data_exit(void)
 	sysfs_remove_group(cpldmux_kobj, &pddf_cpldmux_client_data_group);
 	sysfs_remove_group(cpldmux_kobj, &pddf_clients_data_group);
     kobject_put(cpldmux_kobj);
-    pddf_dbg(CPLDMUX, KERN_ERR "%s: Removed the kobjects for 'cpldmux'\n",__FUNCTION__);
+    pddf_info(CPLDMUX, "%s: Removed the kobjects for 'cpldmux'\n",__FUNCTION__);
     return;
 }
 

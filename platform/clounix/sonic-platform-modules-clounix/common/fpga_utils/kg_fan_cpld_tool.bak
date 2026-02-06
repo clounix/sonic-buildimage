@@ -1,0 +1,292 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/i2c.h>
+#include <linux/i2c-dev.h>
+
+#define SLAVE_ADDR (0x3c)
+
+#define DEV_CFG (0xc1)
+#define DEV_WR_FLASH (0xc2)
+#define DEV_CLEAN_INTERRUPT (0xc3)
+#define DEV_READ_INTERRUPT (0xc4)
+#define DEV_ID (0xc5)
+
+#define DEF_CFG (0xf0)
+#define READ_FLASH_ID (0x9f)
+#define WRITE_ENABLE (0x06)
+#define PAGE_WRITE (0x02)
+#define PAGE_READ (0x03)
+#define ERASE_CMD (0x20)
+#define READ_FLASH_STATUS (0x5)
+
+#define MAX_SIZE (512*1024)
+#define SEC_SIZE (4*1024)
+#define PAGE_SIZE (256)
+
+static int io_fd, img_fd = 0;
+static int adap_num = 0;
+
+static int i2c_write(char addr, unsigned char *data, int cnt)
+{
+    struct i2c_rdwr_ioctl_data i2c_data;
+    int ret;
+
+    i2c_data.nmsgs = 1;
+    i2c_data.msgs = (struct i2c_msg *)malloc(i2c_data.nmsgs * sizeof(struct i2c_msg));
+    i2c_data.msgs[0].addr = addr;
+    i2c_data.msgs[0].flags = 0;
+    i2c_data.msgs[0].buf = data;
+    i2c_data.msgs[0].len = cnt;
+    ret = ioctl(io_fd, I2C_RDWR, &i2c_data);
+    free(i2c_data.msgs);
+    usleep(100*1000);
+    return ret;
+}
+
+static int i2c_read(char addr, unsigned char *data, int cnt)
+{
+    struct i2c_rdwr_ioctl_data i2c_data;
+    int ret;
+
+    i2c_data.nmsgs = 1;
+    i2c_data.msgs = (struct i2c_msg *)malloc(i2c_data.nmsgs * sizeof(struct i2c_msg));
+    i2c_data.msgs[0].addr = addr;
+    i2c_data.msgs[0].flags = I2C_M_RD;
+    i2c_data.msgs[0].buf = data;
+    i2c_data.msgs[0].len = cnt;
+    ret = ioctl(io_fd, I2C_RDWR, &i2c_data);
+    free(i2c_data.msgs);
+    usleep(100*1000);
+    return ret;
+}
+
+static void rst_cfg(void)
+{
+    unsigned char cfg[2];
+    cfg[0] = DEV_CFG;
+    cfg[1] = DEF_CFG;
+    i2c_write(SLAVE_ADDR, cfg, 2);
+    sleep(2);
+    return;
+}
+
+static void clean_slave_interrupt(void)
+{
+    unsigned char cmd[1];
+    cmd[0] = DEV_CLEAN_INTERRUPT;
+    i2c_write(SLAVE_ADDR, cmd, 1);
+    return;
+}
+
+static int get_slave_interrupt(void)
+{
+    unsigned char buff[2];
+    buff[0] = DEV_READ_INTERRUPT;
+    i2c_write(SLAVE_ADDR, buff, 1);
+    i2c_read(SLAVE_ADDR, buff, 2);
+    if (((buff[0] & 0x1) == 0) && ((buff[1] & 0x1) == 0))
+        return 1;
+    return 0;
+}
+
+static void write_enable(void)
+{
+    unsigned char buff[3];
+    buff[0] = DEV_WR_FLASH;
+    buff[1] = WRITE_ENABLE;
+    buff[2] =  0x0;
+    i2c_write(SLAVE_ADDR, buff, 3);
+    printf("write enable\n");
+    return;
+}
+
+static int read_flash_status(void)
+{
+    unsigned char buff[6];
+
+    buff[0] = DEV_WR_FLASH;
+    buff[1] = READ_FLASH_STATUS;
+    buff[2] =  0x0;
+    buff[3] =  0x0;
+    buff[4] =  0x0;
+    buff[5] =  0x0;
+    i2c_write(SLAVE_ADDR, buff, 6);
+    while (get_slave_interrupt() == 0) {
+        printf("get irq status fail at %s[%d]\n", __func__, __LINE__);
+        sleep(1);
+    }
+    clean_slave_interrupt();
+    i2c_read(SLAVE_ADDR, buff, 4);
+    printf("%s[%d] %x %x %x %x\n", __func__, __LINE__, buff[0], buff[1], buff[2], buff[3]);
+    if ((buff[1] & 0x1) ||
+        (buff[2] & 0x1) ||
+        (buff[3] & 0x1)) {
+        return 1;
+    } else
+        return 0;
+}
+
+static void erase_flash(void)
+{
+    unsigned char buff[8];
+    int addr;
+
+    buff[0] = DEV_WR_FLASH;
+    buff[1] = ERASE_CMD;
+
+    for (addr = 0; addr < MAX_SIZE;) {
+        write_enable();
+        printf("start erase sector %d:0x%06x...", addr/SEC_SIZE, addr);
+        buff[2] = (addr >> 16) & 0xff;
+        buff[3] = (addr >> 8) & 0xff;
+        buff[4] = addr & 0xff;
+        buff[5] = 0;
+        i2c_write(SLAVE_ADDR, buff, 6);
+        usleep(500*1000);
+        while (get_slave_interrupt() == 0) {
+            printf("get irq status fail at %s[%d]\n", __func__, __LINE__);
+            usleep(100*1000);
+        }
+        clean_slave_interrupt();
+        addr += SEC_SIZE;
+        while (read_flash_status() != 0) {
+            printf("get flash status fail at %s[%d]\n", __func__, __LINE__);
+            usleep(100*1000);
+        }
+    }
+}
+
+static void read_flash_id(void)
+{
+    unsigned char buff[6];
+    buff[0] = DEV_WR_FLASH;
+    buff[1] = READ_FLASH_ID;
+    buff[2] = 0;
+    buff[3] = 0;
+    buff[4] = 0;
+    buff[5] = 0;
+    i2c_write(SLAVE_ADDR, buff, 6);
+    while (get_slave_interrupt() == 0) {
+        printf("get irq status fail at %s[%d]\n", __func__, __LINE__);
+        sleep(1);
+    }
+    clean_slave_interrupt();
+    i2c_read(SLAVE_ADDR, buff, 4);
+    printf("flash id:0x%x%x%x%x\n", buff[0], buff[1], buff[2], buff[3]);
+}
+
+static void write_flash(void)
+{
+    unsigned char buff[262];
+    unsigned char *data = &buff[5];
+    unsigned int addr = 0;
+    int n, i;
+
+    buff[0] = DEV_WR_FLASH;
+    buff[1] = PAGE_WRITE;
+    buff[261] = 0;
+    for (i=0; ;i++) {
+        memset(data, 0xff, PAGE_SIZE);
+        addr = i * PAGE_SIZE;
+        buff[2] = (addr >> 16) & 0xff;
+        buff[3] = (addr >> 8) & 0xff;
+        buff[4] = 0;
+        write_enable();
+        n = read(img_fd, data, PAGE_SIZE);
+        if (n > 0) {
+            i2c_write(SLAVE_ADDR, buff, 262);
+            usleep(10 * 1000);
+            while (get_slave_interrupt() == 0) {
+                printf("write page %d not finish\n", i);
+                usleep(500 * 1000);
+            }
+        } else if (n == 0) {
+            printf("write over\n");
+            return;
+        } else {
+            printf("read img file err\n");
+            return;
+        }
+    }
+}
+
+static void read_flash(void)
+{
+    unsigned char buff[262];
+    unsigned char *data;
+    unsigned int addr = 0;
+    int j;
+
+    for (addr = 0; addr < MAX_SIZE;) {
+        buff[0] = DEV_WR_FLASH;
+        buff[1] = PAGE_READ;
+        data = &buff[5];
+        memset(data, 0, PAGE_SIZE+1);
+        addr += PAGE_SIZE;
+        buff[2] = (addr >> 16) & 0xff;
+        buff[3] = (addr >> 8) & 0xff;
+        buff[4] = 0;
+        i2c_write(SLAVE_ADDR, buff, 262);
+        while (get_slave_interrupt() == 0) {
+            printf("read page %d not finish\n", addr/PAGE_SIZE);
+            usleep(500 * 1000);
+        }
+        clean_slave_interrupt();
+        i2c_read(SLAVE_ADDR, buff, 260);
+        data = &buff[4];
+        for (j = 0; j < PAGE_SIZE; j++) {
+            if ((j%16) == 0) {
+                printf("\n");
+            }
+            printf("%02x ", data[j]);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    static char i2c_path[32];
+    unsigned char id[4];
+    unsigned char buff[32];
+    if (argc != 3) {
+        printf("usage: %s adpter_num. upgrade_file_path\n", argv[0]);
+        return -1;
+    }
+
+    adap_num = strtoul(argv[1], NULL, 10);
+    printf("i2c adap is %d\n", adap_num);
+    sprintf(i2c_path, "/dev/i2c-%d", adap_num);
+
+    if ((io_fd = open(i2c_path, O_RDWR)) <= 0) {
+        printf("open %s fail\n", i2c_path);
+        goto err_io_fd;
+    }
+    if ((img_fd = open(argv[2], O_RDWR)) <= 0) {
+        printf("open %s fail\n", argv[2]);
+        goto err_img_fd;
+    }
+
+    rst_cfg();
+    id[0] = DEV_ID;
+    i2c_write(SLAVE_ADDR, id, 1);
+    i2c_read(SLAVE_ADDR, id, 5);
+    printf("dev_id is: 0x%x%x%x%x\n", id[3], id[2], id[1], id[0]);
+
+    //erase_flash();
+    //read_flash_id();
+    read_flash_status();
+    close(io_fd);
+    close(img_fd);
+    return 0;
+
+err_img_fd:
+    close(io_fd);
+err_io_fd:
+    return -1;
+}

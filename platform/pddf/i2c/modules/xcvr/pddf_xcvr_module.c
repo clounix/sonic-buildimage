@@ -32,6 +32,8 @@
 #include "pddf_client_defs.h"
 #include "pddf_xcvr_defs.h"
 
+static int *log_level = &xcvr_log_level;
+
 static ssize_t do_attr_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
 static ssize_t do_device_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
 extern void* get_device_table(char *name);
@@ -110,7 +112,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
             
             adapter = i2c_get_adapter(cdata->parent_bus);
             if (!adapter) {
-                printk(KERN_ERR "PDDF_ERROR: %s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
+                pddf_err(XCVR, "PDDF_ERROR: %s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
                 goto clear_data;
             }
             /* Allocate the xcvr_platform_data */
@@ -136,7 +138,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
             client_ptr = i2c_new_client_device(adapter, &board_info);
             if (!IS_ERR(client_ptr)) {
                 i2c_put_adapter(adapter);
-                pddf_dbg(XCVR, KERN_ERR "Created a %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
+                pddf_dbg(XCVR, "Created a %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
                 add_device_table(cdata->i2c_name, (void*)client_ptr);
             }
             else
@@ -152,7 +154,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
 
             adapter = i2c_get_adapter(cdata->parent_bus);
             if (!adapter) {
-                printk(KERN_ERR "PDDF_ERROR: %s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
+                pddf_err(XCVR, "PDDF_ERROR: %s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
                 goto clear_data;
             }
             board_info = (struct i2c_board_info) {
@@ -165,19 +167,19 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
             client_ptr = i2c_new_client_device(adapter, &board_info);
             if(!IS_ERR(client_ptr)) {
                 i2c_put_adapter(adapter);
-                pddf_dbg(XCVR, KERN_ERR "Created %s, type:%s client: 0x%p\n", cdata->i2c_name, cdata->dev_type, (void *)client_ptr);
+                pddf_dbg(XCVR, "Created %s, type:%s client: 0x%p\n", cdata->i2c_name, cdata->dev_type, (void *)client_ptr);
                 add_device_table(cdata->i2c_name, (void*)client_ptr);
             }
             else
             {
                 i2c_put_adapter(adapter);
-                printk(KERN_ERR "Error creating a client %s on 0x%x, client_ptr:0x%p\n", board_info.type, board_info.addr, (void *)client_ptr);
+                pddf_err(XCVR, "Error creating a client %s on 0x%x, client_ptr:0x%p\n", board_info.type, board_info.addr, (void *)client_ptr);
                 goto free_data;
             }
         }
         else
         {
-            printk(KERN_ERR "%s:Unknown type of device %s. Unable to create I2C client for it\n",__FUNCTION__, cdata->dev_type);
+            pddf_err(XCVR, "%s:Unknown type of device %s. Unable to create I2C client for it\n",__FUNCTION__, cdata->dev_type);
         }
     }
     else if (strncmp(buf, "delete", strlen(buf)-1)==0)
@@ -186,18 +188,18 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
         client_ptr = (struct i2c_client *)get_device_table(cdata->i2c_name);
         if (client_ptr)
         {
-            pddf_dbg(XCVR, KERN_ERR "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
+            pddf_dbg(XCVR, "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
             i2c_unregister_device(client_ptr);
             delete_device_table(cdata->i2c_name);
         }
         else
         {
-            pddf_dbg(XCVR, KERN_ERR "Unable to get the client handle for %s\n", cdata->i2c_name);
+            pddf_err(XCVR, "Unable to get the client handle for %s\n", cdata->i2c_name);
         }
     }
     else
     {
-        printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+        pddf_err(XCVR, "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
     }
 
     goto clear_data;
@@ -208,10 +210,10 @@ free_data:
         XCVR_PDATA *xcvr_platform_data = board_info.platform_data;
         if (xcvr_platform_data->xcvr_attrs)
         {
-            printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
+            pddf_err(XCVR, "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
             kfree(xcvr_platform_data->xcvr_attrs);
         }
-        printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
+        pddf_err(XCVR, "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
         kfree(xcvr_platform_data);
     }
 
@@ -229,7 +231,7 @@ int __init pddf_data_init(void)
     struct kobject *device_kobj;
     int ret = 0;
 
-    pddf_dbg(XCVR, KERN_ERR "XCVR PDDF MODULE.. init\n");
+    pddf_dbg(XCVR, "XCVR PDDF MODULE.. init\n");
 
     device_kobj = get_device_i2c_kobj();
     if(!device_kobj) 
@@ -259,7 +261,7 @@ int __init pddf_data_init(void)
         kobject_put(xcvr_kobj);
         return ret;
     }
-    pddf_dbg(XCVR, "CREATED PDDF SFP DATA SYSFS GROUP\n");
+    pddf_info(XCVR, "CREATED PDDF SFP DATA SYSFS GROUP\n");
     
     return ret;
 }
@@ -272,7 +274,7 @@ void __exit pddf_data_exit(void)
     sysfs_remove_group(i2c_kobj, &pddf_clients_data_group);
     kobject_put(i2c_kobj);
     kobject_put(xcvr_kobj);
-    pddf_dbg(XCVR, KERN_ERR "%s: Removed the kobjects for 'i2c' and 'xcvr'\n",__FUNCTION__);
+    pddf_info(XCVR, "%s: Removed the kobjects for 'i2c' and 'xcvr'\n",__FUNCTION__);
 
     return;
 }

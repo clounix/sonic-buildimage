@@ -32,6 +32,7 @@
 #include "pddf_client_defs.h"
 #include "pddf_psu_defs.h"
 
+static int *log_level = &psu_log_level;
 
 static ssize_t do_attr_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
 static ssize_t do_device_operation(struct device *dev, struct device_attribute *da, const char *buf, size_t count);
@@ -152,7 +153,7 @@ struct i2c_board_info *i2c_get_psu_board_info(PSU_DATA *pdata, NEW_DEV_ATTR *cda
     }
     else
     {
-        printk(KERN_ERR "%s:Unknown type of device %s. Unable to clreate I2C client for it\n",__FUNCTION__, cdata->dev_type);
+        pddf_err(PSU, "%s:Unknown type of device %s. Unable to clreate I2C client for it\n",__FUNCTION__, cdata->dev_type);
     }
 
     return &board_info;
@@ -173,7 +174,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
     {
         adapter = i2c_get_adapter(cdata->parent_bus);
         if (!adapter) {
-            printk(KERN_ERR "PDDF_ERROR: %s: Failed to get i2c adapter for bus %d\n", __FUNCTION__, cdata->parent_bus);
+            pddf_err(PSU, "Parent adapter (%d) not found\n", cdata->parent_bus);
             goto clear_data;
         }
         board_info = i2c_get_psu_board_info(pdata, cdata);
@@ -184,7 +185,7 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
         if(!IS_ERR(client_ptr))
         {
             i2c_put_adapter(adapter);
-            pddf_dbg(PSU, KERN_ERR "Created a %s client: 0x%p\n", cdata->i2c_name , (void *)client_ptr);
+            pddf_dbg(PSU, "Created a %s client: 0x%p\n", cdata->i2c_name , (void *)client_ptr);
             add_device_table(cdata->i2c_name, (void*)client_ptr);
         }
         else
@@ -199,19 +200,19 @@ static ssize_t do_device_operation(struct device *dev, struct device_attribute *
         client_ptr = (struct i2c_client *)get_device_table(cdata->i2c_name);
         if (client_ptr)
         {
-            pddf_dbg(PSU, KERN_ERR "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
+            pddf_dbg(PSU, "Removing %s client: 0x%p\n", cdata->i2c_name, (void *)client_ptr);
             i2c_unregister_device(client_ptr);
             delete_device_table(cdata->i2c_name);
         }
         else
         {
-            printk(KERN_ERR "Unable to get the client handle for %s\n", cdata->i2c_name);
+            pddf_err(PSU, "Unable to get the client handle for %s\n", cdata->i2c_name);
         }
 
     }
     else
     {
-        printk(KERN_ERR "PDDF_ERROR: %s: Invalid value for dev_ops %s", __FUNCTION__, buf);
+        pddf_err(PSU, "%s: Invalid value for dev_ops %s", __FUNCTION__, buf);
     }
 
     goto clear_data;
@@ -222,10 +223,10 @@ free_data:
         PSU_PDATA *psu_platform_data = board_info->platform_data;
         if (psu_platform_data->psu_attrs)
         {
-            printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
+            pddf_dbg(PSU, "%s: Unable to create i2c client. Freeing the platform subdata\n", __FUNCTION__);
             kfree(psu_platform_data->psu_attrs);
         }
-        printk(KERN_ERR "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
+        pddf_err(PSU, "%s: Unable to create i2c client. Freeing the platform data\n", __FUNCTION__);
         kfree(psu_platform_data);
     }
 
@@ -276,7 +277,7 @@ int __init pddf_data_init(void)
         kobject_put(psu_kobj);
         return ret;
     }
-    pddf_dbg(PSU, "CREATED PDDF PSU DATA SYSFS GROUP\n");
+    pddf_info(PSU, "CREATED PDDF PSU DATA SYSFS GROUP\n");
     
     return ret;
 }
@@ -289,7 +290,7 @@ void __exit pddf_data_exit(void)
     sysfs_remove_group(i2c_kobj, &pddf_clients_data_group);
     kobject_put(i2c_kobj);
     kobject_put(psu_kobj);
-    pddf_dbg(PSU, KERN_ERR "%s: Removed the kobjects for 'i2c' and 'psu'\n",__FUNCTION__);
+    pddf_info(PSU, "%s: Removed the kobjects for 'i2c' and 'psu'\n",__FUNCTION__);
 
     return;
 }

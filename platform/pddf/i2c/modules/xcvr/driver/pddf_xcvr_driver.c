@@ -33,6 +33,7 @@
 #include "pddf_xcvr_defs.h"
 #include "pddf_xcvr_api.h"
 
+static int *log_level = &xcvr_log_level;
 
 struct pddf_ops_t pddf_xcvr_ops = {
     .pre_init = NULL,
@@ -54,9 +55,12 @@ XCVR_SYSFS_ATTR_OPS xcvr_ops[XCVR_ATTR_MAX] = {
     {XCVR_RESET, get_module_reset, NULL, sonic_i2c_get_mod_reset, NULL, set_module_reset, NULL, sonic_i2c_set_mod_reset, NULL},
     {XCVR_INTR_STATUS, get_module_intr_status, NULL, sonic_i2c_get_mod_intr_status, NULL, NULL, NULL, NULL, NULL},
     {XCVR_LPMODE, get_module_lpmode, NULL, sonic_i2c_get_mod_lpmode, NULL, set_module_lpmode, NULL, sonic_i2c_set_mod_lpmode, NULL},
+    {XCVR_POWER_EN, get_module_power_en, NULL, sonic_i2c_get_mod_power_en, NULL, set_module_power_en, NULL, sonic_i2c_set_mod_power_en, NULL},
+    {XCVR_POWER_FAULT, get_module_power_fault, NULL, sonic_i2c_get_mod_power_fault, NULL, NULL, NULL, NULL, NULL},
     {XCVR_RXLOS, get_module_rxlos, NULL, sonic_i2c_get_mod_rxlos, NULL, NULL, NULL, NULL, NULL},
     {XCVR_TXDISABLE, get_module_txdisable, NULL, sonic_i2c_get_mod_txdisable, NULL, set_module_txdisable, NULL, sonic_i2c_set_mod_txdisable, NULL},
     {XCVR_TXFAULT, get_module_txfault, NULL, sonic_i2c_get_mod_txfault, NULL, NULL, NULL, NULL, NULL},
+    {XCVR_OVERWRITE_EN, get_module_overwrite_en, NULL, sonic_i2c_get_mod_overwrite_en, NULL, set_module_overwrite_en, NULL, sonic_i2c_set_mod_overwrite_en, NULL}
 };
 EXPORT_SYMBOL(xcvr_ops);
 
@@ -67,9 +71,12 @@ static SENSOR_DEVICE_ATTR(xcvr_present, S_IWUSR|S_IRUGO, get_module_presence,   
 static SENSOR_DEVICE_ATTR(xcvr_reset,   S_IWUSR|S_IRUGO, get_module_reset, set_module_reset, XCVR_RESET);
 static SENSOR_DEVICE_ATTR(xcvr_intr_status, S_IWUSR|S_IRUGO, get_module_intr_status, NULL, XCVR_INTR_STATUS);
 static SENSOR_DEVICE_ATTR(xcvr_lpmode,  S_IWUSR|S_IRUGO, get_module_lpmode, set_module_lpmode, XCVR_LPMODE);
+static SENSOR_DEVICE_ATTR(xcvr_power_en, S_IWUSR|S_IRUGO, get_module_power_en, set_module_power_en, XCVR_POWER_EN);
+static SENSOR_DEVICE_ATTR(xcvr_power_fault, S_IWUSR|S_IRUGO, get_module_power_fault, NULL, XCVR_POWER_FAULT);
 static SENSOR_DEVICE_ATTR(xcvr_rxlos,   S_IWUSR|S_IRUGO, get_module_rxlos, NULL, XCVR_RXLOS);
 static SENSOR_DEVICE_ATTR(xcvr_txdisable,   S_IWUSR|S_IRUGO, get_module_txdisable, set_module_txdisable, XCVR_TXDISABLE);
 static SENSOR_DEVICE_ATTR(xcvr_txfault, S_IWUSR|S_IRUGO, get_module_txfault, NULL, XCVR_TXFAULT);
+static SENSOR_DEVICE_ATTR(xcvr_overwrite_en, S_IWUSR|S_IRUGO, get_module_overwrite_en, set_module_overwrite_en, XCVR_OVERWRITE_EN);
 
 /* List of all the xcvr attribute structures 
  * to get name, use sensor_dev_attr_<>.dev_attr.attr.name
@@ -80,9 +87,12 @@ static struct sensor_device_attribute *xcvr_attr_list[MAX_XCVR_ATTRS] = {
     &sensor_dev_attr_xcvr_reset,
     &sensor_dev_attr_xcvr_intr_status,
     &sensor_dev_attr_xcvr_lpmode,
+    &sensor_dev_attr_xcvr_power_en,
+    &sensor_dev_attr_xcvr_power_fault,
     &sensor_dev_attr_xcvr_rxlos,
     &sensor_dev_attr_xcvr_txdisable,
     &sensor_dev_attr_xcvr_txfault,
+    &sensor_dev_attr_xcvr_overwrite_en,
 };
 
 static struct attribute *xcvr_attributes[MAX_XCVR_ATTRS] = {NULL};
@@ -96,7 +106,7 @@ static int xcvr_probe(struct i2c_client *client,
 {
     struct xcvr_data *data;
     int status =0;
-    int i,j,num;
+    int i,j,k = 0,num;
     XCVR_PDATA *xcvr_platform_data;
     XCVR_ATTR *attr_data;
 
@@ -126,7 +136,7 @@ static int xcvr_probe(struct i2c_client *client,
     i2c_set_clientdata(client, data);
     data->valid = 0;
 
-    dev_info(&client->dev, "chip found\n");
+    pddf_dbg(XCVR, "%s chip found\n", dev_name(&client->dev));
 
     /* Take control of the platform data */
     xcvr_platform_data = (XCVR_PDATA *)(client->dev.platform_data);
@@ -148,10 +158,10 @@ static int xcvr_probe(struct i2c_client *client,
         }
         
         if (j<XCVR_ATTR_MAX)
-            xcvr_attributes[i] = &xcvr_attr_list[j]->dev_attr.attr;
+            xcvr_attributes[k++] = &xcvr_attr_list[j]->dev_attr.attr;
 
     }
-    xcvr_attributes[i] = NULL;
+    xcvr_attributes[k] = NULL;
 
     /* Register sysfs hooks */
     status = sysfs_create_group(&client->dev.kobj, &xcvr_group);
@@ -165,8 +175,7 @@ static int xcvr_probe(struct i2c_client *client,
         goto exit_remove;
     }
 
-    dev_info(&client->dev, "%s: xcvr '%s'\n",
-         dev_name(data->xdev), client->name);
+    pddf_dbg(XCVR, "%s %s: xcvr '%s'\n", dev_name(&client->dev), dev_name(data->xdev), client->name);
     
     /* Add a support for post probe function */
     if (pddf_xcvr_ops.post_probe)
@@ -200,7 +209,7 @@ static void xcvr_remove(struct i2c_client *client)
     {
         ret = (pddf_xcvr_ops.pre_remove)(client);
         if (ret!=0)
-            printk(KERN_ERR "FAN pre_remove function failed\n");
+            pddf_err(XCVR, "FAN pre_remove function failed\n");
     }
 
     hwmon_device_unregister(data->xdev);
@@ -208,11 +217,11 @@ static void xcvr_remove(struct i2c_client *client)
     kfree(data);
 
     if (platdata_sub) {
-        pddf_dbg(XCVR, KERN_DEBUG "%s: Freeing platform subdata\n", __FUNCTION__);
+        pddf_dbg(XCVR, "%s: Freeing platform subdata\n", __FUNCTION__);
         kfree(platdata_sub);
     }
     if (platdata) {
-        pddf_dbg(XCVR, KERN_DEBUG "%s: Freeing platform data\n", __FUNCTION__);
+        pddf_dbg(XCVR, "%s: Freeing platform data\n", __FUNCTION__);
         kfree(platdata);
     }
     
@@ -220,7 +229,7 @@ static void xcvr_remove(struct i2c_client *client)
     {
         ret = (pddf_xcvr_ops.post_remove)(client);
         if (ret!=0)
-            printk(KERN_ERR "FAN post_remove function failed\n");
+            pddf_err(XCVR, "FAN post_remove function failed\n");
     }
 }
 
@@ -260,7 +269,7 @@ int xcvr_init(void)
             return ret;
     }
 
-    pddf_dbg(XCVR, KERN_ERR "PDDF XCVR DRIVER.. init Invoked..\n");
+    pddf_dbg(XCVR, "PDDF XCVR DRIVER.. init Invoked..\n");
     ret = i2c_add_driver(&xcvr_driver);
     if (ret!=0)
         return ret;

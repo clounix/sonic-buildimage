@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2025
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2023
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -52,7 +52,7 @@
 #define KNET_DEV_VER_COMPILE_TIME TOSTRING(KNET_DEV_MAKE_COMPILE_TIME)
 
 #if defined(KNET_DEV_RELEASED)
-#include "knet_ver_released.h"
+#include "clx_ver_released.h"
 #define KNET_DEV_VER_GIT_HASH TOSTRING(KNET_DEV_RELEASED_GIT_HASH)
 #else
 #define KNET_DEV_VER_GIT_HASH TOSTRING(KNET_DEV_MAKE_GIT_HASH)

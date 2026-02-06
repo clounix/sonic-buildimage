@@ -1,0 +1,1352 @@
+#include "knet_dev.h"
+#include "knet_pci.h"
+#include "knet_buffer.h"
+#include "kg_chip.h"
+#include <linux/slab.h>
+#include <linux/skbuff.h>
+#include <linux/pci.h>
+#include <linux/dma-mapping.h>
+#include <linux/netdevice.h>
+#include <linux/etherdevice.h>
+
+#define descriptor(unit, channel, desc_idx) \
+    (&(((volatile kg_descriptor_t           \
+             *)(clx_dma_drv(unit)->dma_channel[channel].sw_ring_base))[desc_idx]))
+
+static unsigned char g_mod_default_mac[ETH_ALEN] = {0x70, 0x06, 0x92, 0x6D, 0x00, 0x01};
+
+static int
+kg_top_irq_mask(uint32_t unit)
+{
+    uint32_t intr_mask = 0xFFFFFFFF;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_TOP_INTR_MSK, &intr_mask,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_top_irq_unmask(uint32_t unit)
+{
+    uint32_t intr_mask = 0x0;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_TOP_INTR_MSK, &intr_mask,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_dma_irq_mask_all(uint32_t unit)
+{
+    uint32_t intr_mask = 0xFFFFFFFF;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_NORMAL_MASK_ALL, &intr_mask,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_dma_irq_unmask_all(uint32_t unit)
+{
+    uint32_t intr_mask = 0x0;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_NORMAL_MASK_ALL, &intr_mask,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_get_dma_irq_channel(uint32_t unit, uint32_t *channel_bmp)
+{
+    uint32_t intr_mask = 0x0;
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_STA_PDMA_NORMAL_INTR, channel_bmp,
+                                             sizeof(uint32_t));
+    dbg_print(DBG_DEBUG, "unit:%u dma irq reg status:0x%x\n", unit, *channel_bmp);
+    if (*channel_bmp != 0) {
+        clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_P2H_INTR_MSK, &intr_mask,
+                                                 sizeof(uint32_t));
+        dbg_print(DBG_DEBUG, "unit:%u dma irq reg intr_mask:0x%x\n", unit, intr_mask);
+        CLX_CLR_BITMAP(*channel_bmp, intr_mask);
+    }
+    dbg_print(DBG_DEBUG, "unit:%u dma irq status:0x%x\n", unit, *channel_bmp);
+
+    return 0;
+}
+
+static int
+kg_get_dma_error_irq_channel(uint32_t unit, uint32_t *channel_bmp)
+{
+#if 0
+    uint32_t data = 0;
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_CHAIN0_INTR_REG, &data,
+                                             sizeof(uint32_t));
+    if (data & KG_PDMA_ERROR_IRQ_BIT) {
+        clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR, channel_bmp,
+                                             sizeof(uint32_t));
+    }
+#endif
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR, channel_bmp,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_mask_dma_channel_irq(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_mask = 0;
+    uint32_t offset = 0;
+
+    if (channel <= KG_DMA_CH_PACKET_END) {
+        intr_mask = 0x1 << channel;
+        offset = KG_CFG_PDMA_P2H_INTR_MSK;
+    } else {
+        /* not pkt channel irq, don't mask */
+        return 0;
+    }
+
+    dbg_print(DBG_DEBUG, "unit:%u mask channel:%d, intr_mask:0x%x\n", unit, channel, intr_mask);
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, offset, &intr_mask, sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_unmask_dma_channel_irq(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_mask = 0x0;
+    uint32_t offset = 0;
+    uint32_t data = 0;
+
+    if (channel <= KG_DMA_CH_PACKET_END) {
+        data = 0x1 << channel;
+        offset = KG_CFG_PDMA_P2H_INTR_MSK;
+    } else {
+        /* not pkt channel irq, don't unmask */
+        return 0;
+    }
+
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, offset, &intr_mask, sizeof(uint32_t));
+    CLX_CLR_BITMAP(intr_mask, data);
+
+    dbg_print(DBG_DEBUG, "unit:%u unmask channel:%d, intr_mask:0x%x\n", unit, channel, intr_mask);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, offset, &intr_mask, sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_clear_dma_channel_irq(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_clr = 0;
+    uint32_t offset = 0;
+
+    if (channel <= KG_DMA_CH_PACKET_END) {
+        intr_clr = 0x1 << channel;
+        offset = KG_CFW_PDMA_P2H_INTR_CLR;
+    } else {
+        /* not pkt channel irq, don't clear */
+        return 0;
+    }
+
+    dbg_print(DBG_DEBUG, "unit:%u clear channel:%d, intr_clr:0x%x\n", unit, channel, intr_clr);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, offset, &intr_clr, sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_error_irq_handle(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_clr = 0;
+    uint32_t err_type_val = 0;
+    uint32_t data[10] = {0};
+    int32_t i = 0;
+
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR, &intr_clr,
+                                             sizeof(uint32_t));
+    if (intr_clr & (1 << channel)) {
+        clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_ERR_TYPE(channel),
+                                                 &err_type_val, sizeof(uint32_t));
+        dbg_print(DBG_INTR, "unit:%u channel:%d, err_type:0x%x\n", unit, channel, err_type_val);
+
+        if (err_type_val & KG_PDMA_CHANNEL_RD_DESC_ERROR) {
+            dbg_print(DBG_INTR, "unit:%u channel:%d, PDMA_CHANNEL_RD_DESC_ERROR\n", unit, channel);
+            clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_RD_ERR_DESC(channel),
+                                                     &data[0], KG_REG_RD_ERR_DES_SIZE);
+        }
+
+        if (err_type_val & KG_PDMA_CHANNEL_WR_DESC_ERROR) {
+            dbg_print(DBG_INTR, "unit:%u channel:%d, PDMA_CHANNEL_WR_DESC_ERROR\n", unit, channel);
+            clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_WB_DESC(channel),
+                                                     &data[0], KG_REG_WR_ERR_DES_SIZE);
+        }
+
+        if (err_type_val & KG_PDMA_CHANNEL_RD_DATA_ERROR) {
+            dbg_print(DBG_INTR, "unit:%u channel:%d, PDMA_CHANNEL_RD_DATA_ERROR\n", unit, channel);
+            clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_SRC_ERR_INFO(channel),
+                                                     &data[0], KG_REG_RD_DATA_ERR_SIZE);
+        }
+
+        if (err_type_val & KG_PDMA_CHANNEL_WR_DATA_ERROR) {
+            dbg_print(DBG_INTR, "unit:%u channel:%d, PDMA_CHANNEL_WR_DATA_ERROR\n", unit, channel);
+            clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_DST_ERR_INFO(channel),
+                                                     &data[0], KG_REG_WR_DATA_ERR_SIZE);
+        }
+
+        for (i = 9; i >= 0; i--) {
+            dbg_print(DBG_INTR, "unit:%u channel:%d, data[%d](%d-%d):0x%08x\n", unit, channel, i,
+                      i * 32, (i + 1) * 32 - 1, data[i]);
+        }
+    }
+
+    return 0;
+}
+
+static int
+kg_mask_dma_channel_error_irq(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_mask = 0x1 << channel;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR_MSK, &intr_mask,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_unmask_dma_channel_error_irq(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_mask = 0x0;
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR_MSK, &intr_mask,
+                                             sizeof(uint32_t));
+    CLX_CLR_BITMAP(intr_mask, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR_MSK, &intr_mask,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_error_irq_clear(uint32_t unit, uint32_t channel)
+{
+    uint32_t intr_clr = 0x1 << channel;
+
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_IRQ_PDMA_ABNORMAL_P2H_INTR, &intr_clr,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+/* dma drv */
+static int
+kg_dma_channel_enable(uint32_t unit, uint32_t channel)
+{
+    uint32_t enable;
+    dbg_print(DBG_DEBUG, "unit=%d, channel=%d, enable.\n", unit, channel);
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
+                                             sizeof(uint32_t));
+    CLX_SET_BITMAP(enable, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_disable(uint32_t unit, uint32_t channel)
+{
+    uint32_t enable;
+    dbg_print(DBG_DEBUG, "unit:%u disable channel:%d,addr:0x%x\n", unit, channel,
+              KG_CFG_PDMA_CH_ENABLE);
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
+                                             sizeof(uint32_t));
+    CLX_CLR_BITMAP(enable, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_ring_base_set(uint32_t unit, uint32_t channel, clx_addr_t ring_base)
+{
+    dbg_print(DBG_DEBUG, "unit:%u, channel:%d, ring base=0x%llx\n", unit, channel, ring_base);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CHx_RING_BASE(channel),
+                                              (uint32_t *)&ring_base, sizeof(clx_addr_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_ring_base_get(uint32_t unit, uint32_t channel, clx_addr_t *ring_base)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_RING_BASE(channel),
+                                             (uint32_t *)ring_base, sizeof(clx_addr_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_ring_size_set(uint32_t unit, uint32_t channel, uint32_t ring_size)
+{
+    dbg_print(DBG_DEBUG, "unit:%u, channel:%d, ring size=%d\n", unit, channel, ring_size);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CHx_RING_SIZE(channel), &ring_size,
+                                              sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_ring_size_get(uint32_t unit, uint32_t channel, uint32_t *ring_size)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_RING_SIZE(channel), ring_size,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_work_idx_set(uint32_t unit, uint32_t channel, uint32_t work_idx)
+{
+    dbg_print(DBG_DEBUG, "unit:%u, channel:%d, work_idx=%d\n", unit, channel, work_idx);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CHx_DESC_WORK_IDX(channel),
+                                              &work_idx, sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_work_idx_get(uint32_t unit, uint32_t channel, uint32_t *work_idx)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_DESC_WORK_IDX(channel), work_idx,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_pop_idx_get(uint32_t unit, uint32_t channel, uint32_t *pop_idx)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_STA_PDMA_CHx_DESC_POP_IDX(channel), pop_idx,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_channel_en_get(uint32_t unit, uint32_t channel, uint32_t *channel_en)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CH_ENABLE, channel_en,
+                                             sizeof(uint32_t));
+    *channel_en = CLX_GET_BITMAP(*channel_en, 1 << channel);
+    return 0;
+}
+
+static int
+kg_dma_desc_location_get(uint32_t unit, uint32_t *desc_location)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_DESC_LOCATION, desc_location,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_desc_endian_get(uint32_t unit, uint32_t channel, uint32_t *desc_endian)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_DESC_ENDIAN, desc_endian,
+                                             sizeof(uint32_t));
+    *desc_endian = CLX_GET_BITMAP(*desc_endian, 1 << channel);
+    return 0;
+}
+
+static int
+kg_dma_channel_data_endian_swap_get(uint32_t unit, uint32_t channel, uint32_t *data_endian_swap)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_DATA_ENDIAN_SWAP, data_endian_swap,
+                                             sizeof(uint32_t));
+    *data_endian_swap = CLX_GET_BITMAP(*data_endian_swap, 1 << channel);
+    return 0;
+}
+
+static int
+kg_dma_channel_pph_swap_get(uint32_t unit, uint32_t channel, uint32_t *pph_swap)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_PPH_SWAP, pph_swap,
+                                             sizeof(uint32_t));
+    *pph_swap = CLX_GET_BITMAP(*pph_swap, 1 << channel);
+    return 0;
+}
+
+static int
+kg_dma_channel_mode_get(uint32_t unit, uint32_t channel, uint32_t *mode)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_MODE(channel), mode,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_channel_reset(uint32_t unit, uint32_t channel)
+{
+    uint32_t reset;
+    uint32_t outstd = 1;
+    uint16_t num = 100;
+
+    // check outstd desc
+    do {
+        clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_OUTSTD_DESC(channel), &outstd,
+                                                 sizeof(uint32_t));
+
+        if(outstd == 0) {
+            break;
+        }
+
+        num--;
+    } while (num != 0);
+
+    if(num == 0) {
+        dbg_print(DBG_WARN, "unit=%d, channel=%d, timeout\n", unit, channel);
+    }
+
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFW_PDMA_CH_RESET, &reset, sizeof(uint32_t));
+    CLX_CLR_BITMAP(reset, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFW_PDMA_CH_RESET, &reset, sizeof(uint32_t));
+
+    CLX_SET_BITMAP(reset, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFW_PDMA_CH_RESET, &reset, sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_dma_channel_restart(uint32_t unit, uint32_t channel)
+{
+    uint32_t restart = 0;
+    uint32_t outstd = 1;
+    uint16_t num = 100;
+
+    // check outstd desc
+    do {
+        clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_CHx_OUTSTD_DESC(channel), &outstd,
+                                                 sizeof(uint32_t));
+
+        if(outstd == 0) {
+            break;
+        }
+
+        num--;
+    } while (num != 0);
+
+    if(num == 0) {
+        dbg_print(DBG_WARN, "unit=%d, channel=%d, timeout\n", unit, channel);
+    }
+
+    CLX_SET_BITMAP(restart, 1 << channel);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFW_PDMA_CH_RESTART, &restart,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_dma_misc_get(uint32_t unit, uint32_t *data)
+{
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_CFG_PDMA_MISC, data,
+                                             sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_dma_misc_set(uint32_t unit, uint32_t data)
+{
+    dbg_print(DBG_DEBUG, "unit=%d, data=%d\n", unit, data);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_MISC, &data,sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_rx_desc_cfg_set(uint32_t unit)
+{
+    uint32_t data = 0;
+
+    /* make sure no malform pkt to cpu for rx channel */
+    data = 0;
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_DIS_P2H_RX_DESC_AE_EN, &data,
+                                              sizeof(uint32_t));
+
+    data = (clx_netif_drv(unit)->mtu + CLX_PKT_DMA_FRAG_SIZE - 1) / CLX_PKT_DMA_FRAG_SIZE;
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_P2H_RX_DESC_AE_THR, &data,
+                                              sizeof(uint32_t));
+
+    /* set alm empty thread desc num  for rx and fifo channel */
+    /* mask tx general ecpu channel alm empty intr */
+    data = 0x3fff0;
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_IRQ_PDMA_DESC_ALM_EMPTY_MSK, &data,
+                                              sizeof(uint32_t));
+
+    data = 16;
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_DESC_NUM_THR, &data,
+                                              sizeof(uint32_t));
+
+    return 0;
+}
+
+static int
+kg_rxfifo_cfg_set(uint32_t unit, uint32_t channel)
+{
+    uint32_t data = 0;
+
+    kg_dma_misc_get(unit, &data);
+
+     // rxfifo not stop when rx data err from chip
+    CLX_SET_BITMAP(data, 1 << 0); // p2h_rxfifo_bp_src_err_stop
+    kg_dma_misc_set(unit, data);
+
+    return 0;
+}
+
+static int
+kg_dbg_descriptor_show(uint32_t unit, uint32_t channel, uint32_t desc_idx, char *buf)
+{
+    int len = 0;
+
+    if ((channel > KG_DMA_CH_PACKET_END) || (desc_idx >= clx_dma_drv(unit)->ring_size)) {
+        len += sprintf(buf + len, "unit:%u, channel:%d, desc_idx:%u, invalid parameter\n", unit, channel, desc_idx);
+        return len;
+    }
+
+    len += sprintf(buf + len, "=================unit:%u, channel:%u, desc_idx:%u=================\n", unit, channel, desc_idx);
+    len += sprintf(buf + len, "descriptor->s_addr_hi            = 0x%08x\n", descriptor(unit, channel, desc_idx)->s_addr_hi);
+    len += sprintf(buf + len, "descriptor->s_addr_lo            = 0x%08x\n", descriptor(unit, channel, desc_idx)->s_addr_lo);
+    len += sprintf(buf + len, "descriptor->size                 = %u\n", descriptor(unit, channel, desc_idx)->size);
+    len += sprintf(buf + len, "descriptor->d_addr_hi            = 0x%08x\n", descriptor(unit, channel, desc_idx)->d_addr_hi);
+    len += sprintf(buf + len, "descriptor->d_addr_lo            = 0x%08x\n", descriptor(unit, channel, desc_idx)->d_addr_lo);
+    len += sprintf(buf + len, "descriptor->interrupt            = %u\n", descriptor(unit, channel, desc_idx)->interrupt);
+    len += sprintf(buf + len, "descriptor->sop                  = %u\n", descriptor(unit, channel, desc_idx)->sop);
+    len += sprintf(buf + len, "descriptor->eop                  = %u\n", descriptor(unit, channel, desc_idx)->eop);
+    len += sprintf(buf + len, "descriptor->sinc                 = %u\n", descriptor(unit, channel, desc_idx)->sinc);
+    len += sprintf(buf + len, "descriptor->dinc                 = %u\n", descriptor(unit, channel, desc_idx)->dinc);
+    len += sprintf(buf + len, "descriptor->err                  = %u\n", descriptor(unit, channel, desc_idx)->err);
+    len += sprintf(buf + len, "descriptor->xfer_size            = %u\n", descriptor(unit, channel, desc_idx)->xfer_size);
+    len += sprintf(buf + len, "descriptor->limit_xfer_en        = %u\n", descriptor(unit, channel, desc_idx)->limit_xfer_en);
+    len += sprintf(buf + len, "descriptor->reserve              = %u\n", descriptor(unit, channel, desc_idx)->reserve);
+
+    len += sprintf(buf + len, "soft current work_idx            = %u\n", clx_dma_drv(unit)->dma_channel[channel].work_idx);
+    len += sprintf(buf + len, "soft current pop_idx             = %u\n", clx_dma_drv(unit)->dma_channel[channel].pop_idx);
+    len += sprintf(buf + len, "=================unit:%u, channel:%u, desc_idx:%u=================\n", unit, channel, desc_idx);
+    return len;
+}
+
+static int
+kg_dbg_reg_show(uint32_t unit, uint32_t channel, char *buf)
+{
+    int len = 0;
+    clx_addr_t ring_base;
+    uint32_t ring_size = 0;
+    uint32_t work_idx = 0;
+    uint32_t pop_idx = 0;
+    uint32_t channel_en = 0;
+    uint32_t desc_location = 0;
+    uint32_t mode = 0;
+    uint32_t desc_endian = 0;
+    uint32_t data_endian_swap = 0;
+    uint32_t pph_swap = 0;
+    uint32_t cfg_msic = 0;
+
+    if (channel > KG_DMA_CH_PACKET_END) {
+        len += sprintf(buf + len, "unit:%u, channel:%d invalid parameter\n", unit, channel);
+        return len;
+    }
+
+    kg_dma_channel_ring_base_get(unit, channel, &ring_base);
+    kg_dma_channel_ring_size_get(unit, channel, &ring_size);
+    kg_dma_channel_work_idx_get(unit, channel, &work_idx);
+    kg_dma_channel_pop_idx_get(unit, channel, &pop_idx);
+    kg_dma_channel_channel_en_get(unit, channel, &channel_en);
+    kg_dma_desc_location_get(unit, &desc_location);
+
+
+    kg_dma_channel_mode_get(unit, channel, &mode);
+    kg_dma_channel_desc_endian_get(unit, channel, &desc_endian);
+    kg_dma_channel_data_endian_swap_get(unit, channel, &data_endian_swap);
+    kg_dma_channel_pph_swap_get(unit, channel, &pph_swap);
+
+    kg_dma_misc_get(unit, &cfg_msic);
+
+    len += sprintf(buf + len, "=================unit:%u, channel:%u=================\n", unit, channel);
+    len += sprintf(buf + len, "ring_base                = 0x%llx\n", ring_base);
+    len += sprintf(buf + len, "ring_size                = 0x%08x\n", ring_size);
+    len += sprintf(buf + len, "work_idx                 = %u\n", work_idx);
+    len += sprintf(buf + len, "pop_idx                  = %u\n", pop_idx);
+    len += sprintf(buf + len, "channel_en               = 0x%08x\n", channel_en);
+    len += sprintf(buf + len, "desc_location            = 0x%08x\n", desc_location);
+    len += sprintf(buf + len, "mode                     = 0x%08x\n", mode);
+    len += sprintf(buf + len, "desc_endian              = 0x%08x\n", desc_endian);
+    len += sprintf(buf + len, "data_endian_swap         = 0x%08x\n", data_endian_swap);
+    len += sprintf(buf + len, "pph_swap                 = 0x%08x\n", pph_swap);
+    len += sprintf(buf + len, "global cfg_msic          = 0x%x\n", cfg_msic);
+    len += sprintf(buf + len, "=================unit:%u, channel:%u=================\n", unit, channel);
+
+    return len;
+}
+
+/* intrrupt exist exclude dma rx tx interrupt */
+static bool
+kg_chip_usr_intrrupt_exist(uint32_t unit)
+{
+    uint32_t intr_status = 0x0;
+    uint32_t status_mask = ~(0xff);
+
+    clx_misc_dev->clx_pci_dev[unit]->read_cb(unit, KG_STA_TOP_RAW_INTR, &intr_status,
+                                             sizeof(uint32_t));
+    intr_status &= status_mask;
+
+    return (intr_status != 0);
+}
+
+static int
+kg_dma_rx_buffer_alloc(uint32_t unit, uint32_t channel, uint32_t desc_idx)
+{
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    volatile kg_descriptor_t *ptr_descriptor = descriptor(unit, channel, desc_idx);
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    struct sk_buff *ptr_skb = NULL;
+    dma_addr_t dma_addr;
+
+    ptr_skb = dev_alloc_skb(clx_dma_drv(unit)->descriptor_size + NET_IP_ALIGN);
+    if (NULL == ptr_skb) {
+        dbg_print(DBG_CRIT, "unit:%u Failed to allocate ptr_skb, pop_idx:%d\n", unit, desc_idx);
+        return -ENOMEM;
+    }
+    /* reserve 2-bytes to alignment Ip header */
+    skb_reserve(ptr_skb, NET_IP_ALIGN);
+    skb_put(ptr_skb, clx_dma_drv(unit)->descriptor_size);
+
+    dma_addr = dma_map_single(ptr_dev, ptr_skb->data, ptr_skb->len, DMA_FROM_DEVICE);
+    if (dma_mapping_error(ptr_dev, dma_addr)) {
+        dev_kfree_skb_any(ptr_skb);
+        clx_dma_drv(unit)->dma_channel[channel].cnt.no_memory++;
+        dbg_print(DBG_CRIT, "unit:%u Failed to map ptr_skb\n", unit);
+        return -ENOMEM;
+    }
+
+    dbg_print(
+        DBG_DEBUG,
+        "unit:%u pop_idx:%d, dma_addr:0x%llx, cpu_addr:0x%lx, ptr_skb:0x%lx, ptr_descriptor:0x%lx, len:%u\n",
+        unit, desc_idx, dma_addr, (unsigned long)ptr_skb->data, (unsigned long)ptr_skb,
+        (unsigned long)ptr_descriptor, ptr_skb->len);
+    ptr_descriptor->d_addr_hi = clx_addr_64_hi(dma_addr);
+    ptr_descriptor->d_addr_lo = clx_addr_64_low(dma_addr);
+    ptr_descriptor->interrupt = 0;
+    ptr_descriptor->sinc = 0;
+    ptr_descriptor->dinc = 1;
+    ptr_descriptor->size = clx_dma_drv(unit)->descriptor_size;
+
+    // save the ptr_skb
+    ptr_channel->pptr_skb[desc_idx] = ptr_skb;
+
+    return 0;
+}
+
+static int
+kg_dma_rx_buffer_free(uint32_t unit, uint32_t channel, uint32_t desc_idx)
+{
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    struct sk_buff *ptr_skb = ptr_channel->pptr_skb[desc_idx];
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    dma_addr_t dma_addr = 0;
+    volatile kg_descriptor_t *ptr_descriptor = descriptor(unit, channel, desc_idx);
+
+    if (NULL == ptr_skb) {
+        dbg_print(DBG_ERR, "ptr_skb is NULL. desc_idx:%d\n", desc_idx);
+        return -EINVAL;
+    }
+
+    dma_addr = clx_addr_32_to_64(ptr_descriptor->d_addr_hi, ptr_descriptor->d_addr_lo);
+    dma_unmap_single(ptr_dev, dma_addr, ptr_skb->len, DMA_FROM_DEVICE);
+    dev_kfree_skb_any(ptr_skb);
+    ptr_channel->pptr_skb[desc_idx] = NULL;
+
+    return 0;
+}
+
+static int
+kg_dma_alloc_ringbase(uint32_t unit, uint32_t channel, dma_addr_t *dma_addr)
+{
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+
+    clx_dma_drv(unit)->dma_channel[channel].sw_ring_base = dma_alloc_coherent(
+        ptr_dev, clx_dma_drv(unit)->ring_size * sizeof(kg_descriptor_t), dma_addr, GFP_ATOMIC);
+    if (NULL == ptr_channel->sw_ring_base) {
+        dbg_print(DBG_ERR, "No mem.\n");
+        return -ENOMEM;
+    }
+    dbg_print(DBG_TX, "unit:%u channel:%d sw_ring_base:0x%llx, hw_ring_base:0x%llx\n", unit,
+              channel, (clx_addr_t)clx_dma_drv(unit)->dma_channel[channel].sw_ring_base, *dma_addr);
+
+    return 0;
+}
+
+static int
+kg_dma_free_ringbase(uint32_t unit, uint32_t channel, dma_addr_t dma_addr)
+{
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    dma_free_coherent(ptr_dev, clx_dma_drv(unit)->ring_size * sizeof(kg_descriptor_t),
+                      clx_dma_drv(unit)->dma_channel[channel].sw_ring_base, dma_addr);
+
+    return 0;
+}
+
+static int
+kg_dma_alloc_rx_frag(uint32_t unit,
+                     uint32_t channel,
+                     uint32_t pop_idx,
+                     struct dma_rx_packet *rx_packet)
+{
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    volatile kg_descriptor_t *ptr_descriptor = descriptor(unit, channel, pop_idx);
+    struct dma_rx_frag_buffer *rx_frag;
+
+    dbg_print(
+        DBG_RX,
+        "unit:%u channel:%d pop_idx:%d, ptr_descriptor:0x%llx, ptr_descriptor->interrupt:%d, sop:%d, eop:%d\n",
+        unit, channel, pop_idx, (clx_addr_t)ptr_descriptor, ptr_descriptor->interrupt,
+        ptr_descriptor->sop, ptr_descriptor->eop);
+
+    if (ptr_descriptor->interrupt == 0) {
+        dbg_print(DBG_RX, "[debug] rx channel:%d pop_idx:%d, descriptor->interrupt:%d\n", channel,
+                  pop_idx, ptr_descriptor->interrupt);
+        return DMA_RX_NO_NEW_PACKET;
+    }
+
+    if (ptr_descriptor->err == 1) {
+        dbg_print(DBG_RX, "[warn] rx channel:%d pop_idx:%d, descriptor->err:%d\n", channel,
+                  pop_idx, ptr_descriptor->err);
+        print_packet(DBG_RX_PAYLOAD, ptr_channel->pptr_skb[pop_idx]->data, ptr_descriptor->size);
+
+        clx_intr_drv(unit)->dma_channel_error_irq_handle(unit, channel);
+        clx_dma_channel_restart(unit, channel);
+        clx_dma_drv(unit)->dma_channel[channel].cnt.error_interrupts++;
+    }
+
+    rx_frag = (struct dma_rx_frag_buffer *)kmalloc(sizeof(struct dma_rx_frag_buffer), GFP_ATOMIC);
+    if (!rx_frag) {
+        dbg_print(DBG_CRIT, "unit:%u Failed to allocate packet context\n", unit);
+        return -ENOMEM;
+    }
+
+    rx_frag->ptr_skb = ptr_channel->pptr_skb[pop_idx];
+    rx_frag->dma_addr = clx_addr_32_to_64(ptr_descriptor->d_addr_hi, ptr_descriptor->d_addr_lo);
+    dma_unmap_single(ptr_dev, rx_frag->dma_addr, rx_frag->ptr_skb->len, DMA_FROM_DEVICE);
+    rx_frag->ptr_skb->len = ptr_descriptor->size;
+    list_add_tail(&rx_frag->rx_frag, &rx_packet->rx_frag);
+    rx_packet->list_count++;
+    rx_packet->packet_len += ptr_descriptor->size;
+
+    if (ptr_descriptor->eop == 1) {
+        rx_packet->rx_complete = 1;
+        /* update rx counter */
+        clx_dma_drv(unit)->dma_channel[channel].cnt.packets++;
+        clx_dma_drv(unit)->dma_channel[channel].cnt.bytes += rx_packet->packet_len;
+
+        return DMA_RX_COMPLETE_PACKET;
+    }
+
+    return DMA_RX_INCOMPLETE_PACKET;
+}
+
+static void
+kg_print_pph(uint32_t loglvl, kg_pkt_pph_l2_t *ptr_pph_l2)
+{
+    kg_pkt_pph_l3uc_t *ptr_pph_l3 = NULL;
+    kg_pkt_pph_l25_t *ptr_pph_l25 = NULL;
+
+    if (!(loglvl & verbosity & DBG_RX_PAYLOAD) && !(loglvl & verbosity & DBG_TX_PAYLOAD)) {
+        return;
+    }
+
+    /*print common field*/
+    printk(" ========================== %s PPH  ====================== \n",
+           (loglvl == DBG_RX_PAYLOAD) ? "Rx" : "Tx");
+    printk("fwd_op                      :%u\n", ptr_pph_l2->fwd_op);
+    printk("tc                          :%u\n", ptr_pph_l2->tc);
+    printk("color                       :%u\n", ptr_pph_l2->color);
+    printk("hash_val                    :0x%x\n", ptr_pph_l2->hash_val);
+    printk("dst_idx                     :0x%x\n", ptr_pph_l2->dst_idx);
+    printk("src_idx                     :0x%x\n", ptr_pph_l2->src_idx);
+    printk("skip_epp                    :%u\n", ptr_pph_l2->skip_epp);
+    printk("igr_acl_label               :0x%x\n", ptr_pph_l2->igr_acl_label);
+    printk("mac_learn_en                :%u\n", ptr_pph_l2->mac_learn_en);
+    printk("qos_dnt_modify              :%u\n", ptr_pph_l2->qos_dnt_modify);
+    printk("pkt_journal                 :%u\n", ptr_pph_l2->pkt_journal);
+    printk("src_supp_tag                :0x%x\n", ptr_pph_l2->src_supp_tag);
+    printk("stacking                    :%u\n", ptr_pph_l2->stacking);
+    printk("evpn_esi                    :0x%x\n", ptr_pph_l2->evpn_esi);
+    printk("timestamp                   :0x%x\n", ptr_pph_l2->timestamp);
+    printk("igr_is_fab                  :%u\n", ptr_pph_l2->igr_is_fab);
+    printk("decap_act                   :%u\n", ptr_pph_l2->decap_act);
+    printk("qos_tnl_uniform             :%u\n", ptr_pph_l2->qos_tnl_uniform);
+    printk("mpls_vpn_order              :%u\n", ptr_pph_l2->mpls_vpn_order);
+    printk("skip_ipp                    :%u\n", ptr_pph_l2->skip_ipp);
+    printk("igr_vlan                    :0x%x\n", ptr_pph_l2->igr_vlan);
+    printk("port_id                     :0x%x\n", ptr_pph_l2->port_id);
+    printk("asic_id                     :0x%x\n", ptr_pph_l2->asic_id);
+    printk("mirror_bmap                 :0x%x\n", ptr_pph_l2->mirror_bmap);
+    printk("cpu_reason                  :%u\n", ptr_pph_l2->cpu_reason);
+    printk("sampler                     :%u\n", ptr_pph_l2->sampler);
+    printk("ver                         :%u\n", ptr_pph_l2->ver);
+    printk("cpu_cud                     :%u\n", ptr_pph_l2->cpu_cud);
+    printk("ptp_info                    :0x%x\n", ptr_pph_l2->ptp_info);
+
+    switch (ptr_pph_l2->fwd_op) {
+        case KG_PKT_PPH_TYPE_L2:
+            printk("ecn_enable                  :%u\n", ptr_pph_l2->ecn_enable);
+            printk("igr_vid_pop_num             :%u\n", ptr_pph_l2->igr_vid_pop_num);
+            printk("src_bdi                     :0x%x\n", ptr_pph_l2->src_bdi);
+            printk("pcp_dei_vlan                :%u\n", ptr_pph_l2->pcp_dei_vlan);
+            printk("mpls_pwcw_vld               :%u\n", ptr_pph_l2->mpls_pwcw_vld);
+            printk("ecn                         :%u\n", ptr_pph_l2->ecn);
+
+            break;
+        case KG_PKT_PPH_TYPE_L3UC:
+            ptr_pph_l3 = (kg_pkt_pph_l3uc_t *)ptr_pph_l2;
+            printk("ecn_enable                  :%u\n", ptr_pph_l3->ecn_enable);
+            printk("decr_ttl                    :%u\n", ptr_pph_l3->decr_ttl);
+            printk("dst_bdi                     :%u\n", ptr_pph_l3->dst_bdi);
+            printk("srv6_insert_red             :%u\n", ptr_pph_l3->srv6_insert_red);
+            printk("srv6_encaps_red             :%u\n", ptr_pph_l3->srv6_encaps_red);
+            printk("srv6_encap_end              :%u\n", ptr_pph_l3->srv6_encap_end);
+            printk("mpls_pwcw_vld               :%u\n", ptr_pph_l3->mpls_pwcw_vld);
+            printk("mpls_inner_l2               :%u\n", ptr_pph_l3->mpls_inner_l2);
+            printk("decap_prop_ttl              :%u\n", ptr_pph_l3->decap_prop_ttl);
+            printk("nxt_sid_opcode              :%u\n", ptr_pph_l3->nxt_sid_opcode);
+            printk("decr_sl                     :%u\n", ptr_pph_l3->decr_sl);
+            printk("usid_func_en                :%u\n", ptr_pph_l3->usid_func_en);
+            printk("usid_arg_en                 :%u\n", ptr_pph_l3->usid_arg_en);
+            printk("src_bdi                     :0x%x\n", ptr_pph_l3->src_bdi);
+            printk("ecn                         :%u\n", ptr_pph_l3->ecn);
+            printk("mac_da_high                 :0x%x\n", ptr_pph_l3->mac_da_high);
+            printk("mac_da_low                  :0x%x\n", ptr_pph_l3->mac_da_low);
+            break;
+        case KG_PKT_PPH_TYPE_L25:
+            ptr_pph_l25 = (kg_pkt_pph_l25_t *)ptr_pph_l2;
+            printk("tnl_idx                     :%u\n", ptr_pph_l25->tnl_idx);
+            printk("mpls_lbl                    :%u\n", ptr_pph_l25->mpls_lbl);
+            printk("decr_ttl                    :%u\n", ptr_pph_l25->decr_ttl);
+            printk("decap_prop_ttl              :%u\n", ptr_pph_l25->decap_prop_ttl);
+            break;
+        default:
+            printk("pph type is not valid!!!");
+    }
+}
+
+static int
+kg_pph_prepare(uint32_t unit, uint32_t port_di, uint8_t tc, void *pph)
+{
+    kg_pkt_pph_l2_t *ptr_pph = (kg_pkt_pph_l2_t *)((uint8_t *)pph);
+
+    /* fill up pp header */
+    ptr_pph->skip_ipp = 1;
+    ptr_pph->skip_epp = 1;
+    ptr_pph->color = 0; /* Green */
+    ptr_pph->tc = tc & 0x7;
+    ptr_pph->src_idx = clx_netif_drv(unit)->cpu_port;
+
+    ptr_pph->dst_idx = port_di;
+
+    // TODO: fill up pph other fields
+
+    return 0;
+}
+
+static int
+kg_tx_callback(uint32_t unit, uint32_t channel)
+{
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    struct sk_buff *ptr_skb;
+    volatile kg_descriptor_t *ptr_descriptor;
+    dma_addr_t dma_addr = 0;
+
+    while (ptr_channel->pop_idx != ptr_channel->work_idx) {
+        ptr_descriptor = descriptor(unit, channel, ptr_channel->pop_idx);
+        dbg_print(DBG_TX, "unit:%u channel:%d work_idx:%d, pop_idx:%d, interrupt:%d, error:%d\n",
+                  unit, channel, ptr_channel->work_idx, ptr_channel->pop_idx,
+                  ptr_descriptor->interrupt, ptr_descriptor->err);
+        if (ptr_descriptor->interrupt != 1) {
+            break;
+        }
+        ptr_descriptor->interrupt = 0;
+        dma_addr = clx_addr_32_to_64(ptr_descriptor->s_addr_hi, ptr_descriptor->s_addr_lo);
+        ptr_skb = ptr_channel->pptr_skb[ptr_channel->pop_idx];
+        dbg_print(DBG_TX, "[debug] unit:%u channel:%d, dma_addr:0x%llx, len:%d, skb:0x%llx.\n",
+                  unit, channel, dma_addr, ptr_skb->len,
+                  (clx_addr_t)ptr_channel->pptr_skb[ptr_channel->pop_idx]);
+
+        /* update tx counter */
+        ptr_channel->cnt.packets++;
+        ptr_channel->cnt.bytes += ptr_skb->len;
+
+        dma_unmap_single(ptr_dev, dma_addr, ptr_skb->len, DMA_TO_DEVICE);
+        dev_kfree_skb_any(ptr_skb);
+        ptr_channel->pop_idx++;
+        ptr_channel->pop_idx %= clx_dma_drv(unit)->ring_size;
+    }
+
+    return 0;
+}
+
+static int
+kg_netdev_packet_tx(uint32_t unit, uint32_t channel, struct sk_buff *ptr_skb)
+{
+    clx_dma_channel_t *ptr_channel = &clx_dma_drv(unit)->dma_channel[channel];
+    volatile kg_descriptor_t *ptr_descriptor;
+    struct device *ptr_dev = &clx_misc_dev->clx_pci_dev[unit]->pci_dev->dev;
+    dma_addr_t dma_addr = 0x0;
+    unsigned long flags = 0;
+
+    spin_lock_irqsave(&ptr_channel->lock, flags);
+    if ((ptr_channel->work_idx + 1) % clx_dma_drv(unit)->ring_size == ptr_channel->pop_idx) {
+        dbg_print(DBG_TX, "unit:%u No available descriptor!\n", unit);
+        spin_unlock_irqrestore(&ptr_channel->lock, flags);
+        return -EBUSY;
+    }
+
+    dma_addr = dma_map_single(ptr_dev, ptr_skb->data, ptr_skb->len, DMA_TO_DEVICE);
+    if (dma_mapping_error(ptr_dev, dma_addr)) {
+        dbg_print(DBG_ERR, "unit:%u, txch=%u, skb dma map err\n", unit, channel);
+        clx_dma_drv(unit)->dma_channel[channel].cnt.no_memory++;
+        spin_unlock_irqrestore(&ptr_channel->lock, flags);
+        return -EFAULT;
+    }
+
+    if (!IS_ALIGNED(dma_addr, 4)) {
+        dbg_print(DBG_ERR, "unit:%u dma_addr is not 4bytes-aligned.\n", unit);
+        dma_unmap_single(ptr_dev, dma_addr, ptr_skb->len, DMA_TO_DEVICE);
+        spin_unlock_irqrestore(&ptr_channel->lock, flags);
+        return -EFAULT;
+    }
+    dma_sync_single_for_device(ptr_dev, dma_addr, ptr_skb->len, DMA_TO_DEVICE);
+
+    ptr_descriptor = descriptor(unit, channel, ptr_channel->work_idx);
+    ptr_descriptor->s_addr_hi = clx_addr_64_hi(dma_addr);
+    ptr_descriptor->s_addr_lo = clx_addr_64_low(dma_addr);
+    ptr_descriptor->size = ptr_skb->len;
+    ptr_descriptor->sinc = 1;
+    ptr_descriptor->interrupt = 0;
+    ptr_descriptor->sop = 1;
+    ptr_descriptor->eop = 1;
+
+    ptr_channel->pptr_skb[ptr_channel->work_idx] = ptr_skb;
+    ptr_channel->work_idx += 1;
+    ptr_channel->work_idx %= clx_dma_drv(unit)->ring_size;
+    kg_dma_channel_work_idx_set(unit, channel, ptr_channel->work_idx);
+    dbg_print(DBG_TX,
+              "[debug] unit:%u channel:%d work_idx:%d, pop_idx:%d,dma_addr:0x%llx, len:%d.\n", unit,
+              channel, ptr_channel->work_idx, ptr_channel->pop_idx, dma_addr, ptr_skb->len);
+    spin_unlock_irqrestore(&ptr_channel->lock, flags);
+
+    return 0;
+}
+
+static int
+kg_pkt_dst_get(const uint32_t unit,
+               struct dma_rx_packet *rx_packet,
+               uint32_t *port_di,
+               uint32_t *reason)
+{
+    struct dma_rx_frag_buffer *rx_frag;
+    void *ptr_dma_buffer;
+    kg_pkt_pph_l2_t *ptr_pph = NULL;
+    kg_pkt_pph_l3uc_t *ptr_pph_l3uc = NULL;
+    unsigned char *ptr_pkt_dmac = NULL;
+
+    rx_frag = list_first_entry(&rx_packet->rx_frag, struct dma_rx_frag_buffer, rx_frag);
+    ptr_dma_buffer = rx_frag->ptr_skb->data;
+    ptr_pph = (kg_pkt_pph_l2_t *)((uint8_t *)ptr_dma_buffer);
+
+    kg_print_pph(DBG_RX_PAYLOAD, ptr_pph);
+
+    // set cpu reason
+    rx_packet->pph_info.cpu_reason = ptr_pph->cpu_reason;
+
+    /* mod mac*/
+    ptr_pkt_dmac = (unsigned char *)(ptr_pph + 1);
+    if (0 == memcmp(g_mod_default_mac, ptr_pkt_dmac, 6)) {
+        /* change dmac */
+        if (clx_netif_drv(unit)->enable_mod_dmac) {
+            memcpy(ptr_pkt_dmac, clx_netif_drv(unit)->mod_dmac, 6);
+        }
+
+        rx_packet->pph_info.cpu_reason = KG_PKT_RX_MOD_REASON;
+
+        dbg_print(
+            DBG_RX,
+            "unit:%u set mod reason and enable_mod_dmac:%d pkt_dmac:%02x-%02x-%02x-%02x-%02x-%02x\n",
+            unit, clx_netif_drv(unit)->enable_mod_dmac, ptr_pkt_dmac[0], ptr_pkt_dmac[1],
+            ptr_pkt_dmac[2], ptr_pkt_dmac[3], ptr_pkt_dmac[4], ptr_pkt_dmac[5]);
+    }
+
+    *port_di = ptr_pph->src_idx;
+    if (*port_di > CLX_NETIF_PORT_DI_MAX_NUM) {
+        if (ptr_pph->asic_id >= KG_MAX_ASIC_NUM_PER_UNIT || ptr_pph->port_id >= KG_PORTS_PER_SLICE) {
+            dbg_print(DBG_RX,
+                      "unit:%u Invalid asic_id=%u or port_id=%u (max_asid=%u, max_port=%u)\n", unit,
+                      ptr_pph->asic_id, ptr_pph->port_id, KG_MAX_ASIC_NUM_PER_UNIT - 1,
+                      KG_PORTS_PER_SLICE - 1);
+            return -1;
+        }
+
+        *port_di = CLX_NETIF_GET_PORT_DI(unit, ptr_pph->asic_id, ptr_pph->port_id);
+        if (-1 == *port_di) {
+            dbg_print(DBG_RX, "unit:%u port_di is invlaid!!!,asic_id:%u port_id:%u\n", unit,
+                      ptr_pph->asic_id, ptr_pph->port_id);
+            return -1;
+        }
+        dbg_print(DBG_RX, "unit:%u get port_di:%u asic_id:%u port_id:%u\n", unit, *port_di,
+                  ptr_pph->asic_id, ptr_pph->port_id);
+    }
+
+    if (*port_di == (uint32_t)-1 || *port_di >= CLX_NETIF_PORT_DI_MAX_NUM) {
+        dbg_print(DBG_RX,
+                  "unit:%u Final port_di=%u invalid: ports_num_unit=%u asic_id=%u port_id=%u\n",
+                  unit, *port_di, clx_netif_drv(unit)->ports_num_unit, ptr_pph->asic_id,
+                  ptr_pph->port_id);
+        return -1;
+    }
+
+    *reason = rx_packet->pph_info.cpu_reason;
+
+    /* vlan */
+    if (KG_PKT_PPH_TYPE_L2 == ptr_pph->fwd_op) {
+        rx_packet->pph_info.vlan_tag = clx_netif_drv(unit)->port_db[*port_di].pvid; // default vlan
+        rx_packet->pph_info.vlan_pop_num = ptr_pph->igr_vid_pop_num;
+        ptr_pph->igr_vlan = clx_netif_drv(unit)->port_db[*port_di].pvid; // update pph igr_vlan
+    } else  if(KG_PKT_PPH_TYPE_L3UC == ptr_pph->fwd_op) {
+        ptr_pph_l3uc = (kg_pkt_pph_l3uc_t *)(ptr_pph);
+        rx_packet->pph_info.vlan_tag = ptr_pph_l3uc->src_bdi;
+        rx_packet->pph_info.vlan_pop_num = 1;
+    }
+
+    dbg_print(DBG_RX, "unit:%u vlan_tag:%u vlan_pop_num:%u\n", unit, rx_packet->pph_info.vlan_tag, rx_packet->pph_info.vlan_pop_num);
+
+    return 0;
+}
+
+static int
+kg_parse_netlink_info(const uint32_t unit, struct dma_rx_packet *rx_packet, void *ptr_cookie)
+{
+    struct dma_rx_frag_buffer *rx_frag;
+    void *ptr_dma_buffer;
+    kg_pkt_pph_l2_t *ptr_pph = NULL;
+    struct netlink_rx_cookie *netlink_cookie = (struct netlink_rx_cookie *)ptr_cookie;
+    struct net_device *ptr_igr_net_dev = NULL, *ptr_egr_net_dev = NULL;
+    struct net_device_priv *ptr_igr_priv = NULL, *ptr_egr_priv = NULL;
+    uint32_t port_di = 0;
+    uint32_t netif_id = 0;
+
+    if (!rx_packet || !ptr_cookie || list_empty(&rx_packet->rx_frag)) {
+        dbg_print(DBG_WARN, "unit:%u rx_packet or ptr_cookie is NULL or rx_frag is empty\n", unit);
+        return -EINVAL;
+    }
+
+    rx_frag = list_first_entry(&rx_packet->rx_frag, struct dma_rx_frag_buffer, rx_frag);
+    if (!rx_frag || !rx_frag->ptr_skb || !rx_frag->ptr_skb->data) {
+        dbg_print(DBG_WARN,
+                  "unit:%u rx_frag or rx_frag->ptr_skb or rx_frag->ptr_skb->data is NULL\n", unit);
+        return -EINVAL;
+    }
+
+    ptr_dma_buffer = rx_frag->ptr_skb->data;
+    ptr_pph = (kg_pkt_pph_l2_t *)((uint8_t *)ptr_dma_buffer);
+
+    // obtain the igress netdev ifindex
+    if (ptr_pph->src_idx >= CLX_NETIF_PORT_DI_MAX_NUM) {
+        if (ptr_pph->asic_id >= KG_MAX_ASIC_NUM_PER_UNIT || ptr_pph->port_id >= KG_PORTS_PER_SLICE) {
+            dbg_print(DBG_WARN,
+                      "unit:%u Invalid asic_id=%u or port_id=%u (max_asid=%u, max_port=%u)\n", unit,
+                      ptr_pph->asic_id, ptr_pph->port_id, KG_MAX_ASIC_NUM_PER_UNIT - 1,
+                      KG_PORTS_PER_SLICE - 1);
+            return -1;
+        }
+
+        netlink_cookie->pkt.igr_port_si =
+            CLX_NETIF_GET_PORT_DI(unit, ptr_pph->asic_id, ptr_pph->port_id);
+        if ((uint32_t)-1 == netlink_cookie->pkt.igr_port_si) {
+            return -EFAULT;
+        }
+    } else {
+        netlink_cookie->pkt.igr_port_si = ptr_pph->src_idx;
+    }
+    netif_id = clx_netif_di2id_lookup(unit, netlink_cookie->pkt.igr_port_si);
+    ptr_igr_net_dev = clx_netif_drv(unit)->netif_db[netif_id].ptr_net_dev;
+    if(NULL == ptr_igr_net_dev)
+    {
+        dbg_print(DBG_WARN,
+                    "unit:%u Invalid netdev, netif id:%u igr_port_si:%u\n", unit, netif_id, netlink_cookie->pkt.igr_port_si);
+        return -1;
+    }
+    netlink_cookie->pkt.iifindex = ptr_igr_net_dev->ifindex;
+
+    // obtain the egress netdev ifindex
+    port_di = ptr_pph->dst_idx;
+    if (port_di >= CLX_NETIF_PORT_DI_MAX_NUM) {
+        // set the egress netdev ifindex to the igress netdev ifindex when the egress netdev is not
+        // found
+        netlink_cookie->pkt.eifindex = netlink_cookie->pkt.iifindex;
+        ptr_egr_net_dev = ptr_igr_net_dev;
+        dbg_print(DBG_NETLINK,"unit:%u di is out range of PHY PORT DI, egr ifindex:%u\n", unit, netlink_cookie->pkt.eifindex);
+    } else {
+        netif_id = clx_netif_di2id_lookup(unit, port_di);
+        if (netif_id == -1) {
+            // set the egress netdev ifindex to the igress netdev ifindex when the egress netdev is
+            // not found
+            netlink_cookie->pkt.eifindex = netlink_cookie->pkt.iifindex;
+            ptr_egr_net_dev = ptr_igr_net_dev;
+            dbg_print(DBG_NETLINK,"unit:%u not found netif by di, egr ifindex:%u\n", unit, netlink_cookie->pkt.eifindex);
+        } else {
+            ptr_egr_net_dev = clx_netif_drv(unit)->netif_db[netif_id].ptr_net_dev;
+            if(NULL == ptr_egr_net_dev)
+            {
+                dbg_print(DBG_WARN,
+                            "unit:%u Invalid netdev, netif id:%u port_di:%u\n", unit, netif_id, port_di);
+                return -1;
+            }
+            netlink_cookie->pkt.eifindex = ptr_egr_net_dev->ifindex;
+        }
+    }
+
+    if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_IGR_SFLOW_SAMPLER) {
+        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_INGRESS;
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+        ptr_igr_priv = netdev_priv(ptr_igr_net_dev);
+        if (ptr_igr_priv) {
+            netlink_cookie->pkt.sample_rate = ptr_igr_priv->igr_sample_rate;
+        }
+    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_EGR_SFLOW_SAMPLER) {
+        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_EGRESS;
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+        if (ptr_egr_net_dev) {
+            ptr_egr_priv = netdev_priv(ptr_egr_net_dev);
+            if (ptr_egr_priv) {
+                dbg_print(DBG_NETLINK, "unit:%u, ifindx:%u egr_sample_rate:%u\n", unit, ptr_egr_net_dev->ifindex, ptr_egr_priv->egr_sample_rate);
+                netlink_cookie->pkt.sample_rate = ptr_egr_priv->egr_sample_rate;
+            }
+            else {
+                dbg_print(DBG_WARN, "cannot find netdev priv data, unit:%u, ifindx:%u\n", unit, ptr_egr_net_dev->ifindex);
+            }
+        }
+    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_MOD_REASON) {
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_MOD;
+    } else {
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_OTHER;
+    }
+    dbg_print(
+        DBG_RX,
+        "unit:%d, netlink_type:%d, psample_dir:%d, sample_rate:%d, "
+        "iifindex:%d, eifindex:%d, igr_port_si:%d, port dst_idx:%d, cpu_reason:%d, pph_cpu_reason:%d\n",
+        unit, netlink_cookie->netlink_type, netlink_cookie->pkt.psample_dir,netlink_cookie->pkt.sample_rate,
+        netlink_cookie->pkt.iifindex, netlink_cookie->pkt.eifindex, netlink_cookie->pkt.igr_port_si,
+        port_di, rx_packet->pph_info.cpu_reason, ptr_pph->cpu_reason);
+
+    return 0;
+}
+
+clx_pci_drv_cb_t kg_pci_driver = {
+    .dma_bit_mask = 48,
+    .mmio_bar = 0,
+};
+
+clx_netif_drv_cb_t kg_pkt_driver = {
+    .mtu = KG_MAX_PKT_SIZE,
+    .cpu_port = KG_PKT_CPU_PORT,
+    .unit_num = KG_MAX_UNIT_NUM,
+    .dies_per_unit = KG_MAX_DIE_NUM_PER_UNIT,
+    .slices_per_die = KG_MAX_SLICE_NUM_PER_UNIT,
+    .ports_per_slice = KG_PORTS_PER_SLICE,
+    .slices_per_unit = KG_MAX_DIE_NUM_PER_UNIT * KG_MAX_SLICE_NUM_PER_UNIT,
+    .ports_num_unit = KG_MAX_DIE_NUM_PER_UNIT * KG_MAX_SLICE_NUM_PER_UNIT * KG_PORTS_PER_SLICE,
+    .get_pkt_dst = kg_pkt_dst_get,
+    .parse_netlink_info = kg_parse_netlink_info,
+    .ptr_port_map_db = NULL,
+};
+
+clx_dma_drv_cb_t kg_dma_driver = {
+    .channel_num = 20,
+    .rx_channel_num = 4,
+    .tx_channel_num = 4,
+    .ring_size = CLX_PKT_DMA_RING_SIZE,
+    .descriptor_size = CLX_PKT_DMA_FRAG_SIZE,
+    .dma_hdr_size = KG_PKT_PDMA_HDR_SZ,
+
+    .enable_channel = kg_dma_channel_enable,
+    .disable_channel = kg_dma_channel_disable,
+    .reset_channel = kg_dma_channel_reset,
+    .restart_channel = kg_dma_channel_restart,
+    .set_ring_base = kg_dma_channel_ring_base_set,
+    .get_ring_base = kg_dma_channel_ring_base_get,
+    .set_ring_size = kg_dma_channel_ring_size_set,
+    .get_ring_size = kg_dma_channel_ring_size_get,
+    .set_work_idx = kg_dma_channel_work_idx_set,
+    .get_work_idx = kg_dma_channel_work_idx_get,
+    .get_pop_idx = kg_dma_channel_pop_idx_get,
+    .alloc_ring_base = kg_dma_alloc_ringbase,
+    .free_ring_base = kg_dma_free_ringbase,
+    .alloc_rx_buffer = kg_dma_rx_buffer_alloc,
+    .free_rx_buffer = kg_dma_rx_buffer_free,
+    .alloc_rx_frag = kg_dma_alloc_rx_frag,
+    .prepare_pph = kg_pph_prepare,
+    .tx_packet = kg_netdev_packet_tx,
+    .tx_callback = kg_tx_callback,
+    .set_descriptor_cfg = kg_rx_desc_cfg_set,
+    .txfifo_data_splice_cfg = NULL,
+    .rxfifo_cfg_set = kg_rxfifo_cfg_set,
+    .dbg_descriptor_show = kg_dbg_descriptor_show,
+    .dbg_reg_show = kg_dbg_reg_show,
+};
+
+static msi_isr_vector_t kg_msi_vector[] = {
+    /* rx dma channels */
+    {.handler = dma_rx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_rx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_rx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_rx_msi_hanler, .msi_cookie = NULL},
+    /* tx dma channels */
+    {.handler = dma_tx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_tx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_tx_msi_hanler, .msi_cookie = NULL},
+    {.handler = dma_tx_msi_hanler, .msi_cookie = NULL},
+    /* general 8 dma channels */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    /* fifo dma channel */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    /* chain 0 interrupt */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    /* chain 1-5 interrupt */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    /* chain 6 interrupt to die 1? */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+    /* period intr */
+    {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
+};
+
+static int
+kg_register_msi_irq(uint32_t unit, uint32_t irq)
+{
+    uint32_t idx = 0;
+    clx_dma_channel_cookie_t *dma_cookie;
+    clx_intr_info_t *usr_intr_cookie;
+    struct clx_pci_dev_s *ptr_clx_dev = clx_misc_dev->clx_pci_dev[unit];
+    struct pci_dev *pci_dev = ptr_clx_dev->pci_dev;
+    int pos = 0;
+    uint16_t msg_ctrl = 0;
+    uint32_t msi_addr_low = 0;
+    uint32_t msi_addr_high = 0;
+    uint64_t msi_addr = 0;
+    uint32_t msi_data = 0;
+    int rc;
+
+    /*cfg msi data && msi addr to pcx reg*/
+    pos = pci_find_capability(pci_dev, PCI_CAP_ID_MSI);
+    if (!pos) {
+        dbg_print(DBG_CRIT, "unit:%u PCI not support msi capability\n", unit);
+        return -ENOSYS;
+    }
+
+    pci_read_config_word(pci_dev, pos + PCI_MSI_FLAGS, &msg_ctrl);
+    pci_read_config_dword(pci_dev, pos + PCI_MSI_ADDRESS_LO, &msi_addr_low);
+    if ((msg_ctrl & PCI_MSI_FLAGS_64BIT)) {
+        pci_read_config_dword(pci_dev, pos + PCI_MSI_ADDRESS_HI, &msi_addr_high);
+    }
+    pci_read_config_dword(
+        pci_dev, pos + ((msg_ctrl & PCI_MSI_FLAGS_64BIT) ? PCI_MSI_DATA_64 : PCI_MSI_DATA_32),
+        &msi_data);
+
+    msi_addr = ((uint64_t)msi_addr_high << 32) | msi_addr_low;
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_MSI_ADDR, (uint32_t *)&msi_addr,
+                                              sizeof(uint64_t));
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_MSI_DATA, &msi_data, sizeof(uint32_t));
+
+    /* alloc msi vector */
+    clx_intr_drv(unit)->msi_vector =
+        kmalloc_array(clx_intr_drv(unit)->msi_cnt, sizeof(msi_isr_vector_t), GFP_KERNEL);
+    if (!clx_intr_drv(unit)->msi_vector) {
+        dbg_print(DBG_CRIT, "unit:%u Failed to allocate msi vector\n", unit);
+        return -ENOMEM;
+    }
+
+    memset(clx_intr_drv(unit)->msi_vector, 0,
+           clx_intr_drv(unit)->msi_cnt * sizeof(msi_isr_vector_t));
+    memcpy(clx_intr_drv(unit)->msi_vector, kg_msi_vector,
+           clx_intr_drv(unit)->msi_cnt * sizeof(msi_isr_vector_t));
+
+    /* fill in the msi_cookie */
+    for (idx = 0; idx < clx_intr_drv(unit)->msi_cnt; idx++) {
+        if (idx < clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num) {
+            dma_cookie = kmalloc(sizeof(clx_dma_channel_cookie_t), GFP_ATOMIC);
+            if (!dma_cookie) {
+                dbg_print(DBG_CRIT, "unit:%u Failed to allocate dma cookie\n", unit);
+                return -ENOMEM;
+            }
+            dma_cookie->unit = unit;
+            dma_cookie->channel = idx;
+            clx_intr_drv(unit)->msi_vector[idx].msi_cookie = dma_cookie;
+
+            tasklet_init(&clx_dma_drv(unit)->clx_dma_intr[idx].dma_tasklets,
+                         clx_dma_drv(unit)->clx_dma_intr[idx].dma_handler,
+                         (unsigned long)&clx_dma_drv(unit)->clx_dma_intr[idx].channel_cookie);
+        } else {
+            usr_intr_cookie = kmalloc(sizeof(clx_intr_info_t), GFP_ATOMIC);
+            if (!usr_intr_cookie) {
+                dbg_print(DBG_CRIT, "unit:%u Failed to allocate interrupt cookie\n", unit);
+                return -ENOMEM;
+            }
+            usr_intr_cookie->unit = unit;
+            usr_intr_cookie->irq = idx;
+            usr_intr_cookie->valid = CLX_INTR_VALID_CODE;
+            clx_intr_drv(unit)->msi_vector[idx].msi_cookie = usr_intr_cookie;
+        }
+
+        dbg_print(DBG_INTR, "unit:%u request_irq. base irq=%d irq=%d.\n", unit, irq, irq + idx);
+        rc = request_irq(irq + idx, clx_intr_drv(unit)->msi_vector[idx].handler, 0, CLX_DRIVER_NAME,
+                         clx_intr_drv(unit)->msi_vector[idx].msi_cookie);
+        if (0 != rc) {
+            dbg_print(DBG_CRIT, "unit:%u request_irq failed. irq=%d.\n", unit, irq + idx);
+            return rc;
+        }
+    }
+
+    return 0;
+}
+
+static void
+kg_unregister_msi_irq(uint32_t unit)
+{
+    uint32_t i;
+    struct pci_dev *pci_dev = clx_misc_dev->clx_pci_dev[unit]->pci_dev;
+
+    for (i = 0; i < clx_intr_drv(unit)->msi_cnt; i++) {
+        dbg_print(DBG_INTR, "free_irq. unit=%u, irq=%d.\n", unit, pci_irq_vector(pci_dev, i));
+        free_irq(pci_irq_vector(pci_dev, i), clx_intr_drv(unit)->msi_vector[i].msi_cookie);
+        kfree(clx_intr_drv(unit)->msi_vector[i].msi_cookie);
+    }
+
+    kfree(clx_intr_drv(unit)->msi_vector);
+}
+
+clx_intr_drv_cb_t kg_intr_driver = {
+    .intr_flags = INTR_FLAGS_DEINIT,
+    // .intr_mode = INTR_MODE_MSI,
+    .msi_cnt = sizeof(kg_msi_vector) / sizeof(msi_isr_vector_t),
+    .msi_vector = NULL,
+    .top_irq_mask = kg_top_irq_mask,
+    .top_irq_unmask = kg_top_irq_unmask,
+    .dma_irq_mask_all = kg_dma_irq_mask_all,
+    .dma_irq_unmask_all = kg_dma_irq_unmask_all,
+    .read_dma_irq_status = kg_get_dma_irq_channel,
+    .mask_dma_channel_irq = kg_mask_dma_channel_irq,
+    .unmask_dma_channel_irq = kg_unmask_dma_channel_irq,
+    .clear_dma_channel_irq = kg_clear_dma_channel_irq,
+    .read_dma_error_irq_status = kg_get_dma_error_irq_channel,
+    .mask_dma_channel_error_irq = kg_mask_dma_channel_error_irq,
+    .unmask_dma_channel_error_irq = kg_unmask_dma_channel_error_irq,
+    .clear_dma_channel_error_irq = kg_dma_channel_error_irq_clear,
+    .dma_channel_error_irq_handle = kg_dma_channel_error_irq_handle,
+    .usr_interrupt_exist = kg_chip_usr_intrrupt_exist,
+    .register_msi_irq = kg_register_msi_irq,
+    .unregister_msi_irq = kg_unregister_msi_irq,
+};
