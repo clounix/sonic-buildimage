@@ -1,0 +1,14 @@
+Source: sonic-flines-platform-modules
+Section: main
+Priority: extra
+Maintainer: Clounix <lufq@clounix.com>
+Build-Depends: debhelper (>= 8.0.0), bzip2
+Standards-Version: 3.9.3
+
+Package: sonic-platform-flines-ds410g-48y8c
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-flines-ds410h-48y8c
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp

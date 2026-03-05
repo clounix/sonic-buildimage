@@ -1,6 +1,7 @@
 include $(PLATFORM_PATH)/sai.mk
 include $(PLATFORM_PATH)/clounix-modules.mk
 include $(PLATFORM_PATH)/platform-modules-clounix.mk
+include $(PLATFORM_PATH)/platform-modules-flines.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix.mk
 include $(PLATFORM_PATH)/docker-syncd-clounix-rpc.mk
 include $(PLATFORM_PATH)/one-image.mk
