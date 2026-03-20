@@ -75,6 +75,7 @@ static int *log_level = &psu_log_level;
 ssize_t pddf_show_custom_psu_v_out(struct device *dev, struct device_attribute *da, char *buf);
 ssize_t pddf_show_custom_psu_v_out_min(struct device *dev, struct device_attribute *da, char *buf);
 ssize_t pddf_show_custom_psu_v_out_max(struct device *dev, struct device_attribute *da, char *buf);
+int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *data);
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out;
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out_min;
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out_max;
