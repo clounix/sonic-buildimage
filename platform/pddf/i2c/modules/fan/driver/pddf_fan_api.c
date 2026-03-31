@@ -372,6 +372,17 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
         case FAN_SPEED_TARGET_R_L13:
         case FAN_SPEED_TARGET_R_L14:
         case FAN_SPEED_TARGET_R_L15:
+        case FAN1_SPEED_MAX:
+        case FAN2_SPEED_MAX:
+        case FAN3_SPEED_MAX:
+        case FAN4_SPEED_MAX:
+        case FAN5_SPEED_MAX:
+        case FAN1_SPEED_MIN:
+        case FAN2_SPEED_MIN:
+        case FAN3_SPEED_MIN:
+        case FAN4_SPEED_MIN:
+        case FAN5_SPEED_MIN:
+        case FAN_EEPROM_SIZE:
             status = attr_info->val.intval;
 			break;
 		default:
@@ -839,7 +850,7 @@ int sonic_i2c_get_fan_direction_default(void *client, FAN_DATA_ATTR *udata, void
         status = val;
     else
         painfo->val.intval = ((val & udata->mask) == udata->cmpval);
-
+    pddf_dbg(FAN, "val: %#x, mask: %#x, cmpval: %#x, intval: %#x", val, udata->mask, udata->cmpval, painfo->val.intval);
     return status;
 
 ret:
