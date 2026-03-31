@@ -5,4 +5,5 @@ obj-m += tps546b24a.o
 obj-m += tps53915.o
 obj-m += xdpe132g5h.o
 obj-m += lmk05318.o
+obj-m += tmp75.o
 
