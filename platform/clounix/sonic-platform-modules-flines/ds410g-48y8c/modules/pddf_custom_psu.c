@@ -62,6 +62,10 @@
 #include <linux/slab.h>
 #include <linux/dmi.h>
 #include "pddf_psu_defs.h"
+#include "pddf_psu_driver.h"
+#include "pddf_client_defs.h"
+
+static int *log_level = &psu_log_level;
 
 #define PSU_REG_VOUT_MODE 0x20
 #define PSU_REG_READ_VOUT 0x8b
@@ -74,6 +78,10 @@ ssize_t pddf_show_custom_psu_v_out_max(struct device *dev, struct device_attribu
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out;
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out_min;
 extern PSU_SYSFS_ATTR_DATA access_psu_v_out_max;
+extern PSU_SYSFS_ATTR_DATA access_psu_model_name;
+extern PSU_SYSFS_ATTR_DATA access_psu_mfr_id;
+extern PSU_SYSFS_ATTR_DATA access_psu_serial_num;
+
 static int two_complement_to_int(u16 data, u8 valid_bit, int mask)
 {
     u16  valid_data  = data & mask;
@@ -208,12 +216,56 @@ ssize_t pddf_show_custom_psu_v_out_max(struct device *dev, struct device_attribu
     else
         return sprintf(buf, "%d\n", (mantissa * multiplier) / (1 << -exponent));
 }
+
+static int sonic_i2c_get_psu_block_custom(void *client, PSU_DATA_ATTR *adata, void *data)
+{
+    int status = 0, retry = 10;
+    struct psu_attr_info *padata = (struct psu_attr_info *)data;
+    char buf[32]="";  //temporary placeholder for block data
+    uint8_t offset = (uint8_t)adata->offset;
+    int data_len = adata->len;
+
+    while (retry)
+    {
+        status = i2c_smbus_read_block_data((struct i2c_client *)client, offset, buf);
+        if (unlikely(status<0))
+        {
+            msleep(60);
+            retry--;
+            continue;
+        }
+        break;
+    }
+
+    if (status < 0)
+    {
+        buf[0] = '\0';
+        pddf_dbg(PSU, "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
+    }
+    else
+    {
+        buf[data_len-1] = '\0';
+    }
+
+    if (strncmp(adata->devtype, "pmbus", strlen("pmbus")) == 0)
+        strncpy(padata->val.strval, buf+1, data_len-1);
+    else
+        strncpy(padata->val.strval, buf, data_len);
+
+    pddf_dbg(PSU, "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
+    return 0;
+}
+
 static int __init pddf_custom_psu_init(void)
 {
     access_psu_v_out.show = pddf_show_custom_psu_v_out;
     access_psu_v_out_min.show = pddf_show_custom_psu_v_out_min;
     access_psu_v_out_max.show = pddf_show_custom_psu_v_out_max;
     access_psu_v_out.do_get = NULL;
+
+    access_psu_model_name.do_get = sonic_i2c_get_psu_block_custom;
+    access_psu_mfr_id.do_get = sonic_i2c_get_psu_block_custom;
+    access_psu_serial_num.do_get = sonic_i2c_get_psu_block_custom;
     return 0;
 }
 
