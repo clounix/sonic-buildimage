@@ -21,9 +21,11 @@ static struct func_map fpga_update_map[] = {
     {CLX25600_L_SLT_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
     {CLX12800_PLATFORM_STRING, anlogic_fpga_update_init, anlogic_fpga_update_exit},
     {ESX25600_64D_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
-
+    {DS410G_48Y8C_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
+    
     {ARM_CLX4000_24C8D_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
     {ARM_CLX25600_L_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
+    {ARM_DS410H_48Y8C_PLATFORM_STRING, xilinx_fpga_update_init, xilinx_fpga_update_exit},
 };
 
 int fpga_update_init(const char* platform,uint32_t region)

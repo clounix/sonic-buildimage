@@ -97,7 +97,9 @@ struct fpga_fn_if {
 #define CLX25600_L_R2_PLATFORM_STRING "x86_64-clounix_clx12800_48d8e-r2"
 #define CLX25600_L_SLT_PLATFORM_STRING "x86_64-clounix_clx12800_slt-r0"
 #define ESX25600_64D_PLATFORM_STRING "x86_64-embedway_esx25600_64d-r0"
+#define DS410G_48Y8C_PLATFORM_STRING "x86_64-flines_ds410g_48y8c-r0"
 
+#define ARM_DS410H_48Y8C_PLATFORM_STRING "arm64-flines_ds410h_48y8c-r0"
 #define ARM_CLX4000_24C8D_PLATFORM_STRING "arm64-clounix_clx4000_24c8d-r0"
 #define ARM_CLX25600_L_PLATFORM_STRING "arm64-clounix_clx12800_48d8e-r0"
 typedef uint32_t UINTPTR;
