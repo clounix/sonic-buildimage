@@ -63,6 +63,9 @@
 #include <linux/notifier.h>
 #include <linux/panic_notifier.h>
 #include <linux/kdebug.h>
+#include "pddf_client_defs.h"
+
+static int *log_level = &wdt_log_level;
 
 #define WATCHDOG_BASE_ADDRESS           (0x0100)
 
@@ -122,7 +125,7 @@ static int prolong_wdt_work(struct notifier_block *nb, unsigned long action, voi
   //reg_data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
   //writel(WATCHDOG_BFINS(CONFIG_ENABLE, 1, reg_data), fpga_ctl_addr + WATCHDOG_CONFIG);
 
-    printk(KERN_EMERG "%s[%d]\n", __func__, __LINE__);
+    pddf_dbg(WDT, "%s[%d]\n", __func__, __LINE__);
     return NOTIFY_DONE;
 }
 /*
@@ -169,7 +172,7 @@ static ssize_t drv_get_watchdog_state(struct device *dev,
         }
     }
     else {
-        printk(KERN_ERR "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         ret = -1;
     }
     return ret;
@@ -192,7 +195,7 @@ static ssize_t drv_get_watchdog_timeleft(struct device *dev,
     unsigned int  data = 0 ;
     unsigned int  timeleft ;
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
     data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
@@ -221,12 +224,12 @@ static ssize_t drv_get_watchdog_timeout(struct device *dev,
     ssize_t ret = -1;
     unsigned int  timeout ;
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
     timeout = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
     timeout = WATCHDOG_BFEXT(CONFIG_TIMEOUT,timeout); 
-    //printk(KERN_INFO  "get timeout is %d.\r\n", timeout);
+    pddf_dbg(WDT, "get timeout is %d.\n", timeout);
     ret = scnprintf(buf, PAGE_SIZE,"%d\n",(int)timeout);
 
     return ret;
@@ -253,7 +256,8 @@ static ssize_t drv_set_watchdog_timeout(struct device *dev,
     {
         return -EINVAL;
     }
-   // printk(KERN_INFO  "set timeout is %d.\r\n", value);
+
+    pddf_dbg(WDT, "set timeout is %d.\n", value);
     timeout = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
     writel(WATCHDOG_BFINS(CONFIG_TIMEOUT,value,timeout), fpga_ctl_addr + WATCHDOG_CONFIG);
 
@@ -283,7 +287,7 @@ static ssize_t drv_get_watchdog_enable_status(struct device *dev,
         ret = scnprintf(buf,PAGE_SIZE,"%d\n",value);
     }
     else{
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         ret = -1;
     }
     return ret;
@@ -303,7 +307,7 @@ static ssize_t drv_set_watchdog_enable_status(struct device *dev,
     /* add vendor codes here */
     unsigned int  data = 0 , value = 0;
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
     if (kstrtouint(buf, 10, &value))
@@ -345,7 +349,7 @@ static ssize_t drv_set_watchdog_reset(struct device *dev,
     unsigned int  data = 0 ;
 
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
     data = WATCHDOG_BIT(FEED_SET);
@@ -359,7 +363,7 @@ static ssize_t drv_get_watchdog_rst_flag(struct device *dev,
     unsigned int  data = 0 ;
 
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR  "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
 
@@ -377,7 +381,7 @@ static ssize_t drv_set_watchdog_rst_flag(struct device *dev,
     unsigned int  data = 0 ;
 
     if (fpga_ctl_addr == NULL) {
-        printk(KERN_ERR "fpga resource is not available.\r\n");
+        pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
 
@@ -432,7 +436,7 @@ int watchdog_sysfs_init(void)
 
     if (kobj_watchdog_root == NULL)
     {
-        printk(KERN_ERR "create kobj_watchdog_root failed!");
+        pddf_err(WDT, "create kobj_watchdog_root failed!\n");
         ret = -ENOMEM;
         goto exit;
     }
@@ -442,7 +446,7 @@ int watchdog_sysfs_init(void)
 exit:
     if (ret != 0)
     {
-        printk(KERN_ERR  "watchdog sysfs init failed!\n");
+        pddf_err(WDT, "watchdog sysfs init failed!\n");
         watchdog_sysfs_exit();
     }
 
@@ -456,11 +460,11 @@ static int __init clounix_watchdog_init(void)
     ret = watchdog_sysfs_init();
     if (ret)
     {
-       printk(KERN_ERR "clounix fpga module finished and failed!\n");
+       pddf_err(WDT, "clounix fpga module finished and failed!\n");
     }
     else
     {
-        printk(KERN_INFO "clounix fpga watchdog module finished and success!\n");    
+        pddf_info(WDT, "clounix fpga watchdog module finished and success!\n");
         panic_nb.notifier_call = prolong_wdt_work;
         atomic_notifier_chain_register(&panic_notifier_list, &panic_nb);
     }
@@ -475,7 +479,7 @@ static void __exit clounix_watchdog_exit(void)
 
     watchdog_sysfs_exit();
     reset_watchdog();
-    printk(KERN_INFO "clounix fpga watchdog module uninstalled !\n");
+    pddf_info(WDT, "clounix fpga watchdog module uninstalled !\n");
     return;
 }
 
