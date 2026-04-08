@@ -6,4 +6,6 @@ obj-m += tps53915.o
 obj-m += xdpe132g5h.o
 obj-m += lmk05318.o
 obj-m += tmp75.o
-
+obj-m += jwh6374.o
+obj-m += tps389006.o
+KBUILD_EXTRA_SYMBOLS := $(M)/../../../../pddf/i2c/Module.symvers.PDDF
