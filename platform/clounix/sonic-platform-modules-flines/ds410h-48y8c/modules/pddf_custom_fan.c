@@ -73,6 +73,8 @@
 extern void *get_device_table(char *name);
 
 int sonic_i2c_set_fan_pwm_custom(void *client, FAN_DATA_ATTR *udata, void *info);
+int sonic_i2c_get_fan_rpm_custom(void *client, FAN_DATA_ATTR *udata, void *info);
+int sonic_i2c_get_fan_direction_custom(void *client, FAN_DATA_ATTR *udata, void *info);
 
 extern FAN_SYSFS_ATTR_DATA data_fan1_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan2_pwm;
@@ -87,6 +89,28 @@ extern FAN_SYSFS_ATTR_DATA data_fan10_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan11_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan12_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan_hw_version;
+
+extern FAN_SYSFS_ATTR_DATA data_fan1_input;
+extern FAN_SYSFS_ATTR_DATA data_fan2_input;
+extern FAN_SYSFS_ATTR_DATA data_fan3_input;
+extern FAN_SYSFS_ATTR_DATA data_fan4_input;
+extern FAN_SYSFS_ATTR_DATA data_fan5_input;
+extern FAN_SYSFS_ATTR_DATA data_fan6_input;
+extern FAN_SYSFS_ATTR_DATA data_fan7_input;
+extern FAN_SYSFS_ATTR_DATA data_fan8_input;
+extern FAN_SYSFS_ATTR_DATA data_fan9_input;
+extern FAN_SYSFS_ATTR_DATA data_fan10_input;
+
+extern FAN_SYSFS_ATTR_DATA data_fan1_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan2_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan3_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan4_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan5_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan6_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan7_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan8_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan9_direction;
+extern FAN_SYSFS_ATTR_DATA data_fan10_direction;
 
 int sonic_i2c_set_fan_pwm_custom(void *client, FAN_DATA_ATTR *udata, void *info)
 {
@@ -136,6 +160,61 @@ int sonic_i2c_set_fan_pwm_custom(void *client, FAN_DATA_ATTR *udata, void *info)
     return status;
 }
 
+
+int sonic_i2c_get_fan_rpm_custom(void *client, FAN_DATA_ATTR *udata, void *info)
+{
+    int status = 0;
+    int val = 0;
+    bool skip_neg_check = false;
+    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
+
+    if (udata->len == 1)
+    {
+        val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+    }
+    else if (udata->len ==2)
+    {
+        val = i2c_smbus_read_word_data((struct i2c_client *)client, udata->offset);
+    }
+    
+
+    if (!skip_neg_check && val < 0) {
+        status = val;
+    } else {
+        if (udata->is_divisor) {
+            int divisor = val >> 3;
+            if (divisor == 0) {
+                printk(KERN_ERR "%s: failed to calculate fan rpm, divisor is 0\n", __FUNCTION__);
+                return -1;
+            } else if (divisor < 0) {
+                painfo->val.intval = 0;
+            } else {
+                painfo->val.intval = udata->mult / divisor;
+            }
+        } else {
+            painfo->val.intval = udata->mult * val;
+        }
+    }
+
+    if (status)
+        printk(KERN_ERR "%s: Error status = %d", __FUNCTION__, status);
+
+    return status;
+}
+
+
+int sonic_i2c_get_fan_direction_custom(void *client, FAN_DATA_ATTR *udata, void *info)
+{
+    /**
+     * 0: F2B是指前向风道(-F)  
+     * 1: B2F是指后向风道(-R)
+     */
+    int status = 0;
+    /* 没有方向寄存器，固定是front to bank */
+    return status;
+}
+
+
 static int __init pddf_custom_fan_init(void)
 {
     data_fan1_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
@@ -153,6 +232,28 @@ static int __init pddf_custom_fan_init(void)
 
     data_fan_hw_version.show = fan_show_default;
     data_fan_hw_version.do_get = sonic_i2c_get_fan_hw_version_default;
+
+    data_fan1_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan2_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan3_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan4_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan5_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan6_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan7_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan8_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan9_input.do_get = sonic_i2c_get_fan_rpm_custom;
+    data_fan10_input.do_get = sonic_i2c_get_fan_rpm_custom;
+
+    data_fan1_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan2_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan3_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan4_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan5_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan6_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan7_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan8_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan9_direction.do_get = sonic_i2c_get_fan_direction_custom;
+    data_fan10_direction.do_get = sonic_i2c_get_fan_direction_custom;
 
     return 0;
 }
