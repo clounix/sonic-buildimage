@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2023
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -270,7 +270,7 @@ netlink_set_mod_skb(struct netif_netlink *ptr_netlink,
         return -EFAULT;
     }
 
-    /* obtain the intf index for the igr_port */
+    /* obtain the intf index for the igr_port which netif is supported, or else the value is not valid */
     igr_port_si = ptr_cookies->pkt.igr_port_si;
     nla_put_u32(ptr_nl_skb, NETIF_NL_ATTR_MOD_IGR_PORT, (uint32_t)igr_port_si);
 
@@ -787,7 +787,13 @@ netif_netlink_reveive_skb(uint32_t unit,
     }
 
     ptr_data = (struct netlink_rx_cookie *)ptr_cookie;
-    ptr_skb = netif_construct_skb_from_rx_packet(unit, port_di, rx_packet);
+    /* if the netlink type is MOD and the igr_port_si is invalid, construct the fast skb */
+    if ((ptr_data->netlink_type == NETLINK_RX_TYPE_MOD &&
+        (ptr_data->pkt.igr_port_si == (uint32_t)-1))) {
+        ptr_skb = netif_construct_fast_skb_from_rx_packet(unit, rx_packet);
+    } else {
+        ptr_skb = netif_construct_skb_from_rx_packet(unit, port_di, rx_packet);
+    }
 
     /* send the packet to netlink mcgroup */
     rc = netlink_forward_rx_packet(unit, ptr_skb, ptr_data);

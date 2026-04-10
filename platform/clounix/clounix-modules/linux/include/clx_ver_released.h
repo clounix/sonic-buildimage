@@ -5,6 +5,6 @@
 #ifndef __CLX_DEV_VER_RELEASED_H__
 #define __CLX_DEV_VER_RELEASED_H__
 
-#define CLX_DEV_RELEASED_GIT_HASH      "af222e8"
+#define CLX_DEV_RELEASED_GIT_HASH      "894c88b"
 
 #endif // __CLX_DEV_VER_RELEASED_H__

@@ -1,3 +1,38 @@
+/*******************************************************************************
+ *  Copyright Statement:
+ *  --------------------
+ *  This software and the information contained therein are protected by
+ *  copyright and other intellectual property laws and terms herein is
+ *  confidential. The software may not be copied and the information
+ *  contained herein may not be used or disclosed except with the written
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *
+ *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+ *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+ *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+ *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+ *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+ *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+ *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+ *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+ *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+ *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+ *
+ *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+ *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+ *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+ *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+ *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+ *
+ *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+ *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+ *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+ *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
+ *
+ *******************************************************************************/
+
 #include "knet_dev.h"
 #include "knet_pci.h"
 #include "knet_fault_event.h"
@@ -258,6 +293,23 @@ clx_netif_net_dev_ioctl(struct net_device *ptr_net_dev, struct ifreq *ptr_ifreq,
     return 0;
 }
 
+void
+clx_netif_wake_tx_queues(uint32_t unit, uint32_t channel)
+{
+    int netif_id;
+    struct net_device *ptr_net_dev;
+    struct net_device_priv *ptr_priv;
+
+    for (netif_id = 0; netif_id < CLX_NETIF_MAX_NUM; netif_id++) {
+        ptr_net_dev = clx_netif_drv(unit)->netif_db[netif_id].ptr_net_dev;
+        if (ptr_net_dev == NULL)
+            continue;
+        ptr_priv = netdev_priv(ptr_net_dev);
+        if (ptr_priv->tx_channel == channel && netif_queue_stopped(ptr_net_dev))
+            netif_wake_queue(ptr_net_dev);
+    }
+}
+
 static netdev_tx_t
 clx_netif_net_dev_tx(struct sk_buff *ptr_skb, struct net_device *ptr_net_dev)
 {
@@ -363,11 +415,10 @@ clx_netif_net_dev_tx(struct sk_buff *ptr_skb, struct net_device *ptr_net_dev)
         ptr_priv->stats.tx_packets += 1;
         ptr_priv->stats.tx_bytes += pkt_len;
     } else {
-        ptr_priv->stats.tx_fifo_errors++; /* to record the extreme cases where packets are
-                                           * dropped
-                                           */
+        ptr_priv->stats.tx_fifo_errors++;
         ptr_priv->stats.tx_dropped++;
         kfree_skb(new_skb);
+        netif_stop_queue(ptr_net_dev);
         return NETDEV_TX_BUSY;
     }
 
@@ -1690,6 +1741,39 @@ clx_netif_set_port_map(uint32_t unit, unsigned long arg)
 
     dbg_print(DBG_RX, "u=%u, slice=%u slice_port=%u port_di=%u\n", unit, port_map_cookie.slice,
               port_map_cookie.slice_port, port_map_cookie.port_di);
+
+    return ret;
+}
+
+int
+clx_netif_get_port_map(uint32_t unit, unsigned long arg)
+{
+    struct clx_ioctl_port_map_cookie port_map_cookie;
+    struct clx_ioctl_port_map_cookie __user *user_port_map = (void __user *)arg;
+    int ret = 0;
+
+    if (copy_from_user(&port_map_cookie, user_port_map, sizeof(struct clx_ioctl_port_map_cookie))) {
+        return -EFAULT;
+    }
+
+    if (port_map_cookie.slice >= clx_netif_drv(unit)->slices_per_unit ||
+        port_map_cookie.slice_port >= clx_netif_drv(unit)->ports_per_slice) {
+        dbg_print(DBG_ERR, "u=%u, bad param slice=%u slice_port=%u\n", unit,
+                  port_map_cookie.slice, port_map_cookie.slice_port);
+        return -EINVAL;
+    }
+
+    if (!clx_netif_drv(unit)->ptr_port_map_db) {
+        dbg_print(DBG_ERR, "u=%u, ptr_port_map_db is NULL\n", unit);
+        return -EFAULT;
+    }
+
+    port_map_cookie.port_di = CLX_NETIF_GET_PORT_DI(unit, port_map_cookie.slice,
+                                                     port_map_cookie.slice_port);
+
+    if (copy_to_user(user_port_map, &port_map_cookie, sizeof(struct clx_ioctl_port_map_cookie))) {
+        return -EFAULT;
+    }
 
     return ret;
 }

@@ -1,3 +1,38 @@
+/*******************************************************************************
+ *  Copyright Statement:
+ *  --------------------
+ *  This software and the information contained therein are protected by
+ *  copyright and other intellectual property laws and terms herein is
+ *  confidential. The software may not be copied and the information
+ *  contained herein may not be used or disclosed except with the written
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *
+ *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+ *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+ *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+ *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+ *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+ *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+ *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+ *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+ *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+ *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+ *
+ *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+ *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+ *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+ *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+ *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+ *
+ *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+ *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+ *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+ *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
+ *
+ *******************************************************************************/
+
 #include "knet_dev.h"
 #include "knet_pci.h"
 #include "knet_buffer.h"
@@ -1064,11 +1099,24 @@ kg_parse_netlink_info(const uint32_t unit, struct dma_rx_packet *rx_packet, void
 
         netlink_cookie->pkt.igr_port_si =
             CLX_NETIF_GET_PORT_DI(unit, ptr_pph->asic_id, ptr_pph->port_id);
-        if ((uint32_t)-1 == netlink_cookie->pkt.igr_port_si) {
-            return -EFAULT;
-        }
     } else {
         netlink_cookie->pkt.igr_port_si = ptr_pph->src_idx;
+    }
+    if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_IGR_SFLOW_SAMPLER) {
+        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_INGRESS;
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_EGR_SFLOW_SAMPLER) {
+        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_EGRESS;
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_MOD_REASON) {
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_MOD;
+        return 0;//no need to further parse netlink info
+    } else {
+        netlink_cookie->netlink_type = NETLINK_RX_TYPE_OTHER;
+    }
+    if ((uint32_t)-1 == netlink_cookie->pkt.igr_port_si) {
+        dbg_print(DBG_WARN, "unit:%u igr_port_si is invalid, igr_port_si:%u\n", unit, netlink_cookie->pkt.igr_port_si);
+        return -EFAULT;
     }
     netif_id = clx_netif_di2id_lookup(unit, netlink_cookie->pkt.igr_port_si);
     ptr_igr_net_dev = clx_netif_drv(unit)->netif_db[netif_id].ptr_net_dev;
@@ -1108,16 +1156,12 @@ kg_parse_netlink_info(const uint32_t unit, struct dma_rx_packet *rx_packet, void
         }
     }
 
-    if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_IGR_SFLOW_SAMPLER) {
-        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_INGRESS;
-        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+    if (netlink_cookie->pkt.psample_dir == NETIF_NL_PKT_PSAMPLE_INGRESS) {
         ptr_igr_priv = netdev_priv(ptr_igr_net_dev);
         if (ptr_igr_priv) {
             netlink_cookie->pkt.sample_rate = ptr_igr_priv->igr_sample_rate;
         }
-    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_EGR_SFLOW_SAMPLER) {
-        netlink_cookie->pkt.psample_dir = NETIF_NL_PKT_PSAMPLE_EGRESS;
-        netlink_cookie->netlink_type = NETLINK_RX_TYPE_SFLOW;
+    } else if (netlink_cookie->pkt.psample_dir == NETIF_NL_PKT_PSAMPLE_EGRESS) {
         if (ptr_egr_net_dev) {
             ptr_egr_priv = netdev_priv(ptr_egr_net_dev);
             if (ptr_egr_priv) {
@@ -1128,10 +1172,6 @@ kg_parse_netlink_info(const uint32_t unit, struct dma_rx_packet *rx_packet, void
                 dbg_print(DBG_WARN, "cannot find netdev priv data, unit:%u, ifindx:%u\n", unit, ptr_egr_net_dev->ifindex);
             }
         }
-    } else if (rx_packet->pph_info.cpu_reason == KG_PKT_RX_MOD_REASON) {
-        netlink_cookie->netlink_type = NETLINK_RX_TYPE_MOD;
-    } else {
-        netlink_cookie->netlink_type = NETLINK_RX_TYPE_OTHER;
     }
     dbg_print(
         DBG_RX,
