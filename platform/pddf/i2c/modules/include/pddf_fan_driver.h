@@ -179,11 +179,6 @@ enum fan_sysfs_attributes {
     FAN3_PN,
     FAN4_PN,
     FAN_MOTOR_NUM,
-    FAN1_LED_STATUS,
-    FAN2_LED_STATUS,
-    FAN3_LED_STATUS,
-    FAN4_LED_STATUS,
-    FAN5_LED_STATUS,
     FAN1_SPEED_MAX,
     FAN2_SPEED_MAX,
     FAN3_SPEED_MAX,
@@ -194,12 +189,6 @@ enum fan_sysfs_attributes {
     FAN3_SPEED_MIN,
     FAN4_SPEED_MIN,
     FAN5_SPEED_MIN,
-    FAN_EEPROM_SIZE,
-    FAN1_EEPROM,
-    FAN2_EEPROM,
-    FAN3_EEPROM,
-    FAN4_EEPROM,
-    FAN5_EEPROM,
 	FAN_MAX_ATTR 
 };
 /* Each client has this additional data */

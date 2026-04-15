@@ -382,7 +382,6 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
         case FAN3_SPEED_MIN:
         case FAN4_SPEED_MIN:
         case FAN5_SPEED_MIN:
-        case FAN_EEPROM_SIZE:
             status = attr_info->val.intval;
 			break;
 		default:

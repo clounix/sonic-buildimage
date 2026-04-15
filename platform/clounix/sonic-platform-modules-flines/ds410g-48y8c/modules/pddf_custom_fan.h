@@ -39,33 +39,4 @@ enum FAN_CPLD_REG
     FAN_EEPROM_IIC_STATUS_OFFSET = 0x28
 };
 
-enum user_fan_led_state
-{
-    USER_FAN_LED_DARK,
-    USER_FAN_LED_GREEN,
-    USER_FAN_LED_YELLOW,
-    USER_FAN_LED_RED,
-    USER_FAN_LED_NOT_SUPPORT
-};
-/*
- *extract the value from FAN_LED2_CONTROL_OFFSET FAN_LED1_CONTROL_OFFSET, and mapping is as below
- * 00 DARK
- * 01 GREEN
- * 10 RED
- * 11 YELLOW
- */
-enum dev_fan_led_state
-{
-    DEV_FAN_LED_DARK,
-    DEV_FAN_LED_GREEN,
-    DEV_FAN_LED_RED,
-    DEV_FAN_LED_YELLOW,
-};
-
-
-static uint8_t led_state_user_to_dev[] = {DEV_FAN_LED_DARK, DEV_FAN_LED_GREEN, DEV_FAN_LED_YELLOW, DEV_FAN_LED_RED,
-                                     USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT, USER_FAN_LED_NOT_SUPPORT};
-static uint8_t led_state_dev_to_user[] = {USER_FAN_LED_DARK, USER_FAN_LED_GREEN, USER_FAN_LED_RED, USER_FAN_LED_YELLOW};
-
-
 #endif /*__PDDF_CUSTOM_FAN_H__*/
