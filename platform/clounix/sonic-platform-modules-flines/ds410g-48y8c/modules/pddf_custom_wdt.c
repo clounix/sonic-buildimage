@@ -71,10 +71,12 @@ static int *log_level = &wdt_log_level;
 
 #define WATCHDOG_CONFIG          0x0110
 #define WATCHDOG_STATUS          0x0114
+#define WATCHDOG_CNT_VAL         0X011C
 #define WATCHDOG_FEED            0x0118
+#define GLOBAL_RST               0x0120
 
 /*bit field in WATCHDOG_CONFIG*/
-#define WATCHDOG_CONFIG_ENABLE_OFFSET 31
+#define WATCHDOG_CONFIG_ENABLE_OFFSET 0
 #define WATCHDOG_CONFIG_ENABLE_SIZE 1
 #define WATCHDOG_CONFIG_RST_OFFSET 30
 #define WATCHDOG_CONFIG_RST_SIZE 1
@@ -87,7 +89,7 @@ static int *log_level = &wdt_log_level;
 #define WATCHDOG_STATUS_REBOOT_OFFSET 31
 #define WATCHDOG_STATUS_REBOOT_SIZE 1
 #define WATCHDOG_STATUS_CNT_OFFSET 0
-#define WATCHDOG_STATUS_CNT_SIZE 8
+#define WATCHDOG_STATUS_CNT_SIZE 16
 /*bit field in WATCHDOG_FEED*/
 #define WATCHDOG_FEED_SET_OFFSET 0
 #define WATCHDOG_FEED_SET_SIZE 1
@@ -120,8 +122,8 @@ static int prolong_wdt_work(struct notifier_block *nb, unsigned long action, voi
     if (fpga_ctl_addr == NULL)
         return NOTIFY_DONE;
 
-    reg_data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    writel(WATCHDOG_BFINS(CONFIG_TIMEOUT, DEFAULT_TIMEOUT, reg_data), fpga_ctl_addr + WATCHDOG_CONFIG);
+    reg_data = readl(fpga_ctl_addr + WATCHDOG_STATUS);
+    writel(WATCHDOG_BFINS(CONFIG_TIMEOUT, DEFAULT_TIMEOUT, reg_data), fpga_ctl_addr + WATCHDOG_STATUS);
   //reg_data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
   //writel(WATCHDOG_BFINS(CONFIG_ENABLE, 1, reg_data), fpga_ctl_addr + WATCHDOG_CONFIG);
 
@@ -198,13 +200,13 @@ static ssize_t drv_get_watchdog_timeleft(struct device *dev,
         pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
-    data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    data = WATCHDOG_BFEXT(CONFIG_TIMEOUT,data) ;
-    timeleft = readl(fpga_ctl_addr + WATCHDOG_STATUS);
-    timeleft = WATCHDOG_BFEXT(STATUS_CNT,timeleft);
+    data = readl(fpga_ctl_addr + WATCHDOG_STATUS);
+    data = WATCHDOG_BFEXT(STATUS_CNT, data) ;
+    timeleft = readl(fpga_ctl_addr + WATCHDOG_CNT_VAL);
+    timeleft = WATCHDOG_BFEXT(STATUS_CNT, timeleft);
     timeleft = data - timeleft ;
-
-    ret = scnprintf(buf, PAGE_SIZE,"%d\n",(int)timeleft);
+    pddf_dbg(WDT, "%s, %d, count: %#x\n", __FUNCTION__, __LINE__, timeleft);
+    ret = scnprintf(buf, PAGE_SIZE, "%d\n", (int)timeleft);
     return ret;
 }
 
@@ -227,8 +229,8 @@ static ssize_t drv_get_watchdog_timeout(struct device *dev,
         pddf_err(WDT, "fpga resource is not available.\n");
         return -ENXIO;
     }
-    timeout = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    timeout = WATCHDOG_BFEXT(CONFIG_TIMEOUT,timeout); 
+    timeout = readl(fpga_ctl_addr + WATCHDOG_STATUS);
+    timeout = WATCHDOG_BFEXT(STATUS_CNT, timeout);
     pddf_dbg(WDT, "get timeout is %d.\n", timeout);
     ret = scnprintf(buf, PAGE_SIZE,"%d\n",(int)timeout);
 
@@ -258,8 +260,8 @@ static ssize_t drv_set_watchdog_timeout(struct device *dev,
     }
 
     pddf_dbg(WDT, "set timeout is %d.\n", value);
-    timeout = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    writel(WATCHDOG_BFINS(CONFIG_TIMEOUT,value,timeout), fpga_ctl_addr + WATCHDOG_CONFIG);
+    timeout = readl(fpga_ctl_addr + WATCHDOG_STATUS);
+    writel(WATCHDOG_BFINS(STATUS_CNT, value, timeout), fpga_ctl_addr + WATCHDOG_STATUS);
 
     return count;
 }
@@ -283,8 +285,8 @@ static ssize_t drv_get_watchdog_enable_status(struct device *dev,
 
     if(NULL != fpga_ctl_addr){
         data= readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-        value = WATCHDOG_BFEXT(CONFIG_ENABLE,data);
-        ret = scnprintf(buf,PAGE_SIZE,"%d\n",value);
+        value = WATCHDOG_BFEXT(CONFIG_ENABLE, data);
+        ret = scnprintf(buf,PAGE_SIZE, "%d\n", value);
     }
     else{
         pddf_err(WDT, "fpga resource is not available.\n");
@@ -316,7 +318,7 @@ static ssize_t drv_set_watchdog_enable_status(struct device *dev,
     }
 
     data= readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    writel(WATCHDOG_BFINS(CONFIG_ENABLE,value,data), fpga_ctl_addr + WATCHDOG_CONFIG);
+    writel(WATCHDOG_BFINS(CONFIG_ENABLE, value, data), fpga_ctl_addr + WATCHDOG_CONFIG);
     return count;
 }
 
@@ -330,8 +332,9 @@ static void reset_watchdog(void)
     data= readl(fpga_ctl_addr + WATCHDOG_CONFIG);
     writel(WATCHDOG_BFINS(CONFIG_ENABLE, 0, data), fpga_ctl_addr + WATCHDOG_CONFIG);
 
-    timeout = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
-    writel(WATCHDOG_BFINS(CONFIG_TIMEOUT, 90, timeout), fpga_ctl_addr + WATCHDOG_CONFIG);
+    timeout = readl(fpga_ctl_addr + GLOBAL_RST);
+    timeout |= 1 << WATCHDOG_CONFIG_CLEAR_OFFSET;
+    writel(data, fpga_ctl_addr + GLOBAL_RST);
     return;
 }
 
@@ -367,7 +370,7 @@ static ssize_t drv_get_watchdog_rst_flag(struct device *dev,
         return -ENXIO;
     }
 
-    data = readl(fpga_ctl_addr + WATCHDOG_STATUS);
+    data = readl(fpga_ctl_addr + GLOBAL_RST);
     if ((data & (1 << WATCHDOG_STATUS_REBOOT_OFFSET)) != 0)
         return sprintf(buf, "1\n");
     else
@@ -385,9 +388,9 @@ static ssize_t drv_set_watchdog_rst_flag(struct device *dev,
         return -ENXIO;
     }
 
-    data = readl(fpga_ctl_addr + WATCHDOG_CONFIG);
+    data = readl(fpga_ctl_addr + GLOBAL_RST);
     data |= 1 << WATCHDOG_CONFIG_CLEAR_OFFSET;
-    writel(data, fpga_ctl_addr + WATCHDOG_CONFIG);
+    writel(data, fpga_ctl_addr + GLOBAL_RST);
 
     return count;
 }
