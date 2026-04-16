@@ -1,0 +1,2 @@
+/sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/fpga_device_driver.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/if/fpga_interface.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/fpga/drv_fpga_clx.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/fpga/drv_fpga_xlinx.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/fpga/drv_fpga_anlogic.o
+

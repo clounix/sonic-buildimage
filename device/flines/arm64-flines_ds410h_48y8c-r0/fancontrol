@@ -1,0 +1,10 @@
+INTERVAL=10
+FCTEMPS=/sys/s3ip/fan/fan1/ratio=/sys/s3ip/temp_sensor/temp1/value /sys/s3ip/fan/fan2/ratio=/sys/s3ip/temp_sensor/temp1/value
+#FCTEMPS=/sys/bus/i2c/devices/6-0060/hwmon/hwmon1/fan_pwm=/sys/devices/platform/coretemp.0/hwmon/hwmon0/temp1_input
+FCFANS=/sys/s3ip/fan/fan1/ratio=/sys/s3ip/fan/fan1/motor1/speed /sys/s3ip/fan/fan2/ratio=/sys/s3ip/fan/fan2/motor1/speed /sys/s3ip/fan/fan2/ratio=/sys/s3ip/fan/fan3/motor1/speed
+MINTEMP=/sys/s3ip/fan/fan1/ratio=35 /sys/s3ip/fan/fan2/ratio=35
+MAXTEMP=/sys/s3ip/fan/fan1/ratio=50 /sys/s3ip/fan/fan2/ratio=50
+MINSTART=/sys/s3ip/fan/fan1/ratio=100 /sys/s3ip/fan/fan2/ratio=100
+MINSTOP=/sys/s3ip/fan/fan1/ratio=40 /sys/s3ip/fan/fan2/ratio=40
+MINPWM=/sys/s3ip/fan/fan1/ratio=40 /sys/s3ip/fan/fan2/ratio=40
+MAXPWM=/sys/s3ip/fan/fan1/ratio=100 /sys/s3ip/fan/fan2/ratio=100

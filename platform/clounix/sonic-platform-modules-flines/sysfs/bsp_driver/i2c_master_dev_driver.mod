@@ -1,0 +1,2 @@
+/sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/i2c_master_device_driver.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/if/i2c_master_interface.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/platform/drv_i2c_xilinx.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/platform/drv_i2c_master_xilinx.o /sonic/platform/clounix/sonic-platform-modules-flines/sysfs/bsp_driver/driver/platform/drv_i2c_anlogic.o
+

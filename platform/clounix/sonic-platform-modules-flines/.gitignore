@@ -1,0 +1,5 @@
+*.pyc
+.vscode
+*.o
+.tmp_versions/
+*.ko.cmd

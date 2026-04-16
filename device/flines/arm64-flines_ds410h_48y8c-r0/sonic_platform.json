@@ -1,0 +1,45 @@
+{
+  "i2c_topology_dict": [
+    {"bus": "i2c-1",   "driver": "pca9555",       "address": "0x26"},
+    {"bus": "i2c-1",   "driver": "24c02",         "address": "0x57"},
+    {"bus": "i2c-1",   "driver": "pcf85063",      "address": "0x51"},
+    {"bus": "i2c-4",   "driver": "gw1200d",       "address": "0x58"},
+    {"bus": "i2c-4",   "driver": "tmp75c",        "address": "0x4a"},
+    {"bus": "i2c-4",   "driver": "24c02",         "address": "0x50"},
+    {"bus": "i2c-5",   "driver": "gw1200d",       "address": "0x5a"},
+    {"bus": "i2c-5",   "driver": "tmp75c",        "address": "0x49"},
+    {"bus": "i2c-5",   "driver": "24c02",         "address": "0x52"},
+    {"bus": "i2c-6",   "driver": "tmp75c",        "address": "0x48"},
+    {"bus": "i2c-7",   "driver": "24c02",         "address": "0x51"},
+    {"bus": "i2c-8",   "driver": "clx_hwmon_fan", "address": "0x60"},
+    {"bus": "i2c-8",   "driver": "tmp75c",        "address": "0x4b"},
+    {"bus": "i2c-9",   "driver": "tps389006",     "address": "0x30"},
+    {"bus": "i2c-10",  "driver": "jwh6374",       "address": "0x03"}
+  ],
+
+  "kernel_module_list": [
+    "i2c_dev",
+    "pmbus_core",
+    "coretemp",
+    "at24  io_limit=32",
+    "s3ip_sysfs",
+    "clounix_sysfs_main",
+    "fpga_dev_driver",
+    "syseeprom_dev_driver",
+    "i2c_master_dev_driver",
+    "fan_dev_driver",
+    "cpld_dev_driver",
+    "sysled_dev_driver",
+    "psu_dev_driver",
+    "transceiver_dev_driver",
+    "temp_sensor_dev_driver",
+    "vol_sensor_dev_driver",
+    "watchdog_dev_driver",
+    "curr_sensor_dev_driver",
+    "clx_psu_dev",
+    "jwh6374",
+    "tmp75",
+    "pca9555",
+    "tps389006"
+  ]
+}

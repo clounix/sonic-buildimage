@@ -1,0 +1,28 @@
+From 450ac35e2775482b7edc2d4f8b17c226501ec806 Mon Sep 17 00:00:00 2001
+From: Long Wu <wulong@clounix.com>
+Date: Fri, 16 Jan 2026 11:33:56 +0800
+Subject: [PATCH] Support clounix for sonic utilities
+
+---
+ scripts/fast-reboot | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/scripts/fast-reboot b/scripts/fast-reboot
+index 30b0c787..64d00d8f 100755
+--- a/scripts/fast-reboot
++++ b/scripts/fast-reboot
+@@ -777,6 +777,11 @@ then
+   systemctl stop nps-modules-`uname -r`.service || debug "Ignore stopping nps service error $?"
+ fi
+ 
++if [[ "$sonic_asic_type" = 'clounix' ]];
++then
++  systemctl stop clx-modules.service || debug "Ignore stopping clounix service error $?"
++fi
++
+ # Stop opennsl modules for Broadcom platform
+ if [[ "$sonic_asic_type" = 'broadcom' ]];
+ then
+-- 
+2.25.1
+
