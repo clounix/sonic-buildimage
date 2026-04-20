@@ -241,7 +241,7 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
     {
         buf[0] = '\0';
         strncpy(padata->val.strval, buf, adata->len);
-        printk(KERN_ERR  "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
+        // printk(KERN_ERR  "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
     }
     else
     {
@@ -249,7 +249,7 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
         strncpy(padata->val.strval, buf+1, status-1);
     }
         
-    printk(KERN_ERR  "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
+    // printk(KERN_ERR  "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
     return 0;
 }
 

@@ -108,6 +108,8 @@
 extern void __iomem * fpga_ctl_addr;
 struct kobject  *kobj_watchdog_root = NULL;
 
+static int wdt_loglevel = 0;
+
 static struct notifier_block panic_nb = {0};
 
 static int prolong_wdt_work(struct notifier_block *nb, unsigned long action, void *data)
@@ -388,6 +390,29 @@ static ssize_t drv_set_watchdog_rst_flag(struct device *dev,
     return count;
 }
 
+static ssize_t drv_get_watchdog_loglevel(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    return sprintf(buf, "%d\n", wdt_loglevel);
+}
+
+static ssize_t drv_set_watchdog_loglevel(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+    return -EOPNOTSUPP;
+}
+
+static ssize_t drv_get_watchdog_debug(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    ssize_t ret = -1;
+    ret = scnprintf(buf, PAGE_SIZE, "debug watchdog: \n", "reg");
+    return ret;
+}
+
+static ssize_t drv_set_watchdog_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+    return -EOPNOTSUPP;
+}
+
+
 static DEVICE_ATTR(identify,   S_IRUGO, drv_get_watchdog_identify, NULL);
 static DEVICE_ATTR(state,      S_IRUGO, drv_get_watchdog_state, NULL);
 static DEVICE_ATTR(timeleft,   S_IRUGO, drv_get_watchdog_timeleft, NULL);
@@ -395,7 +420,8 @@ static DEVICE_ATTR(timeout,    S_IRUGO|S_IWUSR, drv_get_watchdog_timeout, drv_se
 static DEVICE_ATTR(reset,      S_IWUSR,         NULL, drv_set_watchdog_reset);
 static DEVICE_ATTR(enable,     S_IRUGO|S_IWUSR, drv_get_watchdog_enable_status, drv_set_watchdog_enable_status);
 static DEVICE_ATTR(rst_occur,     S_IRUGO|S_IWUSR, drv_get_watchdog_rst_flag, drv_set_watchdog_rst_flag);
-
+static DEVICE_ATTR(loglevel,    S_IRUGO|S_IWUSR, drv_get_watchdog_loglevel, drv_set_watchdog_loglevel);
+static DEVICE_ATTR(debug,    S_IRUGO|S_IWUSR, drv_get_watchdog_debug, drv_set_watchdog_debug);
 
 static struct attribute *watchdog_debug_attributes[] =
 {
@@ -406,6 +432,8 @@ static struct attribute *watchdog_debug_attributes[] =
     &dev_attr_reset.attr,
     &dev_attr_enable.attr,
     &dev_attr_rst_occur.attr,
+    &dev_attr_loglevel.attr,
+    &dev_attr_debug.attr,
     NULL
 };
 
