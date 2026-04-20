@@ -3,7 +3,7 @@
         "name": "clx2000-48y8c",
         "num_psus": 2,
         "num_ports": 58,
-        "num_temps": 10,
+        "num_temps": 12,
         "num_fantrays":5,
         "num_fans_pertray":2,
         "num_voltage_sensors":12,
