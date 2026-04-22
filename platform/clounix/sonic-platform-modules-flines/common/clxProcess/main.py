@@ -111,7 +111,7 @@ def deviceInit():
         path = SFP_PATH  + '/eth' + str(x+1) + '/reset'
         result = common.readFile(path)
         if result != 'NA':
-            result = common.writeFile(path, "1")
+            result = common.writeFile(path, "0")
 
     # Set QSFP power enable  and high power mode  the present signal
     for x in range(0, sfp_num):
@@ -128,10 +128,12 @@ def deviceInit():
         if result != 'NA':
             result = common.writeFile(path, "0")
 
-    for x in range(sfp_num):
+    for x in range(0, sfp_num):
         path = SFP_PATH + '/eth' + str(x + 1) + '/tx_disable'
-        result = common.writeFile(path, "0")
-        
+        result = common.readFile(path)
+        if result != 'NA':
+            result = common.writeFile(path, "0")
+
     return
 
 def do_platformApiInit():
