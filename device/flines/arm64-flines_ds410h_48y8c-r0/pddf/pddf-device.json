@@ -50,15 +50,15 @@
                 "pddf_client_module",
                 "pddf_multifpgapci_i2c_module",
                 "pddf_multifpgapci_driver",
+                "pddf_fpgapci_driver",
+                "pddf_fpgapci_module",
+                "pddf_xilinx_device_algo",
                 "pddf_cpld_module",
                 "pddf_cpld_driver",
                 "pddf_cpldmux_module",
                 "pddf_cpldmux_driver",
                 "pddf_fpgai2c_module",
                 "pddf_fpgai2c_driver",
-                "pddf_fpgapci_driver",
-                "pddf_fpgapci_module",
-                "pddf_xilinx_device_algo",
                 "pddf_fan_driver_module",
                 "pddf_fan_module",
                 "pddf_mux_module",
@@ -2946,74 +2946,135 @@
         }
     },
     "SYSSTATUS":
-    {
-        "dev_info":{ "device_type":"SYSSTAT", "device_name":"SYSSTATUS"},
-        "dev_attr":{ },
-        "attr_list":
-        [  
-            { "attr_name":"fpga_board_version","attr_devtype":"fpgapci","attr_devaddr":"0x0", "attr_offset":"0x10","attr_mask":"0xffff","attr_len":"0x2"},
-            { "attr_name":"fpga_firmware_version","attr_devtype":"fpgapci","attr_devaddr":"0x4", "attr_offset":"0x0","attr_mask":"0x7FFF","attr_len":"0x2"},
-            { "attr_name":"cpld1_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
-            { "attr_name":"cpld2_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x8","attr_mask":"0xff","attr_len":"0x1"},
-            { "attr_name":"cpld3_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"}
-
-        ]
-    },
-    "LOC_LED" : { "dev_info": { "device_type":"LED", "device_name":"LOC_LED"},
-        "dev_attr": { "index":"0"},
-        "i2c": {
-            "attr_list":
-            [
-                {"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green_blink", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Green Blinking", "value" : "0x9", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
-            ]
-        }
-    },
-    "SYS_LED" : { "dev_info": { "device_type":"LED", "device_name":"SYS_LED"},
-        "dev_attr": { "index":"0"},
-        "i2c": {
-            "attr_list":
-            [
-                {"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green_blink", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Green Blinking", "value" : "0x9", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
-            ]
-        }
-    },
-    "FAN_LED" : { "dev_info": { "device_type":"LED", "device_name":"FAN_LED"},
-        "dev_attr": { "index":"0"},
-        "i2c": {
-            "attr_list":
-            [
-                {"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
-            ]
-        }
-    },
-    
-    "PSU1_LED" : { "dev_info": { "device_type":"LED", "device_name":"SYS_PSU_LED"},
-        "dev_attr": { "index":"0"},
-        "i2c": {
-            "attr_list":
-            [
-                {"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "11:8", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "11:8", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "11:8", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
-            ]
-        }
-    },
-    "PSU2_LED" : { "dev_info": { "device_type":"LED", "device_name":"SYS_PSU_LED"},
-        "dev_attr": { "index":"1"},
-        "i2c": {
-            "attr_list":
-            [
-                {"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "7:4", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "7:4", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
-                {"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"psu_led", "bits" : "7:4", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
-            ]
-        }
-    }
+	{
+		"dev_info":{ "device_type":"SYSSTAT", "device_name":"SYSSTATUS"},
+		"dev_attr":{ },
+		"attr_list":
+		[  
+			{ "attr_name":"fpga_board_version","attr_devtype":"fpgapci","attr_devaddr":"0x0", "attr_offset":"0x0","attr_mask":"0xffff","attr_len":"0x2"},
+			{ "attr_name":"fpga_firmware_version","attr_devtype":"fpgapci","attr_devaddr":"0x4", "attr_offset":"0x0","attr_mask":"0x7fff","attr_len":"0x2"},
+			{ "attr_name":"cpld1_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
+			{ "attr_name":"cpld2_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x8","attr_mask":"0xff","attr_len":"0x1"},
+			{ "attr_name":"cpld3_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
+			{ "attr_name":"reg_test", "attr_devtype":"fpgapci", "attr_devaddr":"0x10", "attr_offset":"0x0", "attr_mask":"0x80000003", "attr_len": "0x4"},
+			{ "attr_name":"r_cpld3_power_state", "attr_devtype":"fpgapci", "attr_devaddr":"0x3ac", "attr_offset":"0x0", "attr_mask":"0xffff", "attr_len":"0x2"}
+		]
+	},
+	"LOC_LED" : { "dev_info": { "device_type":"LED", "device_name":"LOC_LED"},
+		"dev_attr": { "index":"0"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"blue", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Blue", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"blue_blink", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Blue Blinking", "value" : "0x9", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "23:20", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
+			]
+		}
+	},
+	"SYS_LED" : { "dev_info": { "device_type":"LED", "device_name":"SYS_LED"},
+		"dev_attr": { "index":"0"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"red", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"green_blink", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Green Blinking", "value" : "0x9", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "19:16", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
+			]
+		}
+	},
+	"FAN_LED" : { "dev_info": { "device_type":"LED", "device_name":"FAN_LED"},
+		"dev_attr": { "index":"0"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"red", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"sys_led", "bits" : "3:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
+			]
+		}
+	},
+	"PSU1_LED" : { "dev_info": { "device_type":"LED", "device_name":"PSU_LED"},
+		"dev_attr": { "index":"0"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"psu1_led", "bits" : "11:8", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"red", "attr_devtype":"fpgapci", "attr_devname":"psu1_led", "bits" : "11:8", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"psu1_led", "bits" : "11:8", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"psu1_led", "bits" : "11:8", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
+			]
+		}
+	},
+	"PSU2_LED" : { "dev_info": { "device_type":"LED", "device_name":"PSU_LED"},
+		"dev_attr": { "index":"1"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"yellow", "attr_devtype":"fpgapci", "attr_devname":"psu2_led", "bits" : "7:4", "descr" :"Yellow", "value" : "0x3", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"red", "attr_devtype":"fpgapci", "attr_devname":"psu2_led", "bits" : "7:4", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"green", "attr_devtype":"fpgapci", "attr_devname":"psu2_led", "bits" : "7:4", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"},
+				{"attr_name":"off", "attr_devtype":"fpgapci", "attr_devname":"psu2_led", "bits" : "7:4", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x200", "swpld_addr_offset" :"0x0"}
+			]
+		}
+	},
+	"FANTRAY1_LED" : { "dev_info": { "device_type":"LED", "device_name":"FANTRAY_LED"},
+		"dev_attr": { "index":"0"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"red", "attr_devtype":"fan_led", "attr_devname":"fan1_led", "bits" : "1:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"green", "attr_devtype":"fan_led", "attr_devname":"fan1_led", "bits" : "1:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"off", "attr_devtype":"fan_led", "attr_devname":"fan1_led", "bits" : "1:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"}
+			]
+		}
+	},
+	"FANTRAY2_LED" : { "dev_info": { "device_type":"LED", "device_name":"FANTRAY_LED"},
+		"dev_attr": { "index":"1"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"red", "attr_devtype":"fan_led", "attr_devname":"fan2_led", "bits" : "1:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"green", "attr_devtype":"fan_led", "attr_devname":"fan2_led", "bits" : "1:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"off", "attr_devtype":"fan_led", "attr_devname":"fan2_led", "bits" : "1:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"}
+			]
+		}
+	},
+	"FANTRAY3_LED" : { "dev_info": { "device_type":"LED", "device_name":"FANTRAY_LED"},
+		"dev_attr": { "index":"2"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"red", "attr_devtype":"fan_led", "attr_devname":"fan3_led", "bits" : "1:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"green", "attr_devtype":"fan_led", "attr_devname":"fan3_led", "bits" : "1:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"off", "attr_devtype":"fan_led", "attr_devname":"fan3_led", "bits" : "1:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"}
+			]
+		}
+	},
+	"FANTRAY4_LED" : { "dev_info": { "device_type":"LED", "device_name":"FANTRAY_LED"},
+		"dev_attr": { "index":"3"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"red", "attr_devtype":"fan_led", "attr_devname":"fan4_led", "bits" : "1:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"green", "attr_devtype":"fan_led", "attr_devname":"fan4_led", "bits" : "1:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"off", "attr_devtype":"fan_led", "attr_devname":"fan4_led", "bits" : "1:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"}
+			]
+		}
+	},
+	"FANTRAY5_LED" : { "dev_info": { "device_type":"LED", "device_name":"FANTRAY_LED"},
+		"dev_attr": { "index":"4"},
+		"i2c": {
+			"attr_list":
+			[
+				{"attr_name":"red", "attr_devtype":"fan_led", "attr_devname":"fan5_led", "bits" : "1:0", "descr" :"Red", "value" : "0x2", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"green", "attr_devtype":"fan_led", "attr_devname":"fan5_led", "bits" : "1:0", "descr" :"Green", "value" : "0x1", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"},
+				{"attr_name":"off", "attr_devtype":"fan_led", "attr_devname":"fan5_led", "bits" : "1:0", "descr" :"Off", "value" : "0x0", "swpld_addr" : "0x15", "swpld_addr_offset" :"0x16"}
+			]
+		}
+	}
 }
+
 

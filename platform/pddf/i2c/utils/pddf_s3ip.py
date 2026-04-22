@@ -544,14 +544,19 @@ def create_s3ip_fan_sysfs():
         log_os_system(cmd, 1)
 
         # model_name of the fan
-        model = 'NA'
-        cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/model_name'.format(model, f)
+        try:
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_model_name /sys_switch/fan/fan{}/model_name'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/model_name'.format(f)
+
         log_os_system(cmd, 1)
 
         # fan eeprom
         try:
-            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'])
-            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'])
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
             cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_eeprom /sys_switch/fan/fan{}/eeprom'.format(bus, dev_addr, f, f)
         except Exception:
             cmd = 'echo "NA" > /sys_switch/fan/fan{}/eeprom'.format(f)
@@ -560,43 +565,21 @@ def create_s3ip_fan_sysfs():
 
         # serial_num of the fan
         try:
-            val = 'NA'
-            attr = 'fan{}_sn'.format(f)
-            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                val = output.rstrip()
-                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path('FAN-CTRL', attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/serial_number'.format(node, f)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_sn /sys_switch/fan/fan{}/serial_number'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/serial_number'.format(f)
 
         log_os_system(cmd, 1)
 
         # part_number of the fan
         try:
-            val = 'NA'
-            attr = 'fan{}_pn'.format(f)
-            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                val = output.rstrip()
-                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path('FAN-CTRL', attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/part_number'.format(node, f)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_part_number /sys_switch/fan/fan{}/part_number'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/part_number'.format(f)
 
         log_os_system(cmd, 1)
 

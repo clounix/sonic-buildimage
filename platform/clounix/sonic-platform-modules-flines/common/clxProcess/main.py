@@ -126,7 +126,12 @@ def deviceInit():
         path = SFP_PATH  + '/eth' + str(x+1) + '/low_power_mode'
         result = common.readFile(path)
         if result != 'NA':
-            result = common.writeFile(path, "1")
+            result = common.writeFile(path, "0")
+
+    for x in range(sfp_num):
+        path = SFP_PATH + '/eth' + str(x + 1) + '/tx_disable'
+        result = common.writeFile(path, "0")
+        
     return
 
 def do_platformApiInit():

@@ -43,7 +43,7 @@ static int fan_eeprom_wait_tx_done(struct i2c_client *client)
         val = i2c_smbus_read_byte_data(client, FAN_EEPROM_IIC_STATUS_OFFSET);
         if (val & FAN_EEPROM_TX_FINISH_MASK) {
             if (val & FAN_EEPROM_TX_ERROR_MASK) {
-                pr_err("fan-eeprom: fan_eeprom_wait_bus_tx_done data ECOMM error\n");
+                pr_err("fan-eeprom: TX error\n");
                 return -ECOMM;
             }
             return 0;
@@ -51,36 +51,26 @@ static int fan_eeprom_wait_tx_done(struct i2c_client *client)
         usleep_range(5, 10);
     } while (time_before(jiffies, timeout));
 
-    pr_err("fan-eeprom: fan_eeprom_wait_tx_done data ETIMEDOUT error\n");
+    pr_err("fan-eeprom: TX timeout\n");
     return -ETIMEDOUT;
 }
 
 static int __fan_eeprom_read_byte_nolock(struct fan_eeprom_priv *priv, u32 offset, u8 *val)
 {
-    int ret = 0;
+    int ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_REG_OFFSET, offset);
+    if (ret < 0) return ret;
 
-    /* 设置偏移 */
-    ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_REG_OFFSET, offset);
-    if (ret < 0)
-        return ret;
-
-    /* 开始读取 */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_START_OFFSET, FAN_EEPROM_IIC_START_MASK);
-    if (ret < 0)
-        return ret;
+    if (ret < 0) return ret;
 
-    /* 等待发送完成 */
-    if (fan_eeprom_wait_tx_done(priv->client) != 0) {
-        return -ETIMEDOUT;
-    } else {
-        /* 读取数据 */
-        ret = i2c_smbus_read_byte_data(priv->client, FAN_EEPROM_BYTE_READ_OFFSET);
-        if (ret < 0)
-            return ret;
+    ret = fan_eeprom_wait_tx_done(priv->client);
+    if (ret < 0) return ret;
 
-        *val = ret;
-        return 0;
-    }
+    ret = i2c_smbus_read_byte_data(priv->client, FAN_EEPROM_BYTE_READ_OFFSET);
+    if (ret < 0) return ret;
+
+    *val = ret;
+    return 0;
 }
 
 static int fan_eeprom_read_multi(struct fan_eeprom_priv *priv, u8 fan_idx, u32 start_offset, u8 *buf, u32 len)
@@ -88,61 +78,42 @@ static int fan_eeprom_read_multi(struct fan_eeprom_priv *priv, u8 fan_idx, u32 s
     int ret = 0;
     u32 i;
 
-    if (!priv || !buf)
-        return -EINVAL;
+    if (!priv || !buf) return -EINVAL;
 
     mutex_lock(&priv->lock);
-    
-    /* 1. 选择风扇 */
+
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_SELECT_OFFSET, fan_idx);
     if (ret < 0) goto err_unlock;
 
-    /* 2. 设置读取大小：1Byte */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_DATA_SIZE_OFFSET, 1);
     if (ret < 0) goto err_unlock;
 
-    /* 3. 设置字节控制：读1Byte */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_MAGE_OFFSET, 1);
     if (ret < 0) goto err_unlock;
 
-    for (i = 0; i < len; i++) 
-    {
+    for (i = 0; i < len; i++) {
         u8 val;
         ret = __fan_eeprom_read_byte_nolock(priv, start_offset + i, &val);
-        if (ret != 0) {
-            break;
-        }
+        if (ret != 0) break;
         buf[i] = val;
     }
 
-    mutex_unlock(&priv->lock);
-    return (ret == 0) ? i : ret;
-
 err_unlock:
     mutex_unlock(&priv->lock);
-    return ret;
+    return (ret == 0) ? i : ret;
 }
 
 static int __fan_eeprom_write_byte_nolock(struct fan_eeprom_priv *priv, u32 offset, u8 val)
 {
-    int ret = 0;
+    int ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_REG_OFFSET, offset);
+    if (ret < 0) return ret;
 
-    /* 设置偏移 */
-    ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_REG_OFFSET, offset);
-    if (ret < 0)
-        return ret;
-
-    /* 写入数据到数据寄存器 */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_BYTE_READ_OFFSET, val);
-    if (ret < 0)
-        return ret;
+    if (ret < 0) return ret;
 
-    /* 启动写入 */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_START_OFFSET, FAN_EEPROM_IIC_START_MASK);
-    if (ret < 0)
-        return ret;
+    if (ret < 0) return ret;
 
-    /* 等待完成 */
     return fan_eeprom_wait_tx_done(priv->client);
 }
 
@@ -151,40 +122,31 @@ static int fan_eeprom_write_multi(struct fan_eeprom_priv *priv, u8 fan_idx, u32 
     int ret = 0;
     u32 i;
 
-    if (!priv || !buf)
-        return -EINVAL;
+    if (!priv || !buf) return -EINVAL;
 
     mutex_lock(&priv->lock);
 
-    /* 1. 选择风扇 */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_SELECT_OFFSET, fan_idx);
     if (ret < 0) goto err_unlock;
 
-    /* 2. 设置写入大小：1Byte */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_DATA_SIZE_OFFSET, 0x01);
     if (ret < 0) goto err_unlock;
 
-    /* 3. 设置字节控制：写1Byte (0x04) */
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_MAGE_OFFSET, 0x04);
     if (ret < 0) goto err_unlock;
 
     for (i = 0; i < len; i++) {
         ret = __fan_eeprom_write_byte_nolock(priv, start_offset + i, buf[i]);
-        if (ret != 0) 
-        {
-            break;
-        }
+        if (ret != 0) break;
         usleep_range(6000, 7000);
     }
 
-    mutex_unlock(&priv->lock);
-    return (ret == 0) ? i : ret;
-
 err_unlock:
     mutex_unlock(&priv->lock);
-    return ret;
+    return (ret == 0) ? i : ret;
 }
 
+/* ---------------- EEPROM raw access ---------------- */
 static ssize_t fan_eeprom_show(struct device *dev,
                                 struct device_attribute *attr, char *buf)
 {
@@ -195,7 +157,6 @@ static ssize_t fan_eeprom_show(struct device *dev,
 
     if (!priv) return -ENODEV;
 
-    /* 通过文件名获取fan_idx */
     if      (strcmp(name, "fan1_eeprom") == 0) fan_idx = 0;
     else if (strcmp(name, "fan2_eeprom") == 0) fan_idx = 1;
     else if (strcmp(name, "fan3_eeprom") == 0) fan_idx = 2;
@@ -204,8 +165,6 @@ static ssize_t fan_eeprom_show(struct device *dev,
     else return -EINVAL;
 
     ret = fan_eeprom_read_multi(priv, fan_idx, 0, buf, FAN_EEPROM_MAX_SIZE);
-
-    /* 如果返回负数表示错误，否则返回实际读取的字节数 */
     return ret;
 }
 
@@ -227,17 +186,137 @@ static ssize_t fan_eeprom_store(struct device *dev,
     else if (strcmp(name, "fan5_eeprom") == 0) fan_idx = 4;
     else return -EINVAL;
 
-    /* 限制写入大小不超过256字节 */
-    if (count > FAN_EEPROM_MAX_SIZE)
-        count = FAN_EEPROM_MAX_SIZE;
+    if (count > FAN_EEPROM_MAX_SIZE) count = FAN_EEPROM_MAX_SIZE;
 
-    /* 调用批量写入接口 */
     ret = fan_eeprom_write_multi(priv, fan_idx, 0, buf, count);
-
     return ret;
 }
 
-/* 定义5个eeprom节点 */
+/* ---------------- Custom fan info parser ---------------- */
+static void fan_eeprom_copy_str(u8 *data, char *out, int len)
+{
+    int i;
+    for (i = 0; i < len; i++) {
+        u8 c = data[i];
+        out[i] = (isascii(c) && isprint(c)) ? c : '.';
+    }
+    out[len] = '\0';
+}
+
+static int fan_eeprom_read_str(u8 fan_idx, u32 offset, u32 len, char *buf)
+{
+    struct fan_eeprom_priv *priv = g_priv;
+    u8 data[32];
+    int ret;
+
+    if (!priv) return -ENODEV;
+    if (len >= sizeof(data)) return -EINVAL;
+
+    ret = fan_eeprom_read_multi(priv, fan_idx, offset, data, len);
+    if (ret != len) return -EIO;
+
+    fan_eeprom_copy_str(data, buf, len);
+    return 0;
+}
+
+static int fan_eeprom_read_u8(u8 fan_idx, u32 offset, u8 *val)
+{
+    struct fan_eeprom_priv *priv = g_priv;
+    u8 data;
+    int ret;
+
+    if (!priv) return -ENODEV;
+
+    ret = fan_eeprom_read_multi(priv, fan_idx, offset, &data, 1);
+    if (ret != 1) return -EIO;
+
+    *val = data;
+    return 0;
+}
+
+static int fan_eeprom_read_num(u8 fan_idx, u32 offset, u32 len, char *buf)
+{
+    struct fan_eeprom_priv *priv = g_priv;
+    u8 data[16];
+    char tmp[16];
+    int ret;
+
+    if (!priv) return -ENODEV;
+    if (len >= sizeof(data)) return -EINVAL;
+
+    ret = fan_eeprom_read_multi(priv, fan_idx, offset, data, len);
+    if (ret != len) return -EIO;
+
+    fan_eeprom_copy_str(data, tmp, len);
+    return snprintf(buf, PAGE_SIZE, "%s\n", tmp);
+}
+
+/* ---------------- Sysfs show functions ---------------- */
+#define FAN_STR_SHOW(_name, _offset, _len) \
+static ssize_t fan_##_name##_show(struct device *dev, struct device_attribute *attr, char *buf) \
+{ \
+    const char *name = attr->attr.name; \
+    u8 fan_idx; \
+    char tmp[32]; \
+    if (!g_priv) return -ENODEV; \
+    if      (strstr(name, "fan1")) fan_idx = 0; \
+    else if (strstr(name, "fan2")) fan_idx = 1; \
+    else if (strstr(name, "fan3")) fan_idx = 2; \
+    else if (strstr(name, "fan4")) fan_idx = 3; \
+    else if (strstr(name, "fan5")) fan_idx = 4; \
+    else return -EINVAL; \
+    if (fan_eeprom_read_str(fan_idx, _offset, _len, tmp) < 0) return -EIO; \
+    return snprintf(buf, PAGE_SIZE, "%s\n", tmp); \
+}
+
+#define FAN_NUM_SHOW(_name, _offset, _len) \
+static ssize_t fan_##_name##_show(struct device *dev, struct device_attribute *attr, char *buf) \
+{ \
+    const char *name = attr->attr.name; \
+    u8 fan_idx; \
+    if (!g_priv) return -ENODEV; \
+    if      (strstr(name, "fan1")) fan_idx = 0; \
+    else if (strstr(name, "fan2")) fan_idx = 1; \
+    else if (strstr(name, "fan3")) fan_idx = 2; \
+    else if (strstr(name, "fan4")) fan_idx = 3; \
+    else if (strstr(name, "fan5")) fan_idx = 4; \
+    else return -EINVAL; \
+    return fan_eeprom_read_num(fan_idx, _offset, _len, buf); \
+}
+#define FAN_STR_HEAD_LEN    (0x0f)
+
+FAN_STR_SHOW(model_name,        (FAN_STR_HEAD_LEN + 0x00), 13)
+FAN_STR_SHOW(sn,                (FAN_STR_HEAD_LEN + 0x10), 16)
+FAN_STR_SHOW(part_number,       (FAN_STR_HEAD_LEN + 0x21), 8)
+
+static ssize_t fan_num_motors_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    const char *name = attr->attr.name;
+    u8 fan_idx, val;
+    if (!g_priv) return -ENODEV;
+    if      (strstr(name, "fan1")) fan_idx = 0;
+    else if (strstr(name, "fan2")) fan_idx = 1;
+    else if (strstr(name, "fan3")) fan_idx = 2;
+    else if (strstr(name, "fan4")) fan_idx = 3;
+    else if (strstr(name, "fan5")) fan_idx = 4;
+    else return -EINVAL;
+
+    if (fan_eeprom_read_u8(fan_idx, 0x40, &val) < 0) return -EIO;
+    return snprintf(buf, PAGE_SIZE, "%u\n", val);
+}
+
+/* ---------------- Define attributes ---------------- */
+#define FAN_CUSTOM_ATTRS(n) \
+static DEVICE_ATTR(fan##n##_model_name,     0440, fan_model_name_show, NULL); \
+static DEVICE_ATTR(fan##n##_sn,             0440, fan_sn_show, NULL); \
+static DEVICE_ATTR(fan##n##_part_number,    0440, fan_part_number_show, NULL); 
+
+FAN_CUSTOM_ATTRS(1);
+FAN_CUSTOM_ATTRS(2);
+FAN_CUSTOM_ATTRS(3);
+FAN_CUSTOM_ATTRS(4);
+FAN_CUSTOM_ATTRS(5);
+
 static DEVICE_ATTR(fan1_eeprom, 0660, fan_eeprom_show, fan_eeprom_store);
 static DEVICE_ATTR(fan2_eeprom, 0660, fan_eeprom_show, fan_eeprom_store);
 static DEVICE_ATTR(fan3_eeprom, 0660, fan_eeprom_show, fan_eeprom_store);
@@ -250,13 +329,33 @@ static struct device_attribute *fan_eeprom_attrs[] = {
     &dev_attr_fan3_eeprom,
     &dev_attr_fan4_eeprom,
     &dev_attr_fan5_eeprom,
+
+    &dev_attr_fan1_model_name,
+    &dev_attr_fan1_sn,
+    &dev_attr_fan1_part_number,
+
+    &dev_attr_fan2_model_name,
+    &dev_attr_fan2_sn,
+    &dev_attr_fan2_part_number,
+
+    &dev_attr_fan3_model_name,
+    &dev_attr_fan3_sn,
+    &dev_attr_fan3_part_number,
+
+    &dev_attr_fan4_model_name,
+    &dev_attr_fan4_sn,
+    &dev_attr_fan4_part_number,
+
+    &dev_attr_fan5_model_name,
+    &dev_attr_fan5_sn,
+    &dev_attr_fan5_part_number,
+
     NULL
 };
 
 static int fan_eeprom_create_attrs(struct device *dev)
 {
     int i, ret = 0;
-
     for (i = 0; fan_eeprom_attrs[i]; i++) {
         ret = device_create_file(dev, fan_eeprom_attrs[i]);
         if (ret)
@@ -268,7 +367,6 @@ static int fan_eeprom_create_attrs(struct device *dev)
 static void fan_eeprom_remove_attrs(struct device *dev)
 {
     int i;
-
     for (i = 0; fan_eeprom_attrs[i]; i++) {
         device_remove_file(dev, fan_eeprom_attrs[i]);
     }
@@ -319,28 +417,23 @@ static struct notifier_block fan_eeprom_nb = {
 
 static int __init fan_eeprom_init(void)
 {
-    int ret;
-
-    ret = bus_register_notifier(&i2c_bus_type, &fan_eeprom_nb);
+    int ret = bus_register_notifier(&i2c_bus_type, &fan_eeprom_nb);
     if (ret) {
         pr_err("fan-eeprom: failed to register i2c notifier\n");
         return ret;
     }
-
-    pr_info("fan-eeprom: module loaded, waiting for pddf_fan...\n");
+    pr_info("fan-eeprom: module loaded\n");
     return 0;
 }
 
 static void __exit fan_eeprom_exit(void)
 {
     bus_unregister_notifier(&i2c_bus_type, &fan_eeprom_nb);
-
     if (g_priv) {
         fan_eeprom_remove_attrs(g_priv->i2c_dev);
         kfree(g_priv);
         g_priv = NULL;
     }
-
     pr_info("fan-eeprom: module unloaded\n");
 }
 
@@ -348,6 +441,6 @@ module_init(fan_eeprom_init);
 module_exit(fan_eeprom_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("PDDF Fan EEPROM Addon for pddf_fan driver");
+MODULE_DESCRIPTION("PDDF Fan EEPROM Custom Fields Driver");
 MODULE_AUTHOR("FLKS");
 MODULE_SOFTDEP("pre: pddf_fan");
