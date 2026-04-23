@@ -122,12 +122,6 @@ def create_s3ip_temp_sysfs():
     num_temps = pddf_api.data['PLATFORM']['num_temps'] if 'num_temps' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/temp_sensor/number'.format(num_temps)
     log_os_system(cmd, 1)
-    # loglevel
-    cmd = 'sudo echo "{}" > /sys_switch/temp_sensor/loglevel'.format('NA')
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/temp_sensor /sys_switch/temp_sensor/debug'
-    log_os_system(cmd, 1)
 
     #debug
     debug_node = get_pddf_custom_path('temp_debug')
@@ -260,12 +254,6 @@ def create_s3ip_volt_sysfs():
     #loglevel
     cmd = 'sudo echo 2 > /sys_switch/volt_sensor/loglevel'
     log_os_system(cmd, 1)
-
-    # loglevel
-    cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/loglevel'.format('NA')
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/volt_sensor /sys_switch/vol_sensor/debug'
 
     for volt_idx in range(1, num_voltage_sensors + 1):
         cmd = 'sudo mkdir -p -m 777 /sys_switch/volt_sensor/vol{}'.format(volt_idx)
@@ -407,12 +395,6 @@ def create_s3ip_curr_sysfs():
     num_current_sensors = pddf_api.data['PLATFORM']['num_current_sensors'] if 'num_current_sensors' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/curr_sensor/number'.format(num_current_sensors)
     log_os_system(cmd, 1)
-    # loglevel
-    cmd = 'sudo echo "{}" > /sys_switch/curr_sensor/loglevel'.format('NA')
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/curr_sensor /sys_switch/curr_sensor/debug'
-    log_os_system(cmd, 1)
 
     #debug
     debug_node = get_pddf_custom_path('curr_debug')
@@ -536,15 +518,6 @@ def create_s3ip_syseeprom_sysfs():
     syseeprom_node = pddf_api.get_path("EEPROM1", "eeprom")
     cmd = 'sudo ln -s {} /sys_switch/syseeprom'.format(syseeprom_node)
     log_os_system(cmd, 1)
-    # bsp version
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/bsp_version /sys_switch/bsp_version'
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/syseeprom /sys_switch/debug'
-    log_os_system(cmd, 1)
-    # # loglevel
-    # cmd = 'sudo ln -s /sys/module/pddf_client_module/parameters/ /sys_switch/loglevel'
-    # log_os_system(cmd, 1)
     print("Completed SysEEPROM sysfs creation")
     print("Creaeting the bsp_version sysfs ..")
     bsp_ver_node = get_pddf_custom_path('bsp_version')
@@ -570,13 +543,6 @@ def create_s3ip_fan_sysfs():
     num_fans_pertray = pddf_api.data['PLATFORM']['num_fans_pertray'] if 'num_fans_pertray' in pddf_api.data['PLATFORM'] else 1
     cmd = 'sudo echo "{}" > /sys_switch/fan/number'.format(num_fantrays)
     log_os_system(cmd, 1)
-    # loglevel
-    cmd = 'sudo ln -s /sys/module/pddf_client_module/parameters/fan_loglevel /sys_switch/fan/loglevel'
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/fan /sys_switch/fan/debug'
-    log_os_system(cmd, 1)
-
 
     #debug
     debug_node = get_pddf_custom_path('fan_debug')
@@ -1167,6 +1133,30 @@ def create_s3ip_psu_sysfs():
 
         log_os_system(cmd, 1)
 
+        # out_vol_max
+        try:
+            out_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out_max'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/alarm_threshold_vol'.format(out_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/alarm_threshold_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/alarm_threshold_vol'.format(out_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/alarm_threshold_vol'.format(out_vol, p)
+
+        log_os_system(cmd, 1)
+
         # out_vol (input current in milli volts)
         try:
             out_vol = 'NA'
@@ -1586,12 +1576,7 @@ def create_s3ip_xcvr_sysfs():
     num_ports = pddf_api.data['PLATFORM']['num_ports'] if 'num_ports' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/transceiver/number'.format(num_ports)
     log_os_system(cmd, 1)
-    # loglevel
-    cmd = 'sudo ln -s /sys/module/pddf_client_module/parameters/xcvr_loglevel /sys_switch/transceiver/loglevel'
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/transceiver /sys_switch/transceiver/debug'
-    log_os_system(cmd, 1)
+
     # power_on
     power_on = 1
     cmd = 'sudo echo "{}" > /sys_switch/transceiver/power_on'.format(power_on)
@@ -1881,13 +1866,6 @@ def create_s3ip_sysled_sysfs():
 
     # Fixing the LED enum state for now
 
-    # loglevel
-    cmd = 'sudo ln -s /sys/module/pddf_client_module/parameters/led_loglevel /sys_switch/sysled/loglevel'
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/sysled /sys_switch/sysled/debug'
-    log_os_system(cmd, 1)
-
     # SYS-LED
     result, output = pddf_api.get_system_led_color("SYS_LED")
     if result:
@@ -2065,12 +2043,6 @@ def create_s3ip_cpld_sysfs():
     cpld_dev = [k for k in pddf_api.data.keys() if 'CPLD' in k]
     num_cplds = len(cpld_dev)
     cmd = 'sudo echo "{}" > /sys_switch/cpld/number'.format(num_cplds)
-    log_os_system(cmd, 1)
-     # loglevel
-    cmd = 'sudo ln -s /sys/module/pddf_client_module/parameters/cpld_loglevel /sys_switch/cpld/loglevel'
-    log_os_system(cmd, 1)
-    # debug
-    cmd = 'sudo ln -s /sys/kernel/pddf/devices/custom_debug/cpld /sys_switch/cpld/debug'
     log_os_system(cmd, 1)
 
     #debug
