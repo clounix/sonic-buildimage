@@ -194,7 +194,7 @@ static int __init pddf_custom_debug_init(void)
 {
     struct kobject *device_kobj;
     int ret = 0;
-    printk(KERN_INFO "dmchen %s, %d\n", __FUNCTION__, __LINE__);
+
     device_kobj = get_device_i2c_kobj();
     if(!device_kobj) 
         return -ENOMEM;

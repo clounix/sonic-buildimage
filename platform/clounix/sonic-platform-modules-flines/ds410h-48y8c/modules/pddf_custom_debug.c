@@ -1,230 +1,230 @@
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/jiffies.h>
-#include <linux/i2c.h>
-#include <linux/hwmon.h>
-#include <linux/hwmon-sysfs.h>
-#include <linux/err.h>
-#include <linux/mutex.h>
-#include <linux/sysfs.h>
-#include <linux/slab.h>
-#include <linux/delay.h>
-#include <linux/dmi.h>
 #include <linux/kobject.h>
+#include <linux/sysfs.h>
+#include <linux/module.h>
+#include <linux/device.h>
+#include <linux/string.h>
 #include "pddf_client_defs.h"
 
-#define BSP_VERSION     ("1.0")
-
-static ssize_t drv_get_syseeprom_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t sys_bsp_version_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug syseeprom: \n"
-                                        "i2cget -y -f 1 0x57 %s\n", "reg");
-    return ret;
+    char *bsp_version = "1.0";
+
+    return sprintf(buf, "%s\n", bsp_version);
 }
 
-static ssize_t drv_set_syseeprom_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t sys_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "read eeprom: \n"
+                        "hexdump -C /sys_switch/syseeprom\n");
 }
 
-static ssize_t drv_get_transceiver_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t sys_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug transceiver: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_transceiver_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t xcvr_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "read transciever info: \n"
+                        "cat /sys_switch/transceiver/present\n"
+                        "hexdump -C /sys_switch/transceiver/eth1/eeprom\n");
 }
 
-static ssize_t drv_get_temp_sensor_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t xcvr_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug temp sensor: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_temp_sensor_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t temp_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "read temp_sensor info: \n"
+                        "cat /sys_switch/temp_sensor/temp*/*\n");
 }
 
-static ssize_t drv_get_curr_sensor_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t temp_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug curr sensor: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_curr_sensor_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t curr_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "read curr_sensor info: \n"
+                        "cat /sys_switch/curr_sensor/curr*/*\n");
 }
 
-static ssize_t drv_get_volt_sensor_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t curr_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug volt sensor: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_volt_sensor_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t vol_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "read curr_sensor info: \n"
+                        "cat /sys_switch/vol_sensor/vol*/*\n");
 }
 
-static ssize_t drv_get_fan_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t vol_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug fan: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_fan_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t fan_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "fan speed adjust: \n"
+                        "echo <ratio> > /sys_switch/fan/fan*/ratio\n"
+                        "check fan speed: \n"
+                        "cat /sys_switch/fan/fan*/motor1/speed\n");
 }
 
-static ssize_t drv_get_psu_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t fan_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug psu: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_psu_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t psu_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "check PSU info: \n"
+                        "cat /sys_switch/psu/psu*/*\n"
+                        "check PSU temerature: \n"
+                        "cat /sys_switch/psu/psu*/temp*/*\n");
 }
 
-static ssize_t drv_get_sysled_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t psu_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug sysled: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_sysled_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t led_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "get led status: \n"
+                        "cat /sys_switch/sysled/*\n"
+                        "set led status: \n"
+                        "echo <status> > /sys_switch/sysled/sys_led_status\n");
 }
 
-static ssize_t drv_get_fpga_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t led_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug fpga: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_fpga_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t fpga_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "check FPGA version: \n"
+                        "cat /sys_switch/fpga/fpga*/board_version\n");
 }
 
-static ssize_t drv_get_cpld_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t fpga_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug cpld: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_cpld_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t cpld_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "check cpld version: \n"
+                        "cat /sys_switch/cpld/cpld*/firmware_version\n");
 }
 
-static ssize_t drv_get_slot_debug(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t cpld_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    ssize_t ret = -1;
-    ret = scnprintf(buf, PAGE_SIZE, "debug slot: \n", "reg");
-    return ret;
+    return -ENOSYS;
 }
 
-static ssize_t drv_set_slot_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ssize_t wdt_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-    return -EOPNOTSUPP;
+    return sprintf(buf, "watchdog debug: \n"
+                        "echo 120 > /sys_switch/watchdog/timeout\n"
+                        "cat /sys_switch/watchdog/timeleft\n");
 }
 
-static ssize_t get_sys_bsp_version(struct device *dev, struct device_attribute *attr, char *buf)
+ssize_t wdt_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    return sprintf(buf, "%s\n", BSP_VERSION);
+    return -ENOSYS;
 }
-static DEVICE_ATTR(bsp_version,S_IRUGO, get_sys_bsp_version, NULL);
-static DEVICE_ATTR(syseeprom, S_IRUGO|S_IWUSR, drv_get_syseeprom_debug, drv_set_syseeprom_debug);
-static DEVICE_ATTR(transceiver, S_IRUGO|S_IWUSR, drv_get_transceiver_debug, drv_set_transceiver_debug);
-static DEVICE_ATTR(temp_sensor, S_IRUGO|S_IWUSR, drv_get_temp_sensor_debug, drv_set_temp_sensor_debug);
-static DEVICE_ATTR(curr_sensor, S_IRUGO|S_IWUSR, drv_get_curr_sensor_debug, drv_set_curr_sensor_debug);
-static DEVICE_ATTR(volt_sensor, S_IRUGO|S_IWUSR, drv_get_volt_sensor_debug, drv_set_volt_sensor_debug);
-static DEVICE_ATTR(fan, S_IRUGO|S_IWUSR, drv_get_fan_debug, drv_set_fan_debug);
-static DEVICE_ATTR(psu, S_IRUGO|S_IWUSR, drv_get_psu_debug, drv_set_psu_debug);
-static DEVICE_ATTR(sysled, S_IRUGO|S_IWUSR, drv_get_sysled_debug, drv_set_sysled_debug);
-static DEVICE_ATTR(fpga, S_IRUGO|S_IWUSR, drv_get_fpga_debug, drv_set_fpga_debug);
-static DEVICE_ATTR(cpld, S_IRUGO|S_IWUSR, drv_get_cpld_debug, drv_set_cpld_debug);
-static DEVICE_ATTR(slot, S_IRUGO|S_IWUSR, drv_get_slot_debug, drv_set_slot_debug);
 
-static struct attribute *pddf_custom_debug_attributes[] = {
-    &dev_attr_bsp_version.attr,
-    &dev_attr_syseeprom.attr,
-    &dev_attr_transceiver.attr,
-    &dev_attr_temp_sensor.attr,
-    &dev_attr_curr_sensor.attr,
-    &dev_attr_volt_sensor.attr,
-    &dev_attr_fan.attr,
-    &dev_attr_psu.attr,
-    &dev_attr_sysled.attr,
-    &dev_attr_fpga.attr,
-    &dev_attr_cpld.attr,
-    &dev_attr_slot.attr,
-    NULL
+ssize_t slot_debug_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+    return sprintf(buf, "slot debug: \n"
+                        "cat /sys_switch/slot/number\n");
+}
+
+ssize_t slot_debug_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+    return -ENOSYS;
+}
+
+static struct kobj_attribute sys_bsp_version_attr = __ATTR(bsp_version, S_IRUGO | S_IWUSR, sys_bsp_version_debug_show, NULL);
+static struct kobj_attribute sys_debug_attr = __ATTR(sys_debug, S_IRUGO | S_IWUSR, sys_debug_show, sys_debug_store);
+static struct kobj_attribute xcvr_debug_attr = __ATTR(xcvr_debug, S_IRUGO | S_IWUSR, xcvr_debug_show, xcvr_debug_store);
+static struct kobj_attribute temp_debug_attr = __ATTR(temp_debug, S_IRUGO | S_IWUSR, temp_debug_show, temp_debug_store);
+static struct kobj_attribute curr_debug_attr = __ATTR(curr_debug, S_IRUGO | S_IWUSR, curr_debug_show, curr_debug_store);
+static struct kobj_attribute vol_debug_attr = __ATTR(vol_debug, S_IRUGO | S_IWUSR, vol_debug_show, vol_debug_store);
+static struct kobj_attribute fan_debug_attr = __ATTR(fan_debug, S_IRUGO | S_IWUSR, fan_debug_show, fan_debug_store);
+static struct kobj_attribute psu_debug_attr = __ATTR(psu_debug, S_IRUGO | S_IWUSR, psu_debug_show, psu_debug_store);
+static struct kobj_attribute led_debug_attr = __ATTR(led_debug, S_IRUGO | S_IWUSR, led_debug_show, led_debug_store);
+static struct kobj_attribute fpga_debug_attr = __ATTR(fpga_debug, S_IRUGO | S_IWUSR, fpga_debug_show, fpga_debug_store);
+static struct kobj_attribute cpld_debug_attr = __ATTR(cpld_debug, S_IRUGO | S_IWUSR, cpld_debug_show, cpld_debug_store);
+static struct kobj_attribute wdt_debug_attr = __ATTR(wdt_debug, S_IRUGO | S_IWUSR, wdt_debug_show, wdt_debug_store);
+static struct kobj_attribute slot_debug_attr = __ATTR(slot_debug, S_IRUGO | S_IWUSR, slot_debug_show, slot_debug_store);
+
+static struct attribute *pddf_debug_attrs[] = {
+    &sys_bsp_version_attr.attr,
+    &sys_debug_attr.attr,
+    &xcvr_debug_attr.attr,
+    &temp_debug_attr.attr,
+    &curr_debug_attr.attr,
+    &vol_debug_attr.attr,
+    &fan_debug_attr.attr,
+    &psu_debug_attr.attr,
+    &led_debug_attr.attr,
+    &fpga_debug_attr.attr,
+    &cpld_debug_attr.attr,
+    &wdt_debug_attr.attr,
+    &slot_debug_attr.attr,
+    NULL,
 };
 
-static const struct attribute_group pddf_custom_debug_attribute_group = {
-    .attrs = pddf_custom_debug_attributes,
+static struct attribute_group pddf_debug_attr_group = {
+    .attrs = pddf_debug_attrs,
 };
+
 
 static struct kobject *debug_kobj;
+
 static int __init pddf_custom_debug_init(void)
 {
     struct kobject *device_kobj;
     int ret = 0;
 
-    pr_info("PDDF CUSTOM DEBUG MODULE... init\n");
     device_kobj = get_device_i2c_kobj();
-    if(!device_kobj)
-    {
+    if(!device_kobj) 
         return -ENOMEM;
-    }
 
-    debug_kobj = kobject_create_and_add("custom_debug", device_kobj);
-    if(!debug_kobj)
-    {
+    debug_kobj = kobject_create_and_add("pddf_custom", device_kobj);
+    if (!debug_kobj)
         return -ENOMEM;
-    }
-    ret = sysfs_create_group(debug_kobj, &pddf_custom_debug_attribute_group);
-    if(ret)
-    {
+
+    ret = sysfs_create_group(debug_kobj, &pddf_debug_attr_group);
+    if (ret) {
         kobject_put(debug_kobj);
         return ret;
     }
-    pr_info("create custom i2c client sysfs group\n");
 
-    return ret;
+    return 0;
 }
 
-void __exit pddf_custom_debug_exit(void)
+static void __exit pddf_custom_debug_exit(void)
 {
-    pr_info("pddf custom debug module.. exit\n");
-    sysfs_remove_group(debug_kobj, &pddf_custom_debug_attribute_group);
+
+    sysfs_remove_group(debug_kobj, &pddf_debug_attr_group);
+
     kobject_put(debug_kobj);
-    pr_info("removed the kobjects for 'custom_debug'\n");
+
+    return;
 }
+
 
 module_init(pddf_custom_debug_init);
 module_exit(pddf_custom_debug_exit);
 
-MODULE_AUTHOR("FLKS");
-MODULE_DESCRIPTION("pddf custom debug");
 MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("PDDF debug interface under /sys/kernel/pddf_debug");
