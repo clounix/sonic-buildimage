@@ -18,12 +18,12 @@
             {
                 "name": "CPLD-3",
                 "description":"FB CPLD#1",
-                "firmware_version_path":"/sys/bus/i2c/devices/106-0060/fan_hw_version"
+                "firmware_version_path":"/sys/bus/i2c/devices/104-0060/fan_hw_version"
             },
             {
                 "name": "CPLD-4",
                 "description":"SEQ CPLD#1",
-                "firmware_version_path":"/sys/bus/i2c/devices/106-0060/fan_hw_version"
+                "firmware_version_path":"/sys_switch/cpld/cpld3/firmware_version"
             },
             {
                 "name": "FPGA",

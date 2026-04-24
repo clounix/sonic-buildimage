@@ -56,7 +56,7 @@ class Component(ComponentBase):
         if attr_rv != None:
             firmware_version = attr_rv
         else:
-            if self.get_name == 'BIOS':
+            if self.get_name() == 'BIOS':
                 ret,bios_ver = self.__api_helper.run_command(BIOS_QUERY_VERSION_COMMAND)
                 if ret:
                     if bios_ver:
