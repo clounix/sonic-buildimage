@@ -1,17 +1,28 @@
 {
   "XCVR": {
     "xcvr_present": {
-      "i2c": {
+    "i2c": {
         "valmap-QSFP": {
-          "1": true,
-          "0": false
+            "1": true,
+            "1\n": true,
+            "0": false,
+            "0\n": false
         },
         "valmap-QSFP-DD": {
-          "1": true,
-          "0": false
+            "1": true,
+            "1\n": true,
+            "0": false,
+            "0\n": false
+        },
+        "valmap-SFP": {
+            "1": true,
+            "1\n": true,
+            "0": false,
+            "0\n": false
         }
       }
     }
+
   },
 
   "PSU": {

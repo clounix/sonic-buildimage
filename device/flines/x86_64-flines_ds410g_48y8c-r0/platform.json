@@ -40,48 +40,23 @@
         "fan_drawers": [
             {
                 "name": "Draw1",
-                "fans": [
-                    {
-                        "name": "FAN1",
-                        "name": "FAN2"
-                    }
-                ]
+                "fans": [{"name": "FAN1"},{"name": "FAN2"}]
             },
             {
                 "name": "Draw2",
-                "fans": [
-                    {
-                        "name": "FAN3",
-                        "name": "FAN4"
-                    }
-                ]
+                "fans": [{"name": "FAN3"},{"name": "FAN4"}]
             },
             {
                 "name": "Draw3",
-                "fans": [
-                    {
-                        "name": "FAN5",
-                        "name": "FAN6"
-                    }
-                ]
+                "fans": [{"name": "FAN5"},{"name": "FAN6"}]
             },
             {
                 "name": "Draw4",
-                "fans": [
-                    {
-                        "name": "FAN7",
-                        "name": "FAN8"
-                    }
-                ]
+                "fans": [{"name": "FAN7"},{"name": "FAN8"}]
             },
             {
                 "name": "Draw5",
-                "fans": [
-                    {
-                        "name": "FAN9",
-                        "name": "FAN10"
-                    }
-                ]
+                "fans": [{"name": "FAN9"},{"name": "FAN10"}]
             }
         ],
         "psus": [
@@ -348,155 +323,15 @@
             },
             {
                 "name": "Ethernet56"
-            },
-            {
-                "name": "Ethernet57"
-            },
-            {
-                "name": "Ethernet58"
             }
         ],
         "cpi_fp_map": [
         ],
         "pmbus-dev":[
             {
-                "non-std":"1",
-                "master":"0x65",
-                "slave":"0x34",
-                "sensors":[
-                    {
-                        "dir":"vx1",
-                        "vol":"vx1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx2",
-                        "vol":"vx2",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx3",
-                        "vol":"vx3",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx4",
-                        "vol":"vx4",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx5",
-                        "vol":"vx5",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp1",
-                        "vol":"vp1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp2",
-                        "vol":"vp2",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp3",
-                        "vol":"vp3",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp4",
-                        "vol":"vp4",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vh",
-                        "vol":"vh",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"aux1",
-                        "vol":"aux1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"aux2",
-                        "vol":"aux2",
-                        "vol_resol":"0.001"
-                    }
-                ]
-            },
-            {
-                "non-std":"1",
-                "master":"0x65",
-                "slave":"0x36",
-                "sensors":[
-                    {
-                        "dir":"vx1",
-                        "vol":"vx1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx2",
-                        "vol":"vx2",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx3",
-                        "vol":"vx3",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx4",
-                        "vol":"vx4",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vx5",
-                        "vol":"vx5",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp1",
-                        "vol":"vp1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp2",
-                        "vol":"vp2",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp3",
-                        "vol":"vp3",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vp4",
-                        "vol":"vp4",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"vh",
-                        "vol":"vh",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"aux1",
-                        "vol":"aux1",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "dir":"aux2",
-                        "vol":"aux2",
-                        "vol_resol":"0.001"
-                    }
-                ]
-            },
-            {
                 "psu":"1",
-                "master":"0x64",
-                "slave":"0x58",
+                "master":"0x65",
+                "slave":"0x5a",
                 "sensors":[
                     {
                         "dir":"input1",
@@ -533,7 +368,7 @@
             {
                 "psu":"2",
                 "master":"0x64",
-                "slave":"0x5a",
+                "slave":"0x58",
                 "sensors":[
                     {
                         "dir":"input1",
@@ -568,8 +403,8 @@
                 ]
             },
             {
-                "master":"0x66",
-                "slave":"0x40",
+                "master":"0x6a",
+                "slave":"0x03",
                 "sensors":[
                     {
                         "dir":"input1",
@@ -616,107 +451,6 @@
                     },
                     {
                         "temp":"temp2_input",
-                        "temp_resol":"0.001"
-                    }
-                ]
-            },
-            {
-                "master":"0x66",
-                "slave":"0x24",
-                "sensors":[
-                    {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "asic_power":"1",
-                        "dir":"output1",
-                        "vol":"in2_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr1_input",
-                        "curr_resol":"0.001"
-                    }
-                ],
-                "temp_sensors":[
-                    {
-                        "temp":"temp1_input",
-                        "temp_resol":"0.001"
-                    }
-                ]
-            },
-            {
-                "master":"0x66",
-                "slave":"0x27",
-                "sensors":[
-                    {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "asic_power":"1",
-                        "dir":"output1",
-                        "vol":"in2_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr1_input",
-                        "curr_resol":"0.001"
-                    }
-                ],
-                "temp_sensors":[
-                    {
-                        "temp":"temp1_input",
-                        "temp_resol":"0.001"
-                    }
-                ]
-            },
-            {
-                "master":"0x66",
-                "slave":"0x29",
-                "sensors":[
-                    {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001"
-                    },
-                    {
-                        "asic_power":"1",
-                        "dir":"output1",
-                        "vol":"in2_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr1_input",
-                        "curr_resol":"0.001"
-                    }
-                ],
-                "temp_sensors":[
-                    {
-                        "temp":"temp1_input",
-                        "temp_resol":"0.001"
-                    }
-                ]
-            },
-            {
-                "master":"0x68",
-                "slave":"0x10",
-                "sensors":[
-                    {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001",
-                        "power":"power1_input",
-                        "power_resol":"0.000001"
-                    },
-                    {
-                        "dir":"output1",
-                        "vol":"in2_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr1_input",
-                        "curr_resol":"0.001"
-                    }
-                ],
-                "temp_sensors":[
-                    {
-                        "temp":"temp1_input",
                         "temp_resol":"0.001"
                     }
                 ]

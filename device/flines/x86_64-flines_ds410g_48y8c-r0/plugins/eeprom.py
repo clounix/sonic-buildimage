@@ -9,7 +9,7 @@ try:
     import sys
     from sonic_eeprom import eeprom_base
     from sonic_eeprom import eeprom_tlvinfo
-     from sonic_eeprom import eeprom_fruinfo
+    from sonic_eeprom import eeprom_fruinfo
     import subprocess
 except ImportError as e:
     raise ImportError (str(e) + "- required module not found")
@@ -28,4 +28,3 @@ class psu(eeprom_fruinfo.ipmifru):
         else:
             self.eeprom_path = "/sys/bus/i2c/devices/100-0052/eeprom"
         super(psu, self).__init__(self.eeprom_path, 0, '', True)
-
