@@ -322,7 +322,7 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
 		case FAN15_FAULT:
 		case FAN16_FAULT:
 		case FAN_DUTY_CYCLE:
-        case FAN_HW_VERSION:
+        //case FAN_HW_VERSION:
         case FAN_EEPROMWP:
         case FAN1_SPEED_TARGET:
         case FAN2_SPEED_TARGET:
@@ -384,6 +384,9 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
         case FAN5_SPEED_MIN:
             status = attr_info->val.intval;
 			break;
+        case FAN_HW_VERSION:
+            status = attr_info->val.intval;
+            return sprintf(buf, "%#x\n", status);
 		default:
             pddf_dbg(FAN, "%s: Unable to find the attribute index for %s\n", __FUNCTION__, usr_data->aname);
 			status = 0;
