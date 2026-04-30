@@ -64,6 +64,11 @@ extern FAN_SYSFS_ATTR_DATA data_fan2_input;
 extern FAN_SYSFS_ATTR_DATA data_fan3_input;
 extern FAN_SYSFS_ATTR_DATA data_fan4_input;
 extern FAN_SYSFS_ATTR_DATA data_fan5_input;
+extern FAN_SYSFS_ATTR_DATA data_fan6_input;
+extern FAN_SYSFS_ATTR_DATA data_fan7_input;
+extern FAN_SYSFS_ATTR_DATA data_fan8_input;
+extern FAN_SYSFS_ATTR_DATA data_fan9_input;
+extern FAN_SYSFS_ATTR_DATA data_fan10_input;
 extern FAN_SYSFS_ATTR_DATA data_fan1_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan2_pwm;
 extern FAN_SYSFS_ATTR_DATA data_fan3_pwm;
@@ -177,19 +182,19 @@ static int sonic_i2c_get_fan_rpm(void *client, FAN_DATA_ATTR *udata, void *info)
     bool skip_neg_check = false;
     struct fan_attr_info *painfo = (struct fan_attr_info *)info;
 
-    if (udata->offset >= 0x70 && udata->offset <= 0x7f) {
-        offset = udata->offset + 0x10;
-    } else if (udata->offset >= 0x80 && udata->offset <= 0x8f) {
-        offset = udata->offset - 0x10;
-    }
+    // if (udata->offset >= 0x70 && udata->offset <= 0x7f) {
+    //     offset = udata->offset + 0x10;
+    // } else if (udata->offset >= 0x80 && udata->offset <= 0x8f) {
+    //     offset = udata->offset - 0x10;
+    // }
     if (udata->len == 1)
     {
         val_l = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
         val_h = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset+1);
         val = (val_h << 8) + val_l;
-        val_l = i2c_smbus_read_byte_data((struct i2c_client *)client, offset);
-        val_h = i2c_smbus_read_byte_data((struct i2c_client *)client, offset+1);
-        val += ((val_h << 8) + val_l);
+        // val_l = i2c_smbus_read_byte_data((struct i2c_client *)client, offset);
+        // val_h = i2c_smbus_read_byte_data((struct i2c_client *)client, offset+1);
+        // val += ((val_h << 8) + val_l);
     }
     else if (udata->len ==2)
     {
@@ -390,6 +395,11 @@ static int __init pddf_custom_fan_init(void)
     data_fan3_input.do_get = sonic_i2c_get_fan_rpm;
     data_fan4_input.do_get = sonic_i2c_get_fan_rpm;
     data_fan5_input.do_get = sonic_i2c_get_fan_rpm;
+    data_fan6_input.do_get = sonic_i2c_get_fan_rpm;
+    data_fan7_input.do_get = sonic_i2c_get_fan_rpm;
+    data_fan8_input.do_get = sonic_i2c_get_fan_rpm;
+    data_fan9_input.do_get = sonic_i2c_get_fan_rpm;
+    data_fan10_input.do_get = sonic_i2c_get_fan_rpm;
 
     data_fan_model_name.show = show_fan_string;
     data_fan_serial_num.show = show_fan_string;
