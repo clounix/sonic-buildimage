@@ -50,8 +50,9 @@
 enum log_type {
     LOG_OFF,
     LOG_ERR,
-    LOG_INFO,
-    LOG_DEBUG,
+    LOG_WARNING,
+    LOG_INFO = 0x04,
+    LOG_DEBUG = 0x08,
 };
 
 #define pddf_dbg(filter, ...) \
