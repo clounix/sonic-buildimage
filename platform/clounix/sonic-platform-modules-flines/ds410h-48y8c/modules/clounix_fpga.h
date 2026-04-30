@@ -56,13 +56,13 @@
 #define FPGA_DEVICE_ID 0x7021
 
 /*power cycle*/
-#define FPGA_GLOBAL_CFG_BASE 0x100
-#define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0) 
-#define P12V_STBY_EN   1
+#define FPGA_GLOBAL_CFG_BASE 0x300
+#define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0xd0) 
+#define P12V_STBY_EN   2
 #define RESET_MUX_BIT  4
 
 /*PVT mgr*/
-#define FPGA_PVT_BASE  0x900
+#define FPGA_PVT_BASE  0xc00
 #define FPGA_PVT_MGR_CFG (FPGA_PVT_BASE +0x0)
 #define FPGA_PVT_MGR_DATA (FPGA_PVT_BASE +0x4)
 #define FPGA_PVT_MGR_CFG_RST_BIT 31
@@ -75,6 +75,10 @@
 /*CPLD init register*/
 #define CPLD_BASE_ADDRESS           (0x0300)
 #define CPLD_INTF_CONFIG            CPLD_BASE_ADDRESS 
+
+/* FPGA power history record */
+#define FPGA_POWER_HISTORY_RECORDS          (CPLD_BASE_ADDRESS + 0xb0)
+#define FPGA_POWER_HISTORY_RECORDS_CTRL     (CPLD_BASE_ADDRESS + 0xb4)
 
 #define CPLD0_RST_BIT      31
 #define CPLD0_EN_BIT       30

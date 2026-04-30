@@ -92,6 +92,45 @@ static ssize_t set_sys_fpga_power_cycle(struct device *dev, struct device_attrib
     }
     return count;
 }
+static ssize_t get_sys_fpga_power_history_record(struct device *dev, struct device_attribute *da,
+             char *buf)
+{  
+    uint32_t data = 0;
+
+    if(NULL != fpga_ctl_addr){
+        data= readl(fpga_ctl_addr + FPGA_POWER_HISTORY_RECORDS);
+    }
+    return sprintf(buf, "0x%x\n", data);
+}
+static ssize_t get_sys_fpga_ctrl_history_record(struct device *dev, struct device_attribute *da,
+             char *buf)
+{  
+    uint32_t data = 0;
+
+    if(NULL != fpga_ctl_addr){
+        data= readl(fpga_ctl_addr + FPGA_POWER_HISTORY_RECORDS_CTRL);
+    }
+    return sprintf(buf, "0x%x\n", data);
+}
+static ssize_t set_sys_fpga_ctrl_history_record(struct device *dev, struct device_attribute *da,
+             const char *buf, size_t count)
+{
+    uint32_t value = 0;
+    uint32_t data = 0;
+
+    if (kstrtouint(buf, 16, &value))
+    {
+        return -EINVAL;
+    }
+    if(NULL != fpga_ctl_addr){
+        if(1 == value)
+            data = 0x80;
+        else
+            data = 0x0c;
+        writel(data, fpga_ctl_addr + FPGA_POWER_HISTORY_RECORDS_CTRL);
+    }
+    return count;
+}
 static void enable_pvt_temp(void)
 {   
     uint32_t data = 0;
@@ -174,6 +213,8 @@ static ssize_t set_sys_fpga_pvt_temp_crit(struct device *dev,
     return count;
 }
 static DEVICE_ATTR(power_cycle,S_IRUGO | S_IWUSR, get_sys_fpga_power_cycle, set_sys_fpga_power_cycle);
+static DEVICE_ATTR(power_history_record,S_IRUGO, get_sys_fpga_power_history_record, NULL);
+static DEVICE_ATTR(ctrl_history_record,S_IRUGO | S_IWUSR, get_sys_fpga_ctrl_history_record, set_sys_fpga_ctrl_history_record);
 static SENSOR_DEVICE_ATTR(pvt_temp1_input,S_IRUGO, get_sys_fpga_pvt_temp_input, NULL,0);
 static SENSOR_DEVICE_ATTR(pvt_temp1_max,S_IRUGO | S_IWUSR , get_sys_fpga_pvt_temp_max, set_sys_fpga_pvt_temp_max,0);
 static SENSOR_DEVICE_ATTR(pvt_temp1_crit,S_IRUGO | S_IWUSR, get_sys_fpga_pvt_temp_crit, set_sys_fpga_pvt_temp_crit,0);
@@ -181,6 +222,8 @@ static SENSOR_DEVICE_ATTR(pvt_temp1_label,S_IRUGO | S_IWUSR, get_sys_fpga_pvt_te
 static struct attribute *fpga_attributes[] =
 {
     &dev_attr_power_cycle.attr,
+    &dev_attr_power_history_record.attr,
+    &dev_attr_ctrl_history_record.attr,
     &sensor_dev_attr_pvt_temp1_input.dev_attr.attr,
     &sensor_dev_attr_pvt_temp1_max.dev_attr.attr,
     &sensor_dev_attr_pvt_temp1_crit.dev_attr.attr,

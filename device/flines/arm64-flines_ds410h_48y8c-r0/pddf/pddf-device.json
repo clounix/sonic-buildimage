@@ -385,9 +385,9 @@
 				{ "attr_name":"psu_temp1_input", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x8d", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_temp2_input", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x8e", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_temp3_input", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x8f", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp1_high_crit_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc0", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp2_high_crit_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc1", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp3_high_crit_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc2", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"} 
+				{ "attr_name":"psu_temp1_high_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc0", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_temp2_high_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc1", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_temp3_high_threshold", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xc2", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"} 
 			]
 		}
 	},
@@ -469,9 +469,9 @@
 				{ "attr_name":"psu_temp1_input", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x8d", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_temp2_input", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x8e", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_temp3_input", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x8f", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp1_high_crit_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc0", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp2_high_crit_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc1", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_temp3_high_crit_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc2", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"}
+				{ "attr_name":"psu_temp1_high_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc0", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_temp2_high_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc1", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_temp3_high_threshold", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xc2", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"}
 			 ]
 		}
 	},
