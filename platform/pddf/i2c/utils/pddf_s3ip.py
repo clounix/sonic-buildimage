@@ -109,12 +109,27 @@ def log_os_system(cmd, show):
             print('Failed :'+cmd)
     return  status, output
 
+def get_pddf_custom_path(filename):
+    return ("/sys/kernel/pddf/devices/pddf_custom/{}".format(filename))
+
+def get_pddf_client_loglevel(filename):
+    return ("/sys/module/pddf_client_module/parameters/{}".format(filename))
+
 def create_s3ip_temp_sysfs():
     print("Creating temperature sensors sysfs ..")
 
     log_os_system('sudo mkdir -p -m 777 /sys_switch/temp_sensor', 1)
     num_temps = pddf_api.data['PLATFORM']['num_temps'] if 'num_temps' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/temp_sensor/number'.format(num_temps)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('temp_debug')
+    cmd = 'sudo ln -s {} /sys_switch/temp_sensor/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    cmd = 'sudo echo 2 > /sys_switch/temp_sensor/loglevel'
     log_os_system(cmd, 1)
 
     for t in range(1, num_temps+1):
@@ -226,13 +241,22 @@ def create_s3ip_temp_sysfs():
 def create_s3ip_volt_sysfs():
     print("Creating voltage sensors sysfs ..")
 
-    log_os_system('sudo mkdir -p -m 777 /sys_switch/vol_sensor', 1)
+    log_os_system('sudo mkdir -p -m 777 /sys_switch/volt_sensor', 1)
     num_voltage_sensors = pddf_api.data['PLATFORM']['num_voltage_sensors'] if 'num_voltage_sensors' in pddf_api.data['PLATFORM'] else 0
-    cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/number'.format(num_voltage_sensors)
+    cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/number'.format(num_voltage_sensors)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('vol_debug')
+    cmd = 'sudo ln -s {} /sys_switch/volt_sensor/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    cmd = 'sudo echo 2 > /sys_switch/volt_sensor/loglevel'
     log_os_system(cmd, 1)
 
     for volt_idx in range(1, num_voltage_sensors + 1):
-        cmd = 'sudo mkdir -p -m 777 /sys_switch/vol_sensor/vol{}'.format(volt_idx)
+        cmd = 'sudo mkdir -p -m 777 /sys_switch/volt_sensor/vol{}'.format(volt_idx)
         log_os_system(cmd, 1)
 
         dev_name = 'VOLTAGE{}'.format(volt_idx)
@@ -244,9 +268,9 @@ def create_s3ip_volt_sysfs():
             if dev['dev_attr']['display_name']:
                 alias = dev['dev_attr']['display_name']
 
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/alias'.format(alias, volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/alias'.format(alias, volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/alias'.format('NA', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/alias'.format('NA', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -262,9 +286,9 @@ def create_s3ip_volt_sysfs():
             if 'i2c' in i2c_dev.keys() and 'topo_info' in i2c_dev['i2c'].keys() and \
                     'dev_type' in i2c_dev['i2c']['topo_info'].keys():
                 dev_type = i2c_dev['i2c']['topo_info']['dev_type']
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/type'.format(dev_type, volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/type'.format(dev_type, volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/type'.format('NA', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/type'.format('NA', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -276,19 +300,19 @@ def create_s3ip_volt_sysfs():
                 output = pddf_api.bmc_get_cmd(bmc_attr)
                 if output.replace('.','',1).isdigit():
                     max_val = float(output['status'])*1000
-                cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/max'.format(max_val, volt_idx)
+                cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/max'.format(max_val, volt_idx)
             else:
                 # I2C based attribute
                 node = pddf_api.get_path(dev_name, 'volt1_crit_high_threshold')
                 if node:
-                    cmd = 'sudo ln -s {} /sys_switch/vol_sensor/vol{}/max'.format(node, volt_idx)
+                    cmd = 'sudo ln -s {} /sys_switch/volt_sensor/vol{}/max'.format(node, volt_idx)
                 else:
-                    cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/max'.format(max_val, volt_idx)
+                    cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/max'.format(max_val, volt_idx)
                     output = pddf_api.get_virtual_attr_value(dev_name, 'volt1_crit_high_threshold')
                     if output:
-                        cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/max'.format(output, volt_idx)
+                        cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/max'.format(output, volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/max'.format('N/A', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/max'.format('N/A', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -300,20 +324,20 @@ def create_s3ip_volt_sysfs():
                 output = pddf_api.bmc_get_cmd(bmc_attr)
                 if output.replace('.','',1).isdigit():
                     min_val = float(output['status'])*1000
-                cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/min'.format(min_val, volt_idx)
+                cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/min'.format(min_val, volt_idx)
             else:
                 # I2C based attribute
                 node = pddf_api.get_path(dev_name, 'volt1_high_threshold')
                 if node:
-                    cmd = 'sudo ln -s {} /sys_switch/vol_sensor/vol{}/min'.format(node, volt_idx)
+                    cmd = 'sudo ln -s {} /sys_switch/volt_sensor/vol{}/min'.format(node, volt_idx)
                 else:
-                    cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/min'.format(min_val, volt_idx)
+                    cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/min'.format(min_val, volt_idx)
                     output = pddf_api.get_virtual_attr_value(dev_name, 'volt1_high_threshold')
                     if output:
-                        cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/min'.format(output, volt_idx)
+                        cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/min'.format(output, volt_idx)
 
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/min'.format('N/A', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/min'.format('N/A', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -325,16 +349,16 @@ def create_s3ip_volt_sysfs():
                 val = 'NA'
                 if output.replace('.','',1).isdigit():
                     val = float(output['status'])*1000
-                cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/value'.format(val, volt_idx)
+                cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/value'.format(val, volt_idx)
             else:
                 # I2C based attribute
                 node = pddf_api.get_path(dev_name, 'volt1_input')
                 if node:
-                    cmd = 'sudo ln -s {} /sys_switch/vol_sensor/vol{}/value'.format(node, volt_idx)
+                    cmd = 'sudo ln -s {} /sys_switch/volt_sensor/vol{}/value'.format(node, volt_idx)
                 else:
-                    cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/value'.format('N/A', volt_idx)
+                    cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/value'.format('N/A', volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/value'.format('N/A', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/value'.format('N/A', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -344,9 +368,9 @@ def create_s3ip_volt_sysfs():
             if dev['dev_attr']['range']:
                 range_val = dev['dev_attr']['range']
 
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/range'.format(range_val, volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/range'.format(range_val, volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/range'.format('N/A', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/range'.format('N/A', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -356,9 +380,9 @@ def create_s3ip_volt_sysfs():
             if dev['dev_attr']['nominal']:
                 nominal_val = dev['dev_attr']['nominal']
 
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/nominal_value'.format(nominal_val, volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/nominal_value'.format(nominal_val, volt_idx)
         except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/vol_sensor/vol{}/nominal_value'.format('N/A', volt_idx)
+            cmd = 'sudo echo "{}" > /sys_switch/volt_sensor/vol{}/nominal_value'.format('N/A', volt_idx)
 
         log_os_system(cmd, 1)
 
@@ -370,6 +394,15 @@ def create_s3ip_curr_sysfs():
     log_os_system('sudo mkdir -p -m 777 /sys_switch/curr_sensor', 1)
     num_current_sensors = pddf_api.data['PLATFORM']['num_current_sensors'] if 'num_current_sensors' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/curr_sensor/number'.format(num_current_sensors)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('curr_debug')
+    cmd = 'sudo ln -s {} /sys_switch/curr_sensor/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    cmd = 'sudo echo 2 > /sys_switch/curr_sensor/loglevel'
     log_os_system(cmd, 1)
 
     for curr_idx in range(1, num_current_sensors + 1):
@@ -486,6 +519,22 @@ def create_s3ip_syseeprom_sysfs():
     cmd = 'sudo ln -s {} /sys_switch/syseeprom'.format(syseeprom_node)
     log_os_system(cmd, 1)
     print("Completed SysEEPROM sysfs creation")
+    print("Creaeting the bsp_version sysfs ..")
+    bsp_ver_node = get_pddf_custom_path('bsp_version')
+    cmd = 'sudo ln -s {} /sys_switch/bsp_version'.format(bsp_ver_node)
+    log_os_system(cmd, 1)
+    print("Completed bsp_version sysfs creation")
+    print("Creaeting the debug sysfs ..")
+    debug_node = get_pddf_custom_path('sys_debug')
+    cmd = 'sudo ln -s {} /sys_switch/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    print("Completed debug sysfs creation")
+    print("Creaeting the loglevel sysfs ..")
+    loglevel_node = get_pddf_client_loglevel('loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/loglevel'.format(loglevel_node)
+    log_os_system(cmd, 1)
+    print("Completed loglevel sysfs creation")
+
 
 def create_s3ip_fan_sysfs():
     print("Creating the System Fan sysfs ..")
@@ -493,6 +542,16 @@ def create_s3ip_fan_sysfs():
     num_fantrays = pddf_api.data['PLATFORM']['num_fantrays'] if 'num_fantrays' in pddf_api.data['PLATFORM'] else 0
     num_fans_pertray = pddf_api.data['PLATFORM']['num_fans_pertray'] if 'num_fans_pertray' in pddf_api.data['PLATFORM'] else 1
     cmd = 'sudo echo "{}" > /sys_switch/fan/number'.format(num_fantrays)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('fan_debug')
+    cmd = 'sudo ln -s {} /sys_switch/fan/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('fan_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/fan/loglevel'.format(leglevel_node)
     log_os_system(cmd, 1)
 
     #fan_eepromwp
@@ -510,49 +569,42 @@ def create_s3ip_fan_sysfs():
         log_os_system(cmd, 1)
 
         # model_name of the fan
-        model = 'NA'
-        cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/model_name'.format(model, f)
+        try:
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_model_name /sys_switch/fan/fan{}/model_name'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/model_name'.format(f)
+
+        log_os_system(cmd, 1)
+
+        # fan eeprom
+        try:
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_eeprom /sys_switch/fan/fan{}/eeprom'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/eeprom'.format(f)
+        
         log_os_system(cmd, 1)
 
         # serial_num of the fan
         try:
-            val = 'NA'
-            attr = 'fan{}_sn'.format(f)
-            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                val = output.rstrip()
-                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path('FAN-CTRL', attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/serial_number'.format(node, f)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/serial_number'.format(val, f)
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_sn /sys_switch/fan/fan{}/serial_number'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/serial_number'.format(f)
 
         log_os_system(cmd, 1)
 
         # part_number of the fan
         try:
-            val = 'NA'
-            attr = 'fan{}_pn'.format(f)
-            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                val = output.rstrip()
-                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path('FAN-CTRL', attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/part_number'.format(node, f)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/part_number'.format(val, f)
+            bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_part_number /sys_switch/fan/fan{}/part_number'.format(bus, dev_addr, f, f)
+        except Exception:
+            cmd = 'echo "NA" > /sys_switch/fan/fan{}/part_number'.format(f)
 
         log_os_system(cmd, 1)
 
@@ -621,6 +673,28 @@ def create_s3ip_fan_sysfs():
                     cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/ratio'.format(dc, f)
         except Exception as err:
             cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/ratio'.format(dc, f)
+
+        log_os_system(cmd, 1)
+
+        # eeprom
+        try:
+            dc = 'NA'
+            attr = 'fan{}_present'.format((f-1)*mot_num + 1)
+            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                dc = output.rstrip()
+                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path('FAN-CTRL', attr)
+                if node:
+                    new_node = node.replace("_present", "_eeprom")
+                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/eeprom'.format(new_node, f)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
 
         log_os_system(cmd, 1)
 
@@ -755,6 +829,16 @@ def create_s3ip_psu_sysfs():
     log_os_system('sudo mkdir -p -m 777 /sys_switch/psu', 1)
     num_psus = pddf_api.data['PLATFORM']['num_psus'] if 'num_psus' in pddf_api.data['PLATFORM'] else 0
     cmd = 'sudo echo "{}" > /sys_switch/psu/number'.format(num_psus)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('psu_debug')
+    cmd = 'sudo ln -s {} /sys_switch/psu/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('psu_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/psu/loglevel'.format(leglevel_node)
     log_os_system(cmd, 1)
 
     for p in range(1, num_psus+1):
@@ -1049,30 +1133,6 @@ def create_s3ip_psu_sysfs():
 
         log_os_system(cmd, 1)
 
-        # out_vol (input current in milli volts)
-        try:
-            out_vol = 'NA'
-            dev = 'PSU{}'.format(p)
-            attr = 'psu_v_out'
-            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                output = output.rstrip()
-                if output.replace('.', '', 1).isdigit():
-                    out_vol = float(output)
-                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path(dev, attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_vol'.format(node, p)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
-
-        log_os_system(cmd, 1)
-
         # out_vol_max
         try:
             out_vol = 'NA'
@@ -1097,8 +1157,139 @@ def create_s3ip_psu_sysfs():
 
         log_os_system(cmd, 1)
 
+        # out_vol (input current in milli volts)
+        try:
+            out_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_vol'.format(out_vol, p)
+
+        log_os_system(cmd, 1)
+
+        # out_max_vol (input current in micro watts)
+        try:
+            out_max_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out_max'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_max_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_max_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_max_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_max_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_max_vol, p)
+
+        log_os_system(cmd, 1)
+
+        # out_min_vol (input current in micro watts)
+        try:
+            out_min_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out_min'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_min_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_min_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_min_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_min_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_min_vol, p)
+
+        log_os_system(cmd, 1)
+
+        # out_max_vol
+        try:
+            out_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out_max'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_max_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
+
+        log_os_system(cmd, 1)
+
+        # out_min_vol
+        try:
+            out_vol = 'NA'
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_v_out_min'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    out_vol = float(output)
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_min_vol'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
+
+        log_os_system(cmd, 1)
+
+
+        # num_temp_sensors
+        ntemps = 0
+        patten = 'PSU{}'.format(p)
+        try:
+            ntemps = pddf_api.data[patten]['dev_attr']['num_psu_temp']
+        except Exception as err:
+            ntemps = 0
+        cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/num_temp_sensors'.format(ntemps, p)
+        log_os_system(cmd, 1)
+
         # number of temps
-        ntemps = 3 # fixing it for now
+        #ntemps = 3 # fixing it for now
         temp_alias = ["PSU{} Ambient".format(p), "PSU{} SR Hotspot".format(p), "PSU{} PFC Hotspot".format(p)]
         dev_name = 'PSU{}-PMBUS'.format(p)
         dev_obj = pddf_api.data[dev_name]
@@ -1167,6 +1358,8 @@ def create_s3ip_psu_sysfs():
                         output = pddf_api.get_attr_name_output(dev, attr)
                         if output:
                             cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(output['status'], p, t)
+                        else:
+                            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
                     except Exception:
                         node = pddf_api.get_path(dev, attr)
                         if node:
@@ -1221,15 +1414,6 @@ def create_s3ip_psu_sysfs():
             log_os_system(cmd, 1)
 
             # Add PSU power sensors attributes here
-
-        # num_temp_sensors
-        patten = 'PSU{}'.format(p)
-        try:
-            temp_num = pddf_api.data[patten]['dev_attr']['num_psu_temp']
-        except Exception as err:
-            temp_num = 0
-        cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/num_temp_sensors'.format(temp_num, p)
-        log_os_system(cmd, 1)
 
         # present
         try:
@@ -1363,13 +1547,22 @@ def create_s3ip_psu_sysfs():
         # hardware_version
         try:
             hardware_version = 'NA'
-            status, output = log_os_system('fruidutil get psu {}'.format(p), 1)
-            if status == 0 :
-                pattern = r'productVersion\s*:\s*(\S+)'
-                matches = re.findall(pattern, output)
-                if len(matches) >= 1 :
-                    hardware_version = matches[0]
-            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/hardware_version'.format(hardware_version, p)
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_mfr_id'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    hardware_version = int(float(output))
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/hardware_version'.format(hardware_version, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/hardware_version'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/hardware_version'.format(hardware_version, p)
         except Exception as err:
             cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/hardware_version'.format(hardware_version, p)
 
@@ -1387,6 +1580,15 @@ def create_s3ip_xcvr_sysfs():
     # power_on
     power_on = 1
     cmd = 'sudo echo "{}" > /sys_switch/transceiver/power_on'.format(power_on)
+    log_os_system(cmd, 1)
+    #debug
+    debug_node = get_pddf_custom_path('xcvr_debug')
+    cmd = 'sudo ln -s {} /sys_switch/transceiver/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    loglevel_node = get_pddf_client_loglevel('xcvr_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/transceiver/loglevel'.format(loglevel_node)
     log_os_system(cmd, 1)
 
     # port related attributes
@@ -1551,7 +1753,7 @@ def create_s3ip_xcvr_sysfs():
                 else:
                     cmd = ''
         except Exception as err:
-            cmd = ''
+            cmd = 'sudo echo "{}" > /sys_switch/transceiver/eth{}/power_on'.format(power_on, p)
 
         log_os_system(cmd, 1)
 
@@ -1651,7 +1853,19 @@ def create_s3ip_xcvr_sysfs():
 def create_s3ip_sysled_sysfs():
     print("Creating the SysLED sysfs ..")
     log_os_system('sudo mkdir -p -m 777 /sys_switch/sysled', 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('led_debug')
+    cmd = 'sudo ln -s {} /sys_switch/sysled/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('led_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/sysled/loglevel'.format(leglevel_node)
+    log_os_system(cmd, 1)
+
     # Fixing the LED enum state for now
+
     # SYS-LED
     result, output = pddf_api.get_system_led_color("SYS_LED")
     if result:
@@ -1682,14 +1896,24 @@ def create_s3ip_sysled_sysfs():
         cmd = 'sudo echo "{}" > /sys_switch/sysled/fan_led_status'.format(fanled)
     log_os_system(cmd, 1)
 
-    # PSU-LED
-    result, output = pddf_api.get_system_led_color("PSU_LED")
+    # PSU1-LED
+    result, output = pddf_api.get_system_led_color("PSU1_LED")
     if result:
-        node = "/sys/kernel/{}/psu_led".format(pddf_api.get_led_cur_state_path())
-        cmd = 'sudo ln -s {} /sys_switch/sysled/psu_led_status'.format(node)
+        node = "/sys/kernel/{}/psu1_led".format(pddf_api.get_led_cur_state_path())
+        cmd = 'sudo ln -s {} /sys_switch/sysled/psu1_led_status'.format(node)
     else:
         psuled = 'NA'
-        cmd = 'sudo echo "{}" > /sys_switch/sysled/psu_led_status'.format(psuled)
+        cmd = 'sudo echo "{}" > /sys_switch/sysled/psu1_led_status'.format(psuled)
+    log_os_system(cmd, 1)
+
+    # PSU2-LED
+    result, output = pddf_api.get_system_led_color("PSU2_LED")
+    if result:
+        node = "/sys/kernel/{}/psu2_led".format(pddf_api.get_led_cur_state_path())
+        cmd = 'sudo ln -s {} /sys_switch/sysled/psu2_led_status'.format(node)
+    else:
+        psuled = 'NA'
+        cmd = 'sudo echo "{}" > /sys_switch/sysled/psu2_led_status'.format(psuled)
     log_os_system(cmd, 1)
 
     # LOC-LED
@@ -1720,6 +1944,16 @@ def create_s3ip_fpga_sysfs():
     fpga_dev = [k for k in pddf_api.data.keys() if 'FPGAPCIE' in k]
     num_fpgas = len(fpga_dev)
     cmd = 'sudo echo "{}" > /sys_switch/fpga/number'.format(num_fpgas)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('fpga_debug')
+    cmd = 'sudo ln -s {} /sys_switch/fpga/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('fpgapci_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/fpga/loglevel'.format(leglevel_node)
     log_os_system(cmd, 1)
 
     n = 0
@@ -1782,7 +2016,25 @@ def create_s3ip_fpga_sysfs():
         log_os_system(cmd, 1)
 
         # reg_test
-        # TODO
+        try:
+            board_ver = 'NA'
+            dev = 'SYSSTATUS'
+            attr = 'reg_test'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                board_ver = output
+                cmd = 'sudo echo "{}" > /sys_switch/fpga/fpga{}/reg_test'.format(board_ver, n)
+            else:
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/fpga/fpga{}/reg_test'.format(node, n)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/fpga/fpga{}/reg_test'.format(board_ver, n)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/fpga/fpga{}/reg_test'.format(board_ver, n)
+        log_os_system(cmd, 1)
     print("Completed FPGA sysfs creation")
 
 def create_s3ip_cpld_sysfs():
@@ -1791,6 +2043,27 @@ def create_s3ip_cpld_sysfs():
     cpld_dev = [k for k in pddf_api.data.keys() if 'CPLD' in k]
     num_cplds = len(cpld_dev)
     cmd = 'sudo echo "{}" > /sys_switch/cpld/number'.format(num_cplds)
+    log_os_system(cmd, 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('cpld_debug')
+    cmd = 'sudo ln -s {} /sys_switch/cpld/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('fpgapci_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/cpld/loglevel'.format(leglevel_node)
+    log_os_system(cmd, 1)
+
+    #reboot_cause
+    reboot_cause = 'NA'
+    dev = 'RC_EEPROM'
+    attr = 'eeprom'
+    node = pddf_api.get_path(dev, attr)
+    if node:
+        cmd = 'sudo ln -s {} /sys_switch/cpld/reboot_cause'.format(node)
+    else:
+        cmd = 'sudo echo "{}" > /sys_switch/cpld/reboot_cause'.format(reboot_cause)
     log_os_system(cmd, 1)
 
     n = 0
@@ -1852,10 +2125,40 @@ def create_s3ip_cpld_sysfs():
 
 def create_s3ip_watchdog_sysfs():
     print("Creating the watchdog sysfs ..")
+    log_os_system('sudo mkdir -p -m 777 /sys_switch/watchdog', 1)
+
+    #debug
+    debug_node = get_pddf_custom_path('wdt_debug')
+    cmd = 'sudo ln -s {} /sys_switch/watchdog/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    leglevel_node = get_pddf_client_loglevel('wdt_loglevel')
+    cmd = 'sudo ln -s {} /sys_switch/watchdog/loglevel'.format(leglevel_node)
+    log_os_system(cmd, 1)
+
     # watchdog sysfs are not supported in PDDF
     watchdog_path = '/sys/watchdog/'
     if os.path.exists(watchdog_path):
-        cmd = 'sudo ln -s "{}"  /sys_switch/'.format(watchdog_path)
+        cmd = 'sudo ln -s "{}identify"  /sys_switch/watchdog/identify'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}enable"  /sys_switch/watchdog/enable'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}reset"  /sys_switch/watchdog/reset'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}timeout"  /sys_switch/watchdog/timeout'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}timeleft"  /sys_switch/watchdog/timeleft'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}rst_occur"  /sys_switch/watchdog/rst_occur'.format(watchdog_path)
+        log_os_system(cmd, 1)
+
+        cmd = 'sudo ln -s "{}state"  /sys_switch/watchdog/state'.format(watchdog_path)
         log_os_system(cmd, 1)
     else:
         log_os_system('sudo mkdir -p -m 777 /sys_switch/watchdog', 1)
@@ -1884,7 +2187,69 @@ def create_s3ip_watchdog_sysfs():
 def create_s3ip_slot_sysfs():
     print("Creating the slot sysfs ..")
     # slot sysfs are not supported by PDDF
+    log_os_system('sudo mkdir -p -m 777 /sys_switch/slot', 1)
 
+    #debug
+    debug_node = get_pddf_custom_path('slot_debug')
+    cmd = 'sudo ln -s {} /sys_switch/slot/debug'.format(debug_node)
+    log_os_system(cmd, 1)
+    
+    #loglevel
+    cmd = 'sudo echo 2 > /sys_switch/slot/loglevel'
+    log_os_system(cmd, 1)
+
+    #number
+    number = 0
+    cmd = 'sudo echo {} > /sys_switch/slot/number'.format(number)
+    log_os_system(cmd, 1)
+
+    model_name = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/model_name'.format(model_name)
+    log_os_system(cmd, 1)
+
+    hardware_version = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/hardware_version'.format(hardware_version)
+    log_os_system(cmd, 1)
+
+    serial_number = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/serial_number'.format(serial_number)
+    log_os_system(cmd, 1)
+
+    part_number = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/part_number'.format(part_number)
+    log_os_system(cmd, 1)
+
+    status = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/status'.format(status)
+    log_os_system(cmd, 1)
+
+    led_status = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/led_status'.format(led_status)
+    log_os_system(cmd, 1)
+
+    num_temp_sensors = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/num_temp_sensors'.format(num_temp_sensors)
+    log_os_system(cmd, 1)
+
+    # temp_sensor = 'NA'
+    # cmd = 'sudo echo {} > /sys_switch/slot/temp_sensor'.format(temp_sensor)
+    # log_os_system(cmd, 1)
+
+    num_in_sensors = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/num_in_sensors'.format(num_in_sensors)
+    log_os_system(cmd, 1)
+
+    num_curr_sensors = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/num_curr_sensors'.format(num_curr_sensors)
+    log_os_system(cmd, 1)
+
+    num_fpgas = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/num_fpgas'.format(num_fpgas)
+    log_os_system(cmd, 1)
+    
+    num_cplds = 'NA'
+    cmd = 'sudo echo {} > /sys_switch/slot/num_cplds'.format(num_cplds)
+    log_os_system(cmd, 1)
 
     print("Completed slot sysfs creation")
 

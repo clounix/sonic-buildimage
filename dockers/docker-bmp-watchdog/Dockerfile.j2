@@ -7,27 +7,14 @@ FROM $BASE AS builder
 RUN apt-get update && apt-get install -y \
     build-essential
 
+ENV RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+ENV RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+
 # Install Rust/Cargo via rustup
 ARG RUST_ROOT=/usr/.cargo
-#RUN RUSTUP_HOME=$RUST_ROOT CARGO_HOME=$RUST_ROOT bash -c \
-#    'curl --proto "=https" -sSf https://sh.rustup.rs | sh -s -- --default-toolchain 1.79.0 -y'
-# 202511: Download and install Rust from offline tarball
-{% if CONFIGURED_ARCH == "amd64" %}
-ARG RUST_VER=rust-1.79.0-x86_64-unknown-linux-gnu
-{% elif CONFIGURED_ARCH == "arm64" %}
-ARG RUST_VER=rust-1.79.0-aarch64-unknown-linux-gnu
-{% elif CONFIGURED_ARCH == "armhf" %}
-ARG RUST_VER=rust-1.79.0-armv7-unknown-linux-gnueabihf
-{% else %}
-ARG RUST_VER=rust-1.79.0-x86_64-unknown-linux-gnu
-{% endif %}
-RUN set -eux; \
-    mkdir -p /tmp/rust && cd /tmp/rust; \
-    curl -fsSL https://files.clounix.com/repository/swfiles/rust/$RUST_VER.tar.xz -o rust.tar.xz; \
-    tar -xJf rust.tar.xz; \
-    cd $RUST_VER; \
-    ./install.sh --prefix=$RUST_ROOT; \
-    cd / && rm -rf /tmp/rust
+RUN RUSTUP_HOME=$RUST_ROOT CARGO_HOME=$RUST_ROOT bash -c \
+   'curl --proto "=https" -sSf https://sh.rustup.rs | sh -s -- --default-toolchain 1.79.0 -y'
+
 ENV RUSTUP_HOME=$RUST_ROOT
 ENV PATH $PATH:$RUST_ROOT/bin
 

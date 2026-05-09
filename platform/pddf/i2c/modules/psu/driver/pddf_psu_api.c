@@ -389,6 +389,10 @@ ssize_t psu_show_default(struct device *dev, struct device_attribute *da, char *
             multiplier = 1;
             return sprintf(buf, "%ld\n", get_real_world_value(client, usr_data, sysfs_attr_info, "linear11", multiplier));
             break;
+        case PSU_FAN1_RATIO:
+            multiplier = 1;
+            return sprintf(buf, "%ld\n", get_real_world_value(client, usr_data, sysfs_attr_info, "linear11", multiplier));
+            break;
         case PSU_TEMP1_INPUT:
         case PSU_TEMP1_HIGH_THRESHOLD:
         case PSU_TEMP2_INPUT:

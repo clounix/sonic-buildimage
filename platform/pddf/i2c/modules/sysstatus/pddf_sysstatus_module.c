@@ -79,6 +79,7 @@ static struct attribute *sysstatus_addr_attributes[] = {
 PDDF_DATA_ATTR(board_info, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, 32, NULL, NULL);
 PDDF_DATA_ATTR(fpga_board_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(fpga_firmware_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
+PDDF_DATA_ATTR(reg_test, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld1_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld2_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
 PDDF_DATA_ATTR(cpld3_version, S_IWUSR|S_IRUGO, show_sysstatus_data, NULL, PDDF_UINT32, sizeof(uint32_t), NULL, NULL);
@@ -145,6 +146,7 @@ static struct attribute *sysstatus_data_attributes[] = {
     &attr_board_info.dev_attr.attr,
     &attr_fpga_board_version.dev_attr.attr,
     &attr_fpga_firmware_version.dev_attr.attr,
+    &attr_reg_test.dev_attr.attr,
     &attr_cpld1_version.dev_attr.attr,
     &attr_cpld2_version.dev_attr.attr,
     &attr_cpld3_version.dev_attr.attr,
@@ -254,11 +256,12 @@ ssize_t show_sysstatus_data(struct device *dev, struct device_attribute *da, cha
         if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
         {
             status = ptr_fpgapci_read(sysstatus_addr_attrs->devaddr);
-            status =  (status >> sysstatus_addr_attrs->offset);
             pddf_dbg(SYSSTATUS,  "%s: byte_value = 0x%x\n", __FUNCTION__, status);
+            status =  (status >> sysstatus_addr_attrs->offset);
         }
         status = status&sysstatus_addr_attrs->mask;
     }
+    pddf_dbg(SYSSTATUS,  "%s: status = 0x%x\n", __FUNCTION__, status);
     return sprintf(buf, "0x%x\n", status);
 }
 

@@ -1,3 +1,38 @@
+/*******************************************************************************
+ *  Copyright Statement:
+ *  --------------------
+ *  This software and the information contained therein are protected by
+ *  copyright and other intellectual property laws and terms herein is
+ *  confidential. The software may not be copied and the information
+ *  contained herein may not be used or disclosed except with the written
+ *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *
+ *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+ *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
+ *  RECEIVED FROM CLOUNIX AND/OR ITS REPRESENTATIVES ARE PROVIDED TO BUYER ON
+ *  AN "AS-IS" BASIS ONLY. CLOUNIX EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+ *  NEITHER DOES CLOUNIX PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+ *  SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+ *  SUPPLIED WITH THE CLOUNIX SOFTWARE, AND BUYER AGREES TO LOOK ONLY TO SUCH
+ *  THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. CLOUNIX SHALL ALSO
+ *  NOT BE RESPONSIBLE FOR ANY CLOUNIX SOFTWARE RELEASES MADE TO BUYER'S
+ *  SPECIFICATION OR TO CONFORM TO A PARTICULAR STANDARD OR OPEN FORUM.
+ *
+ *  BUYER'S SOLE AND EXCLUSIVE REMEDY AND CLOUNIX'S ENTIRE AND CUMULATIVE
+ *  LIABILITY WITH RESPECT TO THE CLOUNIX SOFTWARE RELEASED HEREUNDER WILL BE,
+ *  AT CLOUNIX'S OPTION, TO REVISE OR REPLACE THE CLOUNIX SOFTWARE AT ISSUE,
+ *  OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY BUYER TO
+ *  CLOUNIX FOR SUCH CLOUNIX SOFTWARE AT ISSUE.
+ *
+ *  THE TRANSACTION CONTEMPLATED HEREUNDER SHALL BE CONSTRUED IN ACCORDANCE
+ *  WITH THE LAWS OF THE PEOPLE'S REPUBLIC OF CHINA, EXCLUDING ITS CONFLICT OF
+ *  LAWS PRINCIPLES.  ANY DISPUTES, CONTROVERSIES OR CLAIMS ARISING THEREOF AND
+ *  RELATED THERETO SHALL BE SETTLED BY LAWSUIT IN SHANGHAI,CHINA UNDER.
+ *
+ *******************************************************************************/
+
 #include "knet_dev.h"
 #include "knet_pci.h"
 #include "knet_fault_event.h"
@@ -267,7 +302,6 @@ dma_disable_channel(uint32_t unit)
         clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
         clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
         clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
-
     }
     return 0;
 }
@@ -416,7 +450,7 @@ dma_rx_tasklet_func(unsigned long data)
             case ACTION_NETDEV:
                 ret = clx_netif_netdev_receive_skb(unit, rx_packet, port_di);
                 if (0 != ret) {
-                    dbg_print(DBG_ERR, "unit:%u netdev_receive_skb failed. port_di=%d, ret=%d\n",
+                    dbg_print(DBG_INFO, "unit:%u netdev_receive_skb failed. port_di=%d, ret=%d\n",
                               unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                 }
@@ -424,14 +458,14 @@ dma_rx_tasklet_func(unsigned long data)
             case ACTION_NETLINK:
                 ret = clx_netif_drv(unit)->parse_netlink_info(unit, rx_packet, &netlink_cookie);
                 if (0 != ret) {
-                    dbg_print(DBG_ERR, "unit:%u parse_netlink_info failed. ret=%d\n", unit, ret);
+                    dbg_print(DBG_RX, "unit:%u parse_netlink_info failed. ret=%d\n", unit, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
                 netlink_cookie.nl = &rule->netlink;
                 ret = netif_netlink_reveive_skb(unit, rx_packet, port_di, &netlink_cookie);
                 if (0 != ret) {
-                    dbg_print(DBG_ERR, "unit:%u netlink_reveive_skb failed. port_di=%d, ret=%d\n",
+                    dbg_print(DBG_RX, "unit:%u netlink_reveive_skb failed. port_di=%d, ret=%d\n",
                               unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
@@ -442,7 +476,7 @@ dma_rx_tasklet_func(unsigned long data)
                           clx_dma_drv(unit)->rx_queue.queue_size);
                 ret = clx_dma_rx_packet_queue_enqueue(&clx_dma_drv(unit)->rx_queue, rx_packet);
                 if (ret != 0) {
-                    dbg_print(DBG_ERR, "unit:%u enqueue failed. ret=%d\n", unit, ret);
+                    dbg_print(DBG_RX, "unit:%u enqueue failed. ret=%d\n", unit, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
@@ -454,7 +488,7 @@ dma_rx_tasklet_func(unsigned long data)
                 ret = clx_netif_netdev_receive_send_ifa(unit, rx_packet, port_di);
                 if (0 != ret) {
                     dbg_print(
-                        DBG_ERR,
+                        DBG_RX,
                         "clx_netif_netdev_receive_send_ifa failed. unit=%d, port_di=%d, ret=%d\n",
                         unit, port_di, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
@@ -495,6 +529,8 @@ dma_tx_tasklet_func(unsigned long data)
     clx_dma_drv(unit)->tx_callback(unit, channel);
     clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
     spin_unlock(&ptr_channel->lock);
+
+    clx_netif_wake_tx_queues(unit, channel);
 }
 
 void
@@ -504,18 +540,15 @@ dma_error_tasklet_func(unsigned long data)
 int
 clx_ioctl_rx_start(uint32_t unit, unsigned long arg)
 {
-    for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        dma_enable_channel(unit);
-    }
+    dma_enable_channel(unit);
     return 0;
 }
 
 int
 clx_ioctl_rx_stop(uint32_t unit, unsigned long arg)
 {
-    for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
-        dma_disable_channel(unit);
-    }
+    dma_disable_channel(unit);
+    wake_up_interruptible(&clx_dma_drv(unit)->rx_wait_queue);
     return 0;
 }
 
