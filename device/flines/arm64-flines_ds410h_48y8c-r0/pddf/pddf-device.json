@@ -83,7 +83,8 @@
 			"pddf_custom_optoe",
 			"pddf_custom_wdt",
             "clounix_fpga_sysfs",
-            "pddf_custom_debug"
+            "pddf_custom_debug",
+			"pddf_custom_ft_cpu_temp"
 		]
 	},
 	"SYSTEM": {

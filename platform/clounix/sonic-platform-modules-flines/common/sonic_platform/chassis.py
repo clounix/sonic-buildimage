@@ -22,12 +22,22 @@ SFP_STATUS_REMOVED = '0'
 
 def get_platform_cpu_num():
     cpu_sensor_label = []
+    match = []
     try:        
         from re import findall
         from subprocess import getstatusoutput
-        cmd = "ls /sys/devices/platform/*coretemp*/hwmon/hwmon*/temp*"
+        
+        # Try Intel path first
+        cmd = "ls /sys/devices/platform/*coretemp*/hwmon/hwmon*/temp*_input 2>/dev/null"
         _, ret = getstatusoutput(cmd)
         match = findall(r".*temp[0-9]*_input", ret)
+        
+        # If Intel not found, try Phytium path
+        if not match:
+            cmd = "ls /sys/devices/platform/PHYT0008:00/PHYT000D:00/hwmon/hwmon*/temp*_input 2>/dev/null"
+            _, ret = getstatusoutput(cmd)
+            match = findall(r".*temp[0-9]*_input", ret)
+        
         for node in match:
             node = node.replace('coretemp', 'core')
             index = node.find('temp')
@@ -61,7 +71,7 @@ class Chassis(PddfChassis):
                 thermal.thermal_obj_name = "CPU_Package"
             else:
                 thermal.thermal_obj_name = "CPU_Core_{}".format(i-1)
-            thermal.thermal_obj = None
+            thermal.thermal_obj = {}
             thermal.is_core_thermal = True
             self._thermal_list.append(thermal)
         

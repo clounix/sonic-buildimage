@@ -6,6 +6,7 @@ obj-m += pddf_custom_fan_eeprom.o
 obj-m += clounix_fpga_register_init.o
 obj-m += clounix_fpga_sysfs.o
 obj-m += pddf_custom_debug.o
+obj-m += pddf_custom_ft_cpu_temp.o
 CFLAGS_pddf_custom_debug.o = -I$(M)/../../../../pddf/i2c/modules/include
 CFLAGS_pddf_custom_psu.o := -I$(M)/../../../../pddf/i2c/modules/include
 CFLAGS_pddf_custom_fan.o := -I$(M)/../../../../pddf/i2c/modules/include
