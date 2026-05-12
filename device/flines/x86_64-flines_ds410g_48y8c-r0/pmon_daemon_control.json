@@ -2,5 +2,6 @@
     "skip_ledd": true,
     "skip_pcied": true,
     "skip_stormond":false,
-    "include_sensormond": true
+    "include_sensormond": true,
+    "skip_fancontrol":true
 }
