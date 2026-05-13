@@ -47,10 +47,11 @@ def pmon_critical_service_check():
         When pmon is not running, print the following:
             pmon:Not OK
     """
-
-    pmon_critical_service_list = [
+    """
         "fancontrol",
         "ledd",
+    """
+    pmon_critical_service_list = [
         "sensord",
         "psud",
         "syseepromd",
@@ -95,12 +96,12 @@ def platform_critical_service_check():
 
     Stdout:
         Print the following:
-            clounix-common-platform-init:OK/Not OK
+            flines-common-platform-init:OK/Not OK
             pddf-platform-init:OK/Not OK
             pddf-s3ip-init:OK/Not OK
     """
     platform_critical_service_list = [
-        "clounix-common-platform-init",
+        "flines-common-platform-init",
         "pddf-platform-init",
         "pddf-s3ip-init",
         "watchdog"
