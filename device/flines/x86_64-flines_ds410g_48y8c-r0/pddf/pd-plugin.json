@@ -59,8 +59,8 @@
     "direction": {
       "i2c": {
         "valmap": {
-          "1": "INTAKE",
-          "0": "EXHAUST"
+          "0": "INTAKE",
+          "1": "EXHAUST"
         }
       }
     },
