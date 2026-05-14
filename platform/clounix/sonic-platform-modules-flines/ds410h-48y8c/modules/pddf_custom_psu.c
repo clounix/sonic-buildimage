@@ -246,7 +246,7 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
     else
     {
         buf[status] = '\0';
-        strncpy(padata->val.strval, buf+1, status-1);
+        strncpy(padata->val.strval, buf, status-1);
     }
         
     // printk(KERN_ERR  "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
