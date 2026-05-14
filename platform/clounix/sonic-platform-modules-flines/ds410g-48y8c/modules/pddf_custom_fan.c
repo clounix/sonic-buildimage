@@ -95,16 +95,6 @@ extern FAN_SYSFS_ATTR_DATA data_fan2_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan3_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan4_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan5_speed_target;
-extern FAN_SYSFS_ATTR_DATA data_fan1_speed_max;
-extern FAN_SYSFS_ATTR_DATA data_fan2_speed_max;
-extern FAN_SYSFS_ATTR_DATA data_fan3_speed_max;
-extern FAN_SYSFS_ATTR_DATA data_fan4_speed_max;
-extern FAN_SYSFS_ATTR_DATA data_fan5_speed_max;
-extern FAN_SYSFS_ATTR_DATA data_fan1_speed_min;
-extern FAN_SYSFS_ATTR_DATA data_fan2_speed_min;
-extern FAN_SYSFS_ATTR_DATA data_fan3_speed_min;
-extern FAN_SYSFS_ATTR_DATA data_fan4_speed_min;
-extern FAN_SYSFS_ATTR_DATA data_fan5_speed_min;
 extern FAN_SYSFS_ATTR_DATA data_fan_eeprom_size;
 
 int sonic_i2c_set_fan_pwm_custom(void *client, FAN_DATA_ATTR *udata, void *info)
@@ -315,29 +305,6 @@ static int get_fan_speed_target(void *client, FAN_DATA_ATTR *udata, void *info)
     return status;
 }
 
-static int get_fan_speed_max(void *client, FAN_DATA_ATTR *udata, void *info)
-{
-    int status = 0;
-    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
-
-    painfo->val.intval = FAN_MAX_SPEED_DS410G;
- 
-    pddf_dbg(FAN, "%s, %d, intval: %#x\n", __FUNCTION__, __LINE__, painfo->val.intval);
-    return status;
-}
-
-static int get_fan_speed_min(void *client, FAN_DATA_ATTR *udata, void *info)
-{
-    int status = 0;
-    struct fan_attr_info *painfo = (struct fan_attr_info *)info;
-
-    painfo->val.intval = FAN_MAX_SPEED_DS410G / 10;
- 
-    pddf_dbg(FAN, "%s, %d, intval: %#x\n", __FUNCTION__, __LINE__, painfo->val.intval);
-    return status;
-}
-
-
 static int __init pddf_custom_fan_init(void)
 {
     data_fan1_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
@@ -380,17 +347,6 @@ static int __init pddf_custom_fan_init(void)
     data_fan3_speed_target.do_get = get_fan_speed_target;
     data_fan4_speed_target.do_get = get_fan_speed_target;
     data_fan5_speed_target.do_get = get_fan_speed_target;
-
-    data_fan1_speed_max.do_get = get_fan_speed_max;
-    data_fan2_speed_max.do_get = get_fan_speed_max;
-    data_fan3_speed_max.do_get = get_fan_speed_max;
-    data_fan4_speed_max.do_get = get_fan_speed_max;
-    data_fan5_speed_max.do_get = get_fan_speed_max;
-    data_fan1_speed_min.do_get = get_fan_speed_min;
-    data_fan2_speed_min.do_get = get_fan_speed_min;
-    data_fan3_speed_min.do_get = get_fan_speed_min;
-    data_fan4_speed_min.do_get = get_fan_speed_min;
-    data_fan5_speed_min.do_get = get_fan_speed_min;
 
     return 0;
 }
