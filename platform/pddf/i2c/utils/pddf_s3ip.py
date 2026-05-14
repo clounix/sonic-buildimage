@@ -1346,30 +1346,32 @@ def create_s3ip_psu_sysfs():
                 dev = 'PSU{}'.format(p)
                 attr = 'psu_temp{}_high_threshold'.format(t)
                 bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
-                if bmc_attr is not None and bmc_attr!={}:
+                
+                if bmc_attr is not None and bmc_attr != {}:
                     output = pddf_api.bmc_get_cmd(bmc_attr)
                     output = output.rstrip()
                     if output.replace('.', '', 1).isdigit():
                         temp_min = float(output)
-                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
+                    cmd = 'sudo echo -n "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
                 else:
-                    # I2C based attribute
                     try:
-                        output = pddf_api.get_attr_name_output(dev, attr)
-                        if output:
-                            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(output['status'], p, t)
-                        else:
-                            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
-                    except Exception:
                         node = pddf_api.get_path(dev, attr)
                         if node:
-                            cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/temp{}/min'.format(node, p, t)
+                            cmd = 'sudo ln -sf {} /sys_switch/psu/psu{}/temp{}/min'.format(node, p, t)
                         else:
-                            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
+                            output = pddf_api.get_attr_name_output(dev, attr)
+                            if output and 'status' in output:
+                                val = output['status'].rstrip()
+                                cmd = 'sudo echo -n "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(val, p, t)
+                            else:
+                                cmd = 'sudo echo -n "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
+                    except Exception:
+                        cmd = 'sudo echo -n "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
             except Exception as err:
-                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
+                cmd = 'sudo echo -n "{}" > /sys_switch/psu/psu{}/temp{}/min'.format(temp_min, p, t)
 
             log_os_system(cmd, 1)
+
 
             # temp_max
             try:
