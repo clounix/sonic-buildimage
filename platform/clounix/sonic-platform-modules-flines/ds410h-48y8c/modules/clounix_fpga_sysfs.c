@@ -70,7 +70,7 @@ static ssize_t get_sys_fpga_power_cycle(struct device *dev, struct device_attrib
     if(NULL != fpga_ctl_addr){
         data= readl(fpga_ctl_addr + FPGA_RESET_CFG_BASE);
     }
-    return sprintf(buf, "0x%x\n", (data >> P12V_STBY_EN) & 0x1);
+    return sprintf(buf, "0x%x\n", data);
 }
 static ssize_t set_sys_fpga_power_cycle(struct device *dev, struct device_attribute *da,
              const char *buf, size_t count)
@@ -84,10 +84,8 @@ static ssize_t set_sys_fpga_power_cycle(struct device *dev, struct device_attrib
     }
     if(NULL != fpga_ctl_addr){
         data= readl(fpga_ctl_addr + FPGA_RESET_CFG_BASE);
-        if(1 == value)
-            SET_BIT(data, P12V_STBY_EN);
-        else
-            CLEAR_BIT(data, P12V_STBY_EN);
+        data |= value;
+        printk(KERN_INFO  "set_sys_fpga_power_cycle data: %#x\n", data);
         writel(data, fpga_ctl_addr + FPGA_RESET_CFG_BASE);
     }
     return count;
