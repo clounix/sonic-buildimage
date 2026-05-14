@@ -398,30 +398,6 @@ EXPORT_SYMBOL(data_fan2_pn);
 EXPORT_SYMBOL(data_fan3_pn);
 EXPORT_SYMBOL(data_fan4_pn);
 
-FAN_SYSFS_ATTR_DATA data_motor_num = {FAN_MOTOR_NUM, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-EXPORT_SYMBOL(data_motor_num);
-
-FAN_SYSFS_ATTR_DATA data_fan1_speed_max = {FAN1_SPEED_MAX, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan2_speed_max = {FAN2_SPEED_MAX, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan3_speed_max = {FAN3_SPEED_MAX, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan4_speed_max = {FAN4_SPEED_MAX, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan5_speed_max = {FAN5_SPEED_MAX, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan1_speed_min = {FAN1_SPEED_MIN, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan2_speed_min = {FAN2_SPEED_MIN, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan3_speed_min = {FAN3_SPEED_MIN, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan4_speed_min = {FAN4_SPEED_MIN, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-FAN_SYSFS_ATTR_DATA data_fan5_speed_min = {FAN5_SPEED_MIN, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-EXPORT_SYMBOL(data_fan1_speed_max);
-EXPORT_SYMBOL(data_fan2_speed_max);
-EXPORT_SYMBOL(data_fan3_speed_max);
-EXPORT_SYMBOL(data_fan4_speed_max);
-EXPORT_SYMBOL(data_fan5_speed_max);
-EXPORT_SYMBOL(data_fan1_speed_min);
-EXPORT_SYMBOL(data_fan2_speed_min);
-EXPORT_SYMBOL(data_fan3_speed_min);
-EXPORT_SYMBOL(data_fan4_speed_min);
-EXPORT_SYMBOL(data_fan5_speed_min);
-
 FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
 {
 	{ "fan1_present", &data_fan1_present},
@@ -581,18 +557,7 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan1_pn", &data_fan1_pn},
     { "fan2_pn", &data_fan2_pn},
     { "fan3_pn", &data_fan3_pn},
-    { "fan4_pn", &data_fan4_pn},
-    { "fan_motor_num", &data_motor_num},
-    { "fan1_speed_max", &data_fan1_speed_max},
-    { "fan2_speed_max", &data_fan2_speed_max},
-    { "fan3_speed_max", &data_fan3_speed_max},
-    { "fan4_speed_max", &data_fan4_speed_max},
-    { "fan5_speed_max", &data_fan5_speed_max},
-    { "fan1_speed_min", &data_fan1_speed_min},
-    { "fan2_speed_min", &data_fan2_speed_min},
-    { "fan3_speed_min", &data_fan3_speed_min},
-    { "fan4_speed_min", &data_fan4_speed_min},
-    { "fan5_speed_min", &data_fan5_speed_min}
+    { "fan4_pn", &data_fan4_pn}
 };
 
 void *get_fan_access_data(char *name)

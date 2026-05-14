@@ -841,14 +841,13 @@ ssize_t store_bits_data(struct device *dev, struct device_attribute *da, const c
         len = pptr-buf;
         sprintf(bits, buf);
         bits[len] = '\0';
-        rc1 = kstrtoint(bits, 10, &num1);
+        rc1 = kstrtoint(bits, 16, &num1);
         if (rc1 == 0)
         {
             sprintf(bits, ++pptr);
-            rc2 = kstrtoint(bits, 10, &num2);
+            rc2 = kstrtoint(bits, 16, &num2);
             if (rc2 == 0)
             {
-                pddf_dbg(LED, "num1: %d, num2:%d\n", num1, num2);
                 for (i=num2; i<=num1; i++) {
                    mask &= ~(1 << i);
                 }
@@ -857,7 +856,7 @@ ssize_t store_bits_data(struct device *dev, struct device_attribute *da, const c
             }
         }
     } else {
-        rc1 = kstrtoint(buf, 10, &num1);
+        rc1 = kstrtoint(buf, 16, &num1);
         if (rc1 == 0)
         {
             bits_ptr->mask_bits = mask & ~(1 << num1);
