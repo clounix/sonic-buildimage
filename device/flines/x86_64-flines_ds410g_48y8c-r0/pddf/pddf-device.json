@@ -7,7 +7,7 @@
 		"num_fantrays":5,
 		"num_fans_pertray":2,
 		"num_voltage_sensors":2,
-		"num_current_sensors":2,
+		"num_current_sensors":1,
 		"num_fpga_pvt_temp":1,
 		"fpga_pvt_temp_type":"kg",
 		"enable_s3ip":"yes",
