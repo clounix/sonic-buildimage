@@ -248,11 +248,11 @@ def create_s3ip_volt_sysfs():
 
     #debug
     debug_node = get_pddf_custom_path('vol_debug')
-    cmd = 'sudo ln -s {} /sys_switch/volt_sensor/debug'.format(debug_node)
+    cmd = 'sudo ln -s {} /sys_switch/vol_sensor/debug'.format(debug_node)
     log_os_system(cmd, 1)
     
     #loglevel
-    cmd = 'sudo echo 2 > /sys_switch/volt_sensor/loglevel'
+    cmd = 'sudo echo 2 > /sys_switch/vol_sensor/loglevel'
     log_os_system(cmd, 1)
 
     for volt_idx in range(1, num_voltage_sensors + 1):
