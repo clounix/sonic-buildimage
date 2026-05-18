@@ -141,10 +141,10 @@ class Fan(PddfFan):
         result = False
         # led color descriptions are not same with BSP driver, so converts here
         color_dict = {
-            self.STATUS_LED_COLOR_GREEN : "STATUS_LED_COLOR_GREEN",
-            self.STATUS_LED_COLOR_RED   : "STATUS_LED_COLOR_RED",
-            self.STATUS_LED_COLOR_AMBER : "STATUS_LED_COLOR_AMBER",
-            self.STATUS_LED_COLOR_OFF   : "STATUS_LED_COLOR_OFF"
+            self.STATUS_LED_COLOR_GREEN : "green",
+            self.STATUS_LED_COLOR_RED   : "red",
+            self.STATUS_LED_COLOR_AMBER : "yellow",
+            self.STATUS_LED_COLOR_OFF   : "off"
         }
         if self.is_psu_fan:
             # Usually no led for psu_fan hence raise a NotImplementedError

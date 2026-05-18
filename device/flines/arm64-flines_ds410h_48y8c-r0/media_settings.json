@@ -9,16 +9,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -27,30 +27,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -59,10 +59,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -75,16 +75,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -93,30 +93,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -125,10 +125,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -141,16 +141,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -159,30 +159,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -191,10 +191,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -207,16 +207,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -225,30 +225,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -257,10 +257,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -273,16 +273,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -291,30 +291,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -323,10 +323,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -339,16 +339,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -357,30 +357,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -389,10 +389,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -405,16 +405,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -423,30 +423,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -455,10 +455,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -471,16 +471,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -489,30 +489,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -521,10 +521,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -537,16 +537,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -555,30 +555,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -587,10 +587,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -603,16 +603,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -621,30 +621,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -653,10 +653,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -669,16 +669,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -687,30 +687,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -719,10 +719,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -735,16 +735,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -753,30 +753,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -785,10 +785,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -801,16 +801,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -819,30 +819,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -851,10 +851,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -867,16 +867,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -885,30 +885,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -917,10 +917,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -933,16 +933,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -951,30 +951,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -983,10 +983,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -999,16 +999,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1017,30 +1017,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1049,10 +1049,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1065,16 +1065,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1083,30 +1083,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1115,10 +1115,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1131,16 +1131,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1149,30 +1149,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1181,10 +1181,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1197,16 +1197,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1215,30 +1215,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1247,10 +1247,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1263,16 +1263,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1281,30 +1281,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1313,10 +1313,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1329,16 +1329,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1347,30 +1347,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1379,10 +1379,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1395,16 +1395,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1413,30 +1413,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1445,10 +1445,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1461,16 +1461,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1479,30 +1479,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1511,10 +1511,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1527,16 +1527,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1545,30 +1545,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1577,10 +1577,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1593,16 +1593,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1611,30 +1611,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1643,10 +1643,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1659,16 +1659,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1677,30 +1677,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1709,10 +1709,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1725,16 +1725,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1743,30 +1743,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1775,10 +1775,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1791,16 +1791,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1809,30 +1809,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1841,10 +1841,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1857,16 +1857,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1875,30 +1875,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1907,10 +1907,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1923,16 +1923,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1941,30 +1941,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -1973,10 +1973,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -1989,16 +1989,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2007,30 +2007,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2039,10 +2039,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2055,16 +2055,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2073,30 +2073,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2105,10 +2105,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2121,16 +2121,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2139,30 +2139,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2171,10 +2171,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2187,16 +2187,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2205,30 +2205,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2237,10 +2237,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2253,16 +2253,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2271,30 +2271,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2303,10 +2303,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2319,16 +2319,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfe",
+                    "lane1":"0xfe",
+                    "lane2":"0xfe",
+                    "lane3":"0xfe"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2337,30 +2337,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x30",
+                    "lane1":"0x30",
+                    "lane2":"0x30",
+                    "lane3":"0x30"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2369,10 +2369,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2385,16 +2385,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2403,30 +2403,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2435,10 +2435,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2451,16 +2451,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2469,30 +2469,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2501,10 +2501,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2517,16 +2517,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2535,30 +2535,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2567,10 +2567,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2583,16 +2583,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2601,30 +2601,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2633,10 +2633,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2649,16 +2649,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2667,30 +2667,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2699,10 +2699,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2715,16 +2715,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2733,30 +2733,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2765,10 +2765,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2781,16 +2781,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2799,30 +2799,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2831,10 +2831,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2847,16 +2847,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2865,30 +2865,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2897,10 +2897,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2913,16 +2913,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2931,30 +2931,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2963,10 +2963,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -2979,16 +2979,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -2997,30 +2997,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3029,10 +3029,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -3045,16 +3045,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3063,30 +3063,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3095,10 +3095,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -3111,16 +3111,16 @@
                     "lane3":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
+                    "lane0":"0xfc",
+                    "lane1":"0xfc",
+                    "lane2":"0xfc",
+                    "lane3":"0xfc"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3129,30 +3129,30 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
                     "lane3":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3161,10 +3161,10 @@
                     "lane3":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a"
                 }
             }
         },
@@ -3181,24 +3181,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3211,18 +3211,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3231,26 +3251,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3263,14 +3263,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3287,24 +3287,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3317,18 +3317,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3337,26 +3357,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3369,14 +3369,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3393,24 +3393,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3423,18 +3423,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3443,26 +3463,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3475,14 +3475,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3499,24 +3499,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3529,18 +3529,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3549,26 +3569,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3581,14 +3581,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3605,24 +3605,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3635,18 +3635,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3655,26 +3675,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3687,14 +3687,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3711,24 +3711,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3741,18 +3741,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3761,26 +3781,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3793,14 +3793,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3817,24 +3817,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3847,18 +3847,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3867,26 +3887,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3899,14 +3899,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         },
@@ -3923,24 +3923,24 @@
                     "lane7":"0x00"
                 },
                 "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
+                    "lane0":"0xfa",
+                    "lane1":"0xfa",
+                    "lane2":"0xfa",
+                    "lane3":"0xfa",
+                    "lane4":"0xfa",
+                    "lane5":"0xfa",
+                    "lane6":"0xfa",
+                    "lane7":"0xfa"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -3953,18 +3953,38 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x32",
+                    "lane1":"0x32",
+                    "lane2":"0x32",
+                    "lane3":"0x32",
+                    "lane4":"0x32",
+                    "lane5":"0x32",
+                    "lane6":"0x32",
+                    "lane7":"0x32"
                 }
             },
             "{'media_interface':'AOC'}": {
                 "pre2":{
+                    "lane0":"0x01",
+                    "lane1":"0x01",
+                    "lane2":"0x01",
+                    "lane3":"0x01",
+                    "lane4":"0x01",
+                    "lane5":"0x01",
+                    "lane6":"0x01",
+                    "lane7":"0x01"
+                },
+                "pre1": {
+                    "lane0":"0xf9",
+                    "lane1":"0xf9",
+                    "lane2":"0xf9",
+                    "lane3":"0xf9",
+                    "lane4":"0xf9",
+                    "lane5":"0xf9",
+                    "lane6":"0xf9",
+                    "lane7":"0xf9"
+                },
+                "post1":{
                     "lane0":"0x00",
                     "lane1":"0x00",
                     "lane2":"0x00",
@@ -3973,26 +3993,6 @@
                     "lane5":"0x00",
                     "lane6":"0x00",
                     "lane7":"0x00"
-                },
-                "pre1": {
-                    "lane0":"0x05",
-                    "lane1":"0x05",
-                    "lane2":"0x05",
-                    "lane3":"0x05",
-                    "lane4":"0x05",
-                    "lane5":"0x05",
-                    "lane6":"0x05",
-                    "lane7":"0x05"
-                },
-                "post1":{
-                    "lane0":"0x03",
-                    "lane1":"0x03",
-                    "lane2":"0x03",
-                    "lane3":"0x03",
-                    "lane4":"0x03",
-                    "lane5":"0x03",
-                    "lane6":"0x03",
-                    "lane7":"0x03"
                 },
                 "pre3":{
                     "lane0":"0x00",
@@ -4005,14 +4005,14 @@
                     "lane7":"0x00"
                 },
                 "main":{
-                    "lane0":"0x37",
-                    "lane1":"0x37",
-                    "lane2":"0x37",
-                    "lane3":"0x37",
-                    "lane4":"0x37",
-                    "lane5":"0x37",
-                    "lane6":"0x37",
-                    "lane7":"0x37"
+                    "lane0":"0x2a",
+                    "lane1":"0x2a",
+                    "lane2":"0x2a",
+                    "lane3":"0x2a",
+                    "lane4":"0x2a",
+                    "lane5":"0x2a",
+                    "lane6":"0x2a",
+                    "lane7":"0x2a"
                 }
             }
         }

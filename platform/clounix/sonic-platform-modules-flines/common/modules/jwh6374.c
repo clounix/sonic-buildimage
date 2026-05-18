@@ -40,7 +40,7 @@ struct jwh6374_data
 
 static int jwh6374_read_byte_data(struct i2c_client *client, int page, int reg)
 {
-    JWH6374_LOG_INFO("%s, %d, page: %#x: reg: %#x\n", __FUNCTION__, __LINE__, page, reg);
+    //JWH6374_LOG_INFO("%s, %d, page: %#x: reg: %#x\n", __FUNCTION__, __LINE__, page, reg);
     return 0;
 }
 
@@ -53,9 +53,9 @@ static unsigned short process_vout(struct i2c_client *client, int page, int phas
     struct jwh6374_data *data = to_jwh6374_data(info);
     vscale_factor = data->vol_scal_factor;
 
-    JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
+    //JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
     vout = pmbus_read_word_data(client, page, 0xff, reg);
-    JWH6374_LOG_INFO("%s, %d, vout: %#x\n", __FUNCTION__, __LINE__, vout);
+    //JWH6374_LOG_INFO("%s, %d, vout: %#x\n", __FUNCTION__, __LINE__, vout);
     vout = ((vout & 0x7ff) * 2500) * vscale_factor;
 
     return (vout / 1000);
@@ -64,9 +64,9 @@ static unsigned short process_vout(struct i2c_client *client, int page, int phas
 static unsigned short process_power(struct i2c_client *client, int page, int phase, int reg)
 {
     unsigned short power = 0;
-    JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
+    //JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
     power = pmbus_read_word_data(client, page, 0xff, reg);
-    JWH6374_LOG_INFO("%s, %d, power: %#x\n", __FUNCTION__, __LINE__, power);
+    //JWH6374_LOG_INFO("%s, %d, power: %#x\n", __FUNCTION__, __LINE__, power);
     power = ((power & 0x7ff) / 4);
 
     return power;
@@ -75,9 +75,9 @@ static unsigned short process_power(struct i2c_client *client, int page, int pha
 static unsigned short process_iout(struct i2c_client *client, int page, int phase, int reg)
 {
     unsigned short iout = 0;
-    JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
+    //JWH6374_LOG_INFO("%s, %d\n", __FUNCTION__, __LINE__);
     iout = pmbus_read_word_data(client, page, 0xff, reg);
-    JWH6374_LOG_INFO("%s, %d, iout: %#x\n", __FUNCTION__, __LINE__, iout);
+    //JWH6374_LOG_INFO("%s, %d, iout: %#x\n", __FUNCTION__, __LINE__, iout);
     iout = ((iout & 0x7ff) / 4);
 
     return iout;
@@ -85,7 +85,7 @@ static unsigned short process_iout(struct i2c_client *client, int page, int phas
 
 static int jwh6374_read_word_data(struct i2c_client *client, int page, int phase, int reg)
 {
-    JWH6374_LOG_INFO("%s, %d, page: %#x, phase: %#x, reg: %#x\n", __FUNCTION__, __LINE__, page, phase, reg);
+    //JWH6374_LOG_INFO("%s, %d, page: %#x, phase: %#x, reg: %#x\n", __FUNCTION__, __LINE__, page, phase, reg);
     switch (reg)
     {
     case PMBUS_READ_IOUT:

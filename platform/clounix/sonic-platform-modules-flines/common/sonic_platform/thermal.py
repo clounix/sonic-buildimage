@@ -9,6 +9,7 @@ except ImportError as e:
     raise ImportError(str(e) + "- required module not found")
 
 core_temp_path = "/sys/devices/platform/*coretemp*/hwmon/hwmon*/"
+phytium_temp_path = "/sys/devices/platform/PHYT0008:00/PHYT000D:00/hwmon/hwmon1/"
 fpga_pvt_temp_path = "/sys/bus/pci/devices/0000*/"
 
 class Thermal(PddfThermal):
@@ -36,8 +37,16 @@ class Thermal(PddfThermal):
             return float(temp1)/1000
         else:
             if self.is_core_thermal:
-                cmd = "cat " + core_temp_path + "temp{}_input".format(self.thermal_index)
+                cmd = "cat " + phytium_temp_path + "temp{}_input".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
+                
+                if output['mode'] != 0:
+                    cmd = "cat " + core_temp_path + "temp{}_input".format(self.thermal_index)
+                    output['mode'], output['status'] = getstatusoutput(cmd)
+                
+                if output['mode'] != 0:
+                    return None
+                
             elif self.is_fpga_pvt_thermal:
                 cmd = "cat " + fpga_pvt_temp_path + "pvt_temp{}_input".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
@@ -72,8 +81,16 @@ class Thermal(PddfThermal):
             return float(temp)/1000
         else:
             if self.is_core_thermal:
-                cmd = "cat " + core_temp_path + "temp{}_max".format(self.thermal_index)
+                cmd = "cat " + phytium_temp_path + "temp{}_max".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
+                
+                if output['mode'] != 0:
+                    cmd = "cat " + core_temp_path + "temp{}_max".format(self.thermal_index)
+                    output['mode'], output['status'] = getstatusoutput(cmd)
+                
+                if output['mode'] != 0:
+                    return 0
+                
             elif self.is_fpga_pvt_thermal:
                 cmd = "cat " + fpga_pvt_temp_path + "pvt_temp{}_max".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
@@ -184,8 +201,15 @@ class Thermal(PddfThermal):
             return float(temp1)/1000 + gain_factor
         else:
             if self.is_core_thermal:
-                cmd = "cat " + core_temp_path + "temp{}_crit".format(self.thermal_index)
+                cmd = "cat " + phytium_temp_path + "temp{}_crit".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
+                if output['mode'] != 0:
+                    cmd = "cat " + core_temp_path + "temp{}_crit".format(self.thermal_index)
+                    output['mode'], output['status'] = getstatusoutput(cmd)
+                
+                if output['mode'] != 0:
+                    return 0
+                
             elif self.is_fpga_pvt_thermal:
                 cmd ="cat " + fpga_pvt_temp_path + "pvt_temp{}_crit".format(self.thermal_index)
                 output['mode'], output['status'] = getstatusoutput(cmd)
@@ -270,8 +294,11 @@ class Thermal(PddfThermal):
                 elif 'path_info' in dev['i2c']:
                     label = self.get_name()
             elif self.is_core_thermal:
-                cmd = "cat " + core_temp_path + "temp{}_label".format(self.thermal_index)
+                cmd = "cat " + phytium_temp_path + "temp{}_label".format(self.thermal_index)
                 _, label = getstatusoutput(cmd)
+                if not label:
+                    cmd = "cat " + core_temp_path + "temp{}_label".format(self.thermal_index)
+                    _, label = getstatusoutput(cmd)
             elif self.is_fpga_pvt_thermal:
                 cmd = "cat " + fpga_pvt_temp_path + "pvt_temp{}_label".format(self.thermal_index)
                 _, label = getstatusoutput(cmd)

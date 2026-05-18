@@ -322,7 +322,7 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
 		case FAN15_FAULT:
 		case FAN16_FAULT:
 		case FAN_DUTY_CYCLE:
-        //case FAN_HW_VERSION:
+        case FAN_HW_VERSION:
         case FAN_EEPROMWP:
         case FAN1_SPEED_TARGET:
         case FAN2_SPEED_TARGET:
@@ -372,21 +372,8 @@ ssize_t fan_show_default(struct device *dev, struct device_attribute *da, char *
         case FAN_SPEED_TARGET_R_L13:
         case FAN_SPEED_TARGET_R_L14:
         case FAN_SPEED_TARGET_R_L15:
-        case FAN1_SPEED_MAX:
-        case FAN2_SPEED_MAX:
-        case FAN3_SPEED_MAX:
-        case FAN4_SPEED_MAX:
-        case FAN5_SPEED_MAX:
-        case FAN1_SPEED_MIN:
-        case FAN2_SPEED_MIN:
-        case FAN3_SPEED_MIN:
-        case FAN4_SPEED_MIN:
-        case FAN5_SPEED_MIN:
             status = attr_info->val.intval;
 			break;
-        case FAN_HW_VERSION:
-            status = attr_info->val.intval;
-            return sprintf(buf, "%#x\n", status);
 		default:
             pddf_dbg(FAN, "%s: Unable to find the attribute index for %s\n", __FUNCTION__, usr_data->aname);
 			status = 0;
@@ -852,7 +839,7 @@ int sonic_i2c_get_fan_direction_default(void *client, FAN_DATA_ATTR *udata, void
         status = val;
     else
         painfo->val.intval = ((val & udata->mask) == udata->cmpval);
-    pddf_dbg(FAN, "val: %#x, mask: %#x, cmpval: %#x, intval: %#x", val, udata->mask, udata->cmpval, painfo->val.intval);
+
     return status;
 
 ret:

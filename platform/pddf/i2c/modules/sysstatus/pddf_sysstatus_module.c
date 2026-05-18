@@ -256,12 +256,11 @@ ssize_t show_sysstatus_data(struct device *dev, struct device_attribute *da, cha
         if (strncmp(sysstatus_addr_attrs->devtype, "fpgapci", strlen("fpgapci")) == 0)
         {
             status = ptr_fpgapci_read(sysstatus_addr_attrs->devaddr);
-            pddf_dbg(SYSSTATUS,  "%s: byte_value = 0x%x\n", __FUNCTION__, status);
             status =  (status >> sysstatus_addr_attrs->offset);
+            pddf_dbg(SYSSTATUS,  "%s: byte_value = 0x%x\n", __FUNCTION__, status);
         }
         status = status&sysstatus_addr_attrs->mask;
     }
-    pddf_dbg(SYSSTATUS,  "%s: status = 0x%x\n", __FUNCTION__, status);
     return sprintf(buf, "0x%x\n", status);
 }
 

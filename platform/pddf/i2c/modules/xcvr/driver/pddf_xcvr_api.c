@@ -381,7 +381,7 @@ int sonic_i2c_get_mod_pres(struct i2c_client *client, XCVR_ATTR *info, struct xc
         else
         {
             modpres = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nMod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -393,7 +393,7 @@ int sonic_i2c_get_mod_pres(struct i2c_client *client, XCVR_ATTR *info, struct xc
         else
         {
             modpres = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x,cmp=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset,info->cmpval);
+            pddf_dbg(XCVR, "\nMod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x,cmp=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset,info->cmpval);
         }
     }
     else if (strcmp(info->devtype, "fpgapci") == 0)
@@ -406,7 +406,7 @@ int sonic_i2c_get_mod_pres(struct i2c_client *client, XCVR_ATTR *info, struct xc
         // else
         {
             modpres = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x, cmp=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset,info->cmpval);
+            pddf_dbg(XCVR, "\nMod presence :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x,cmp=0x%x\n", modpres, status, info->devaddr, info->mask, info->offset,info->cmpval);
         }
     }
     else if (strcmp(info->devtype, "multifpgapci") == 0)
@@ -418,7 +418,7 @@ int sonic_i2c_get_mod_pres(struct i2c_client *client, XCVR_ATTR *info, struct xc
           return status;
 
         modpres = ((output & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-        pddf_dbg(XCVR, "Mod presence :0x%x, reg_value=0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modpres,  output, info->devaddr, info->mask, info->offset);
+        pddf_dbg(XCVR, "\nMod presence :0x%x, reg_value=0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modpres,  output, info->devaddr, info->mask, info->offset);
     }
     else if(strcmp(info->devtype, "eeprom") == 0)
     {
@@ -442,7 +442,7 @@ int sonic_i2c_get_mod_reset(struct i2c_client *client, XCVR_ATTR *info, struct x
         else
         {
             modreset = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod Reset :0x%x, reg_value = 0x%x\n", modreset, status);
+            pddf_dbg(XCVR, "\nMod Reset :0x%x, reg_value = 0x%x\n", modreset, status);
         }
     } 
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -454,20 +454,20 @@ int sonic_i2c_get_mod_reset(struct i2c_client *client, XCVR_ATTR *info, struct x
         else
         {
             modreset = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nMod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
-        pddf_dbg(XCVR, "[%s] status=%x\n", __FUNCTION__, status);
+        pddf_dbg(XCVR, "\n[%s] status=%x\n", __FUNCTION__, status);
         /* if xcvr_fpgapci_read() returns 0xFFFFFFFF, it will be misjudged as -1 here */
         // if (status < 0)
         //     return status;
         // else
         {
             modreset = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Mod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nMod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "multifpgapci") == 0)
@@ -479,7 +479,7 @@ int sonic_i2c_get_mod_reset(struct i2c_client *client, XCVR_ATTR *info, struct x
           return status;
 
         modreset = ((output & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-        pddf_dbg(XCVR, "Mod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, output, info->devaddr, info->mask, info->offset);
+        pddf_dbg(XCVR, "\nMod reset :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", modreset, output, info->devaddr, info->mask, info->offset);
     }
     else if(strcmp(info->devtype, "eeprom") == 0)
     {
@@ -503,7 +503,7 @@ int sonic_i2c_get_mod_intr_status(struct i2c_client *client, XCVR_ATTR *info, st
         else
         {
             mod_intr = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module Interrupt :0x%x, reg_value = 0x%x\n", mod_intr, status);
+            pddf_dbg(XCVR, "\nModule Interrupt :0x%x, reg_value = 0x%x\n", mod_intr, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -515,20 +515,20 @@ int sonic_i2c_get_mod_intr_status(struct i2c_client *client, XCVR_ATTR *info, st
         else
         {
             mod_intr = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
-        pddf_dbg(XCVR, "[%s] status=%x\n", __FUNCTION__, status);
+        pddf_dbg(XCVR, "\n[%s] status=%x\n", __FUNCTION__, status);
         /* if xcvr_fpgapci_read() returns 0xFFFFFFFF, it will be misjudged as -1 here */
         // if (status < 0)
         //     return status;
         // else
         {
             mod_intr = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "multifpgapci") == 0)
@@ -541,7 +541,7 @@ int sonic_i2c_get_mod_intr_status(struct i2c_client *client, XCVR_ATTR *info, st
         }
 
         mod_intr = ((output & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-        pddf_dbg(XCVR, "Module Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, output, info->devaddr, info->mask, info->offset);
+        pddf_dbg(XCVR, "\nModule Interrupt :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", mod_intr, output, info->devaddr, info->mask, info->offset);
     }
     else if(strcmp(info->devtype, "eeprom") == 0)
     {
@@ -566,7 +566,7 @@ int sonic_i2c_get_mod_lpmode(struct i2c_client *client, XCVR_ATTR *info, struct 
         else
         {
             lpmode = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module LPmode :0x%llx, reg_value = 0x%x\n", lpmode, status);
+            pddf_dbg(XCVR, "\nModule LPmode :0x%llx, reg_value = 0x%x\n", lpmode, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -578,14 +578,14 @@ int sonic_i2c_get_mod_lpmode(struct i2c_client *client, XCVR_ATTR *info, struct 
         else
         {
             lpmode = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module LPmode :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", lpmode, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule LPmode :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", lpmode, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
 		lpmode = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-        pddf_dbg(XCVR, "lpmode :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", lpmode, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
+        pddf_dbg(XCVR, "\nlpmode :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", lpmode, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
     }
     else if (strcmp(info->devtype, "multifpgapci") == 0)
     {
@@ -596,7 +596,7 @@ int sonic_i2c_get_mod_lpmode(struct i2c_client *client, XCVR_ATTR *info, struct 
           return status;
 
         lpmode = ((output & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-        pddf_dbg(XCVR, "lpmode :0x%x, reg_val = 0x%x, op=0x%x, mask=0x%x, offset=0x%x\n", lpmode, output, status & BIT_INDEX(info->mask), info->mask, info->offset);
+        pddf_dbg(XCVR, "\nlpmode :0x%x, reg_val = 0x%x, op=0x%x, mask=0x%x, offset=0x%x\n", lpmode, output, status & BIT_INDEX(info->mask), info->mask, info->offset);
     }
     else if (strcmp(info->devtype, "eeprom") == 0)
     {
@@ -619,7 +619,7 @@ int sonic_i2c_get_mod_power_en(struct i2c_client *client, XCVR_ATTR *info, struc
         else
         {
             power_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module power_en :0x%x, reg_value = 0x%x\n", power_en, status);
+            pddf_dbg(XCVR, "\nModule power_en :0x%x, reg_value = 0x%x\n", power_en, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -631,20 +631,20 @@ int sonic_i2c_get_mod_power_en(struct i2c_client *client, XCVR_ATTR *info, struc
         else
         {
             power_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module power_en :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", power_en, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule power_en :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", power_en, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if ( strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
-        pddf_dbg(XCVR, "[%s] status=%x\n", __FUNCTION__, status);
+        pddf_dbg(XCVR, "\n[%s] status=%x\n", __FUNCTION__, status);
         /* if xcvr_fpgapci_read() returns 0xFFFFFFFF, it will be misjudged as -1 here */
         // if (status < 0)
         //     return status;
         // else
         {
             power_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "power_en :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", power_en, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
+            pddf_dbg(XCVR, "\npower_en :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", power_en, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "eeprom") == 0)
@@ -669,7 +669,7 @@ int sonic_i2c_get_mod_power_fault(struct i2c_client *client, XCVR_ATTR *info, st
         else
         {
             power_fault = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module power_fault :0x%x, reg_value = 0x%x\n", power_fault, status);
+            pddf_dbg(XCVR, "\nModule power_fault :0x%x, reg_value = 0x%x\n", power_fault, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -681,20 +681,20 @@ int sonic_i2c_get_mod_power_fault(struct i2c_client *client, XCVR_ATTR *info, st
         else
         {
             power_fault = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module power_fault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", power_fault, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule power_fault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", power_fault, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if ( strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
-        pddf_dbg(XCVR, "[%s] status=%x\n", __FUNCTION__, status);
+        pddf_dbg(XCVR, "\n[%s] status=%x\n", __FUNCTION__, status);
         /* if xcvr_fpgapci_read() returns 0xFFFFFFFF, it will be misjudged as -1 here */
         // if (status < 0)
         //     return status;
         // else
         {
             power_fault = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "power_fault :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", power_fault, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
+            pddf_dbg(XCVR, "\npower_fault :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", power_fault, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "eeprom") == 0)
@@ -719,7 +719,7 @@ int sonic_i2c_get_mod_rxlos(struct i2c_client *client, XCVR_ATTR *info, struct x
         else
         {
             rxlos = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module RxLOS :0x%x, reg_value = 0x%x\n", rxlos, status);
+            pddf_dbg(XCVR, "\nModule RxLOS :0x%x, reg_value = 0x%x\n", rxlos, status);
         }
     } 
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -731,14 +731,14 @@ int sonic_i2c_get_mod_rxlos(struct i2c_client *client, XCVR_ATTR *info, struct x
         else
         {
             rxlos = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module RxLOS :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", rxlos, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule RxLOS :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", rxlos, status, info->devaddr, info->mask, info->offset);
         }
     }
 	else if ( strcmp(info->devtype, "fpgapci") == 0)
     {
-            status = xcvr_fpgapci_read(info);
-            rxlos = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module RxLOS :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x, cmp=%#x\n", rxlos, status, info->devaddr, info->mask, info->offset, info->cmpval);
+             status = xcvr_fpgapci_read(info);
+             rxlos = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
+            pddf_dbg(XCVR, "\nModule RxLOS :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", rxlos, status, info->devaddr, info->mask, info->offset);
          
     }
     
@@ -760,7 +760,7 @@ int sonic_i2c_get_mod_txdisable(struct i2c_client *client, XCVR_ATTR *info, stru
         else
         {
             txdis = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module TxDisable :0x%x, reg_value = 0x%x\n", txdis, status);
+            pddf_dbg(XCVR, "\nModule TxDisable :0x%x, reg_value = 0x%x\n", txdis, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -772,7 +772,7 @@ int sonic_i2c_get_mod_txdisable(struct i2c_client *client, XCVR_ATTR *info, stru
         else
         {
             txdis = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module TxDisable :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txdis, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule TxDisable :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txdis, status, info->devaddr, info->mask, info->offset);
         }
     }
 	else if ( strcmp(info->devtype, "fpgapci") == 0)
@@ -784,7 +784,7 @@ int sonic_i2c_get_mod_txdisable(struct i2c_client *client, XCVR_ATTR *info, stru
         // else
         {
             txdis = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module TxDisable :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x, cmp=%#x\n", txdis, status, info->devaddr, info->mask, info->offset, info->cmpval);
+            pddf_dbg(XCVR, "\nModule TxDisable :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txdis, status, info->devaddr, info->mask, info->offset);
         }
     }
     data->txdisable = txdis;
@@ -805,7 +805,7 @@ int sonic_i2c_get_mod_txfault(struct i2c_client *client, XCVR_ATTR *info, struct
         else
         {
             txflt = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module TxFault :0x%x, reg_value = 0x%x\n", txflt, status);
+            pddf_dbg(XCVR, "\nModule TxFault :0x%x, reg_value = 0x%x\n", txflt, status);
         }
 
     } 
@@ -818,7 +818,7 @@ int sonic_i2c_get_mod_txfault(struct i2c_client *client, XCVR_ATTR *info, struct
         else
         {
             txflt = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module Txfault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txflt, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule Txfault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txflt, status, info->devaddr, info->mask, info->offset);
         }
     }
 	else if ( strcmp(info->devtype, "fpgapci") == 0)
@@ -830,7 +830,7 @@ int sonic_i2c_get_mod_txfault(struct i2c_client *client, XCVR_ATTR *info, struct
         // else
         {
             txflt = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module Txfault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x, cmp=%#x\n", txflt, status, info->devaddr, info->mask, info->offset, info->cmpval);
+            pddf_dbg(XCVR, "\nModule Txfault :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", txflt, status, info->devaddr, info->mask, info->offset);
         }
     }
     data->txfault = txflt;
@@ -851,7 +851,7 @@ int sonic_i2c_get_mod_overwrite_en(struct i2c_client *client, XCVR_ATTR *info, s
         else
         {
             overwrite_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module overwrite_en :0x%x, reg_value = 0x%x\n", overwrite_en, status);
+            pddf_dbg(XCVR, "\nModule overwrite_en :0x%x, reg_value = 0x%x\n", overwrite_en, status);
         }
     }
     else if ( strcmp(info->devtype, "fpgai2c") == 0)
@@ -863,20 +863,20 @@ int sonic_i2c_get_mod_overwrite_en(struct i2c_client *client, XCVR_ATTR *info, s
         else
         {
             overwrite_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "Module overwrite_en :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", overwrite_en, status, info->devaddr, info->mask, info->offset);
+            pddf_dbg(XCVR, "\nModule overwrite_en :0x%x, reg_value = 0x%x, devaddr=0x%x, mask=0x%x, offset=0x%x\n", overwrite_en, status, info->devaddr, info->mask, info->offset);
         }
     }
     else if ( strcmp(info->devtype, "fpgapci") == 0)
     {
         status = xcvr_fpgapci_read(info);
-        pddf_dbg(XCVR, "[%s] status=%x\n", __FUNCTION__, status);
+        pddf_dbg(XCVR, "\n[%s] status=%x\n", __FUNCTION__, status);
         /* if xcvr_fpgapci_read() returns 0xFFFFFFFF, it will be misjudged as -1 here */
         // if (status < 0)
         //     return status;
         // else
         {
             overwrite_en = ((status & BIT_INDEX(info->mask)) == info->cmpval) ? 1 : 0;
-            pddf_dbg(XCVR, "overwrite_en :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", overwrite_en, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
+            pddf_dbg(XCVR, "\noverwrite_en :0x%x, reg_val = 0x%x, op=0x%llx, mask=0x%x, offset=0x%x\n", overwrite_en, status, status & BIT_INDEX(info->mask), info->mask, info->offset);
         }
     }
     else if (strcmp(info->devtype, "eeprom") == 0)

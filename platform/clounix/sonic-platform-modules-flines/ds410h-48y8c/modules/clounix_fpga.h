@@ -57,7 +57,7 @@
 
 /*power cycle*/
 #define FPGA_GLOBAL_CFG_BASE 0x300
-#define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0xd0) 
+#define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0xb8) 
 #define P12V_STBY_EN   2
 #define RESET_MUX_BIT  4
 

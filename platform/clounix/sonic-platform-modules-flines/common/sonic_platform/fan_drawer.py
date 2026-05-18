@@ -16,15 +16,27 @@ class FanDrawer(PddfFanDrawer):
 
     # Provide the functions/variables below for which implementation is to be overwritten
 
+    def get_status_led(self):
+        fan_led_device = "FAN_LED"
+        if (not fan_led_device in self.pddf_obj.data.keys()):
+            # Implement a generic status_led color scheme
+            if self.get_status():
+                return self.STATUS_LED_COLOR_GREEN
+            else:
+                return self.STATUS_LED_COLOR_OFF
+
+        result, color = self.pddf_obj.get_system_led_color(fan_led_device)
+        return (color)
+
     def set_status_led(self, color):
         result = False
         # led color descriptions are not same with BSP driver, so converts here
         color_dict = {
-            self.STATUS_LED_COLOR_GREEN : "STATUS_LED_COLOR_GREEN",
-            self.STATUS_LED_COLOR_RED   : "STATUS_LED_COLOR_RED",
-            self.STATUS_LED_COLOR_AMBER : "STATUS_LED_COLOR_AMBER",
-            self.STATUS_LED_COLOR_OFF   : "STATUS_LED_COLOR_OFF"
+            self.STATUS_LED_COLOR_GREEN : "green",
+            self.STATUS_LED_COLOR_RED   : "red",
+            self.STATUS_LED_COLOR_AMBER : "yellow",
+            self.STATUS_LED_COLOR_OFF   : "off"
         }
-        led_device_name = "FANTRAY{}".format(self.fantray_index) + "_LED"
+        led_device_name = "FAN_LED"
         result, msg = self.pddf_obj.set_system_led_color(led_device_name, color_dict[color])
         return (result)

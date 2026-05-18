@@ -316,286 +316,286 @@ phy set polarity-rev unit=0 portlist=72 lane-cnt=4 property=rx data=0x0.1.1.0
 phy set polarity-rev unit=0 portlist=76 lane-cnt=4 property=rx data=0x0.1.1.1
 phy set polarity-rev unit=0 portlist=80 lane-cnt=1 property=rx data=0x0
 phy set polarity-rev unit=0 portlist=81 lane-cnt=1 property=rx data=0x0
-phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c2 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=cn2 data=0x1.1.1.1
-phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=cn1 data=0xf9.f9.f9.f9
-phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c0 data=0x2a.2a.2a.2a
-phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c1 data=0x0.0.0.0
-phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c2 data=0x0.0.0.0
+phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=1 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=2 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=3 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=4 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=5 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=6 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c1 data=0xfa
+phy set pre-emphasis unit=0 portlist=7 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=8 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=9 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=10 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=11 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=12 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=13 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=14 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=15 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=16 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=17 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=18 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=19 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=20 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=21 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=22 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=23 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=24 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=25 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=26 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=27 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=28 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=29 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=30 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=31 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=32 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=33 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=34 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=cn1 data=0xfa
+phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c0 data=0x30
+phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c1 data=0xfe
+phy set pre-emphasis unit=0 portlist=35 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=36 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=37 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=38 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=39 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=40 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=41 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=42 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=43 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=44 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=45 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=46 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=cn2 data=0x00
+phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=cn1 data=0xfc
+phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c0 data=0x32
+phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c1 data=0xfc
+phy set pre-emphasis unit=0 portlist=47 lane-cnt=1 property=c2 data=0x00
+phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=48 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=52 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=56 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=60 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=64 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=68 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=72 lane-cnt=4 property=c2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=cn2 data=0x00.00.00.00
+phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=cn1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c0 data=0x32.32.32.32
+phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
+phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c2 data=0x00.00.00.00
 phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=cn2 data=0x1
 phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=cn1 data=0xf9
 phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=c0 data=0x2a
@@ -780,61 +780,62 @@ port set cfg unit=0 portlist=72 fec=rs528
 port set cfg unit=0 portlist=76 fec=rs528
 port set cfg unit=0 portlist=80 fec=rs528
 port set cfg unit=0 portlist=81 fec=rs528
-port set cfg unit=0 portlist=0 admin=disable
-port set cfg unit=0 portlist=1 admin=disable
-port set cfg unit=0 portlist=2 admin=disable
-port set cfg unit=0 portlist=3 admin=disable
-port set cfg unit=0 portlist=4 admin=disable
-port set cfg unit=0 portlist=5 admin=disable
-port set cfg unit=0 portlist=6 admin=disable
-port set cfg unit=0 portlist=7 admin=disable
-port set cfg unit=0 portlist=8 admin=disable
-port set cfg unit=0 portlist=9 admin=disable
-port set cfg unit=0 portlist=10 admin=disable
-port set cfg unit=0 portlist=11 admin=disable
-port set cfg unit=0 portlist=12 admin=disable
-port set cfg unit=0 portlist=13 admin=disable
-port set cfg unit=0 portlist=14 admin=disable
-port set cfg unit=0 portlist=15 admin=disable
-port set cfg unit=0 portlist=16 admin=disable
-port set cfg unit=0 portlist=17 admin=disable
-port set cfg unit=0 portlist=18 admin=disable
-port set cfg unit=0 portlist=19 admin=disable
-port set cfg unit=0 portlist=20 admin=disable
-port set cfg unit=0 portlist=21 admin=disable
-port set cfg unit=0 portlist=22 admin=disable
-port set cfg unit=0 portlist=23 admin=disable
-port set cfg unit=0 portlist=24 admin=disable
-port set cfg unit=0 portlist=25 admin=disable
-port set cfg unit=0 portlist=26 admin=disable
-port set cfg unit=0 portlist=27 admin=disable
-port set cfg unit=0 portlist=28 admin=disable
-port set cfg unit=0 portlist=29 admin=disable
-port set cfg unit=0 portlist=30 admin=disable
-port set cfg unit=0 portlist=31 admin=disable
-port set cfg unit=0 portlist=32 admin=disable
-port set cfg unit=0 portlist=33 admin=disable
-port set cfg unit=0 portlist=34 admin=disable
-port set cfg unit=0 portlist=35 admin=disable
-port set cfg unit=0 portlist=36 admin=disable
-port set cfg unit=0 portlist=37 admin=disable
-port set cfg unit=0 portlist=38 admin=disable
-port set cfg unit=0 portlist=39 admin=disable
-port set cfg unit=0 portlist=40 admin=disable
-port set cfg unit=0 portlist=41 admin=disable
-port set cfg unit=0 portlist=42 admin=disable
-port set cfg unit=0 portlist=43 admin=disable
-port set cfg unit=0 portlist=44 admin=disable
-port set cfg unit=0 portlist=45 admin=disable
-port set cfg unit=0 portlist=46 admin=disable
-port set cfg unit=0 portlist=47 admin=disable
-port set cfg unit=0 portlist=48 admin=disable
-port set cfg unit=0 portlist=52 admin=disable
-port set cfg unit=0 portlist=56 admin=disable
-port set cfg unit=0 portlist=60 admin=disable
-port set cfg unit=0 portlist=64 admin=disable
-port set cfg unit=0 portlist=68 admin=disable
-port set cfg unit=0 portlist=72 admin=disable
-port set cfg unit=0 portlist=76 admin=disable
+port set cfg unit=0 portlist=0 admin=enable
+port set cfg unit=0 portlist=1 admin=enable
+port set cfg unit=0 portlist=2 admin=enable
+port set cfg unit=0 portlist=3 admin=enable
+port set cfg unit=0 portlist=4 admin=enable
+port set cfg unit=0 portlist=5 admin=enable
+port set cfg unit=0 portlist=6 admin=enable
+port set cfg unit=0 portlist=7 admin=enable
+port set cfg unit=0 portlist=8 admin=enable
+port set cfg unit=0 portlist=9 admin=enable
+port set cfg unit=0 portlist=10 admin=enable
+port set cfg unit=0 portlist=11 admin=enable
+port set cfg unit=0 portlist=12 admin=enable
+port set cfg unit=0 portlist=13 admin=enable
+port set cfg unit=0 portlist=14 admin=enable
+port set cfg unit=0 portlist=15 admin=enable
+port set cfg unit=0 portlist=16 admin=enable
+port set cfg unit=0 portlist=17 admin=enable
+port set cfg unit=0 portlist=18 admin=enable
+port set cfg unit=0 portlist=19 admin=enable
+port set cfg unit=0 portlist=20 admin=enable
+port set cfg unit=0 portlist=21 admin=enable
+port set cfg unit=0 portlist=22 admin=enable
+port set cfg unit=0 portlist=23 admin=enable
+port set cfg unit=0 portlist=24 admin=enable
+port set cfg unit=0 portlist=25 admin=enable
+port set cfg unit=0 portlist=26 admin=enable
+port set cfg unit=0 portlist=27 admin=enable
+port set cfg unit=0 portlist=28 admin=enable
+port set cfg unit=0 portlist=29 admin=enable
+port set cfg unit=0 portlist=30 admin=enable
+port set cfg unit=0 portlist=31 admin=enable
+port set cfg unit=0 portlist=32 admin=enable
+port set cfg unit=0 portlist=33 admin=enable
+port set cfg unit=0 portlist=34 admin=enable
+port set cfg unit=0 portlist=35 admin=enable
+port set cfg unit=0 portlist=36 admin=enable
+port set cfg unit=0 portlist=37 admin=enable
+port set cfg unit=0 portlist=38 admin=enable
+port set cfg unit=0 portlist=39 admin=enable
+port set cfg unit=0 portlist=40 admin=enable
+port set cfg unit=0 portlist=41 admin=enable
+port set cfg unit=0 portlist=42 admin=enable
+port set cfg unit=0 portlist=43 admin=enable
+port set cfg unit=0 portlist=44 admin=enable
+port set cfg unit=0 portlist=45 admin=enable
+port set cfg unit=0 portlist=46 admin=enable
+port set cfg unit=0 portlist=47 admin=enable
+port set cfg unit=0 portlist=48 admin=enable
+port set cfg unit=0 portlist=52 admin=enable
+port set cfg unit=0 portlist=56 admin=enable
+port set cfg unit=0 portlist=60 admin=enable
+port set cfg unit=0 portlist=64 admin=enable
+port set cfg unit=0 portlist=68 admin=enable
+port set cfg unit=0 portlist=72 admin=enable
+port set cfg unit=0 portlist=76 admin=enable
 port set cfg unit=0 portlist=80 admin=disable
 port set cfg unit=0 portlist=81 admin=disable
+
