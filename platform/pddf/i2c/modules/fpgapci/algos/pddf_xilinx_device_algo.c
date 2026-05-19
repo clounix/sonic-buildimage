@@ -599,11 +599,11 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
 
         writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CFG_ADDR);
 
-        if (p->len == 1)
+        if (p->len == 2)
         {
             tmp_value = 0;
 
-            tmp_value = (FPGA_I2C_MASTER_MGR_WT_BYTE | ((p->buf[0] & 0xFF) << 16) | (p->len << 8) | p->buf[1]);
+            tmp_value = (FPGA_I2C_MASTER_MGR_WT_BYTE | ((p->buf[0] & 0xFF) << 16) | (1 << 8) | p->buf[1]);
 
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
@@ -612,22 +612,22 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
                 goto out;
             }
         }
-        else
+        else if (p->len > 2)
         {
             tmp_addr = (unsigned int *)(priv->mmio + priv->ram_base_addr);
 
-            for (j = 1; j <= p->len; j += 4)
+            for (j = 1; j < p->len; j += 4)
             {
                 tmp_value = p->buf[j];
 
-                if ((j + 1) > p->len)
+                if ((j + 1) >= p->len)
                 {
                     writel(tmp_value, tmp_addr);
 
                     break;
                 }
 
-                tmp_value += (p->buf[j + 1] << 8);
+                tmp_value |= (p->buf[j + 1] << 8);
 
                 if ((j + 2) > p->len)
                 {
@@ -636,7 +636,7 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
                     break;
                 }
 
-                tmp_value += (p->buf[j + 2] << 16);
+                tmp_value |= (p->buf[j + 2] << 16);
 
                 if ((j + 3) > p->len)
                 {
@@ -645,7 +645,7 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
                     break;
                 }
 
-                tmp_value += (p->buf[j + 3] << 24);
+                tmp_value |= (p->buf[j + 3] << 24);
 
                 writel(tmp_value, tmp_addr);
 
@@ -654,7 +654,7 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
 
             tmp_value = 0;
 
-            tmp_value = (FPGA_I2C_MASTER_MGR_WT_WORD | ((p->buf[0] & 0xFF) << 16) | (p->len << 8));
+            tmp_value = (FPGA_I2C_MASTER_MGR_WT_WORD | ((p->buf[0] & 0xFF) << 16) | ((p->len - 1) << 8));
 
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
@@ -1070,6 +1070,7 @@ static int clounix_i2c_smbus_xfer(struct i2c_adapter *adap, unsigned short addr,
 
     mutex_lock(&priv->lock);
     //pddf_dbg(FPGA, "addr: %#x, read_write: %d, command : %#x, size: %d\n", addr, read_write, command, size);
+    printk("addr: %#x, read_write: %d, command : %#x, size: %d\n", addr, read_write, command, size);
     addr = (addr & 0x7f) << 1;
     w_addr = addr;
     r_addr = addr | 0x01;
@@ -1157,6 +1158,7 @@ static int clounix_i2c_smbus_xfer(struct i2c_adapter *adap, unsigned short addr,
 
             break;
         case I2C_SMBUS_BLOCK_DATA:
+            printk("I2C_SMBUS_BLOCK_DATA");
             tmp_value = 0;
             tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE | (r_addr << 8) | w_addr);
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CFG_ADDR);
