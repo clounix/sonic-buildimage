@@ -1070,7 +1070,6 @@ static int clounix_i2c_smbus_xfer(struct i2c_adapter *adap, unsigned short addr,
 
     mutex_lock(&priv->lock);
     //pddf_dbg(FPGA, "addr: %#x, read_write: %d, command : %#x, size: %d\n", addr, read_write, command, size);
-    printk("addr: %#x, read_write: %d, command : %#x, size: %d\n", addr, read_write, command, size);
     addr = (addr & 0x7f) << 1;
     w_addr = addr;
     r_addr = addr | 0x01;
@@ -1158,7 +1157,6 @@ static int clounix_i2c_smbus_xfer(struct i2c_adapter *adap, unsigned short addr,
 
             break;
         case I2C_SMBUS_BLOCK_DATA:
-            printk("I2C_SMBUS_BLOCK_DATA");
             tmp_value = 0;
             tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE | (r_addr << 8) | w_addr);
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CFG_ADDR);

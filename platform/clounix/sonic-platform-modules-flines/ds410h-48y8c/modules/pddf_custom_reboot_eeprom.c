@@ -109,7 +109,6 @@ static ssize_t eeprom_write(struct file *filp, struct kobject *kobj,
     struct fm24c02f_data *data = bin_attr->private;
     ssize_t ret = 0;
     size_t i;
-    printk("off==%d, count==%d\n", off, count);
     if (!data || off >= FM24C02F_SIZE)
         return -EINVAL;
     if (off + count > FM24C02F_SIZE)
