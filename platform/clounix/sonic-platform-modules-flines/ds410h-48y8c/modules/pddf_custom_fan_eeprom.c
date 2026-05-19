@@ -14,6 +14,7 @@
 #define FAN_EEPROM_SELECT_OFFSET        (0x20)
 #define FAN_EEPROM_IIC_REG_OFFSET       (0x22)
 #define FAN_EEPROM_DATA_SIZE_OFFSET     (0x23)
+#define FAN_EEPROM_BYTE_WRITE_OFFSET    (0x24)
 #define FAN_EEPROM_BYTE_READ_OFFSET     (0x25)
 #define FAN_EEPROM_IIC_MAGE_OFFSET      (0x26)
 #define FAN_EEPROM_IIC_START_OFFSET     (0x27)
@@ -108,7 +109,7 @@ static int __fan_eeprom_write_byte_nolock(struct fan_eeprom_priv *priv, u32 offs
     int ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_REG_OFFSET, offset);
     if (ret < 0) return ret;
 
-    ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_BYTE_READ_OFFSET, val);
+    ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_BYTE_WRITE_OFFSET, val);
     if (ret < 0) return ret;
 
     ret = i2c_smbus_write_byte_data(priv->client, FAN_EEPROM_IIC_START_OFFSET, FAN_EEPROM_IIC_START_MASK);
@@ -138,7 +139,7 @@ static int fan_eeprom_write_multi(struct fan_eeprom_priv *priv, u8 fan_idx, u32 
     for (i = 0; i < len; i++) {
         ret = __fan_eeprom_write_byte_nolock(priv, start_offset + i, buf[i]);
         if (ret != 0) break;
-        usleep_range(6000, 7000);
+        usleep_range(10000, 12000);
     }
 
 err_unlock:
