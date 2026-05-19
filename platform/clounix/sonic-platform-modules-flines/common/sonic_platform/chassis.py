@@ -10,6 +10,8 @@ try:
     import os
     import sys
     import time
+    import datetime
+    import syslog
     from sonic_platform_pddf_base.pddf_chassis import PddfChassis
     from sonic_platform.watchdog import Watchdog
     from sonic_platform.thermal import Thermal
@@ -19,6 +21,9 @@ except ImportError as e:
 
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
+REBOOT_EEPROM_PATH = "/sys_switch/cpld/reboot_cause"
+REBOOT_HISTORY_DIR = "/var/log/reboot-cause"
+REBOOT_HISTORY_FILE = "/var/log/reboot-cause/history"
 
 def get_platform_cpu_num():
     cpu_sensor_label = []
@@ -102,7 +107,41 @@ class Chassis(PddfChassis):
             self._watchdog = Watchdog()
 
         return self._watchdog
-    
+    def _generate_reboot_record_name(self):
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        return current_time.strftime("%Y_%m_%d_%H_%M_%S")
+
+    def _write_reboot_history(self, cause, user="N/A", comment="N/A"):
+        try:
+            if not os.path.exists(REBOOT_HISTORY_DIR):
+                os.makedirs(REBOOT_HISTORY_DIR, exist_ok=True)
+            
+            record_name = self._generate_reboot_record_name()
+            current_time = datetime.datetime.now(datetime.timezone.utc)
+            timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+            
+            header = "Name,Cause,Time,User,Comment\n"
+            record = f"{record_name},{cause},{timestamp},{user},{comment}\n"
+            
+            if os.path.exists(REBOOT_HISTORY_FILE):
+                with open(REBOOT_HISTORY_FILE, 'r') as f:
+                    existing_content = f.read()
+                lines = existing_content.strip().split('\n')
+                if len(lines) > 1 and lines[0].startswith("Name"):
+                    data_lines = lines[1:]
+                    data_lines.insert(0, record.strip())
+                    content = header + '\n'.join(data_lines[:10]) + '\n'
+                else:
+                    content = header + record
+            else:
+                content = header + record
+            
+            with open(REBOOT_HISTORY_FILE, 'w') as f:
+                f.write(content)
+                
+        except Exception as e:
+            syslog.syslog(syslog.LOG_ERR, f"Failed to write reboot history: {e}")
+
     def get_reboot_cause(self):
         """
         Retrieves the cause of the previous reboot
@@ -155,8 +194,72 @@ class Chassis(PddfChassis):
                         self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, thermal_overload_pos)
 
                 os.remove(THERMAL_OVERLOAD_POSITION_FILE)
-                # print("thermal reboot_cause {0}".format(reboot_cause))
-        # print(" reboot_cause {0}".format(reboot_cause))
+        
+        try:
+            with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
+                binfile.seek(0)
+                raw_byte = binfile.read(1)
+                hw_reboot_cause = raw_byte.hex().zfill(2)
+
+                if (hw_reboot_cause != 'ff'):
+                    reboot_cause = {
+                        '00': (self.REBOOT_CAUSE_NON_HARDWARE, 'Non-Hardware'),
+                        '01': (self.REBOOT_CAUSE_POWER_LOSS, 'Power Loss'),
+                        '02': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_CPU, 'Thermal Overload: CPU'),
+                        '03': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'Thermal Overload: ASIC'),
+                        '04': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, 'Thermal Overload: Other'),
+                        '05': (self.REBOOT_CAUSE_INSUFFICIENT_FAN_SPEED, 'Insufficient Fan Speed'),
+                        '06': (self.REBOOT_CAUSE_WATCHDOG, 'Watchdog'),
+                        '07': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'Hardware - Other'),
+                        '08': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'CPU Cold Reset'),
+                        '09': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'CPU Warm Reset'),
+                        '10': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'BIOS Reset'),
+                        '11': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'PSU Shutdown'),
+                        '12': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'BMC Shutdown')
+                    }.get(hw_reboot_cause, (self.REBOOT_CAUSE_HARDWARE_OTHER, f'Hardware - Other (0x{hw_reboot_cause})'))
+
+                    try:
+                        binfile.seek(0)
+                        binfile.write(bytes([0xff]))
+                        binfile.flush()
+                    except Exception as e:
+                        syslog.syslog(syslog.LOG_WARNING, f"Failed to clear reboot_cause: {e}")
+                    
+                    self._write_reboot_history(reboot_cause[1])
+                    return reboot_cause
+        except Exception as e:
+            syslog.syslog(syslog.LOG_ERR, f"Failed to read hardware reboot cause: {e}")
+
+        SYS_POWER_STATUS_HISTORY_PATH = os.popen('find /sys -name power_history_record 2>/dev/null').read().strip()
+        if len(SYS_POWER_STATUS_HISTORY_PATH) == 0:
+            print("no power history record node find, pls check driver")
+            return reboot_cause
+        SYS_POWER_STATUS_CTRL_PATH = os.popen('find /sys -name ctrl_history_record 2>/dev/null').read().strip()
+        if len(SYS_POWER_STATUS_CTRL_PATH) == 0:
+            print("no ctrl history record node find, pls check driver")
+            return reboot_cause
+        if reboot_cause[1] == "Unknown" and os.path.isfile(SYS_POWER_STATUS_HISTORY_PATH):
+            try:
+                self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "1")
+                time.sleep(0.5)
+                power_status_history = self.__api_helper.read_one_line_file(SYS_POWER_STATUS_HISTORY_PATH).strip()
+                
+                if power_status_history and power_status_history.lower() != '0xffff':
+                    reboot_cause = (
+                        self.REBOOT_CAUSE_POWER_LOSS,
+                        f'Power Loss - POWER STATUS HISTORY: {power_status_history}'
+                    )
+                self._write_reboot_history(reboot_cause[1])
+                time.sleep(0.5)
+            except Exception as e:
+                syslog.syslog(syslog.LOG_ERR, f"FPGA power status read failed: {e}")
+            finally:
+                try:
+                    self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "0")
+                except Exception:
+                    pass
+            return reboot_cause
+
         return reboot_cause
      
     def get_thermal_manager(self):
