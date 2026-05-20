@@ -11,3 +11,17 @@ class VoltageSensor(PddfVoltageSensor):
 
     def __init__(self, index, pddf_data=None, pddf_plugin_data=None):
         PddfVoltageSensor.__init__(self, index, pddf_data, pddf_plugin_data)
+
+    def get_value(self):
+        output = self.pddf_obj.get_attr_name_output(self.sensor_obj_name, "volt1_input")
+        if not output:
+            return None
+
+        if output['status'].isalpha():
+            attr_value = None
+        else:
+            attr_value = float(output['status'])
+        if self.sensor_index == 2:
+            attr_value /= 1000
+
+        return attr_value
