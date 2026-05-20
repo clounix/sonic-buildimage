@@ -141,6 +141,8 @@ class NormalizationAction(ThermalPolicyActionBase):
     u4b_down_threshold = [36.0, 39.0, 43.0, 47.0]
     fan_speed_ratio = [30, 50, 70, 90, 100]
     LAST_TEMP = '/tmp/last_temp'
+    SAFE_TEMP = 60.0
+    SAFE_FAN_SPEED = 100
 
     def __init__(self):
         self.__api_helper = APIHelper()
@@ -161,6 +163,13 @@ class NormalizationAction(ThermalPolicyActionBase):
                 thermals['0x4a'] = thermal
             elif '0x4b' in zname:
                 thermals['0x4b'] = thermal
+
+        required_sensors = ['CPU', '0x48', '0x49', '0x4a', '0x4b']
+        missing_sensors = [s for s in required_sensors if s not in thermals]
+        if missing_sensors:
+            helper_logger.log_error(f"Missing required thermal sensors: {missing_sensors}. Using safe fan speed.")
+            return None
+
         return thermals
 
     def get_rules(self, nows: list) -> bool:
@@ -180,8 +189,20 @@ class NormalizationAction(ThermalPolicyActionBase):
         chassis = thermal_info_dict['chassis_info'].get_chassis()
         for i in range(chassis.get_num_thermals()):
             thermal = chassis.get_thermal(i)
-            if thermal.get_temperature() > thermal.get_high_threshold():
-                return True
+            try:
+                temp = thermal.get_temperature()
+                high_threshold = thermal.get_high_threshold()
+
+                if temp is None or high_threshold is None:
+                    helper_logger.log_warning(f"Thermal sensor {thermal.get_name()} returned None value. temp={temp}, high_threshold={high_threshold}")
+                    continue
+
+                if temp > high_threshold:
+                    helper_logger.log_warning(f"Thermal warning: {thermal.get_name()} temperature {temp} exceeds high threshold {high_threshold}")
+                    return True
+            except Exception as e:
+                helper_logger.log_error(f"Error checking thermal sensor {thermal.get_name()}: {e}")
+                continue
         return False
 
     def get_ratio(self):
@@ -200,16 +221,21 @@ class NormalizationAction(ThermalPolicyActionBase):
         return default_ratio
 
     def step_speed(self, thermals):
-        nows = [
-            thermals['CPU'].get_temperature(),
-            thermals['0x48'].get_temperature(),
-            thermals['0x49'].get_temperature(),
-            thermals['0x4a'].get_temperature(),
-            thermals['0x4b'].get_temperature()
-        ]
+        nows = []
+        sensor_names = ['CPU', '0x48', '0x49', '0x4a', '0x4b']
+
+        for name in sensor_names:
+            try:
+                temp = thermals[name].get_temperature()
+                if temp is None:
+                    helper_logger.log_error(f"Thermal sensor {name} returned None. Using safe temperature {self.SAFE_TEMP}")
+                    temp = self.SAFE_TEMP
+                nows.append(temp)
+            except Exception as e:
+                helper_logger.log_error(f"Error reading temperature from sensor {name}: {e}. Using safe temperature {self.SAFE_TEMP}")
+                nows.append(self.SAFE_TEMP)
 
         current_ratio = self.get_ratio()
-        print('current_ratio:', current_ratio)
         if current_ratio <= 0:
             self.speed = 50
             helper_logger.log_warning(f"Invalid current_ratio: {current_ratio}. Setting speed to 50.")
@@ -265,7 +291,7 @@ class NormalizationAction(ThermalPolicyActionBase):
             with open(self.LAST_TEMP, 'w') as f:
                 f.write('\n'.join(f'{t:.2f}' for t in temps) + '\n')
         except IOError as e:
-            helper_logger.log_warning(f"Failed to save temps to {LAST_TEMP}: {e}")
+            helper_logger.log_warning(f"Failed to save temps to {self.LAST_TEMP}: {e}")
 
     def update_speed(self, thermal_info_dict):
         temps = []
@@ -278,25 +304,34 @@ class NormalizationAction(ThermalPolicyActionBase):
                      self.u4b_up_threshold[3]]
         else:
             thermals = self.get_thermals(thermal_info_dict)
-            temps = self.step_speed(thermals)
-        print('updata_speed')
-        #self.save_temps(temps)
+            if thermals is None:
+                self.speed = self.SAFE_FAN_SPEED
+                temps = [self.SAFE_TEMP] * 5
+            else:
+                temps = self.step_speed(thermals)
+        self.save_temps(temps)
 
     def execute(self, thermal_info_dict):
-        print('thermal_control.normalization')
-        #chassis = thermal_info_dict['chassis_info'].get_chassis()
-        fan_info = thermal_info_dict['fan_info']
-        #fan_info.collect(chassis)
-        fans = fan_info.fans.values()
-        #faults = fan_info.get_absence_fans()
+        try:
+            #chassis = thermal_info_dict['chassis_info'].get_chassis()
+            fan_info = thermal_info_dict['fan_info']
+            #fan_info.collect(chassis)
+            fans = fan_info.fans.values()
+            #faults = fan_info.get_absence_fans()
 
-        #if len(faults) > 0:
-        #    helper_logger.log_error("Fan fault detected, setting all fans to 100%.")
-        #    for fan in fans:
-        #        fan.set_speed(100)
-        #    return
+            #if len(faults) > 0:
+            #    helper_logger.log_error("Fan fault detected, setting all fans to 100%.")
+            #    for fan in fans:
+            #        fan.set_speed(100)
+            #    return
 
-        self.update_speed(thermal_info_dict)
-        for fan in fans:
-            print('fan name:', fan.get_name(),'speed:', self.speed)
-            fan.set_speed(self.speed)
+            self.update_speed(thermal_info_dict)
+            for fan in fans:
+                fan.set_speed(self.speed)
+        except Exception as e:
+            helper_logger.log_critical(f"Critical error in thermal normalization action: {e}. Setting all fans to 80% for safety.")
+            try:
+                for fan in fans:
+                    fan.set_speed(80)
+            except:
+                pass
