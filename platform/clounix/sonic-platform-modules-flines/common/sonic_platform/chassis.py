@@ -59,7 +59,11 @@ class Chassis(PddfChassis):
     """
     PDDF Platform-specific Chassis class
     """
-
+    REBOOT_CAUSE_CPU_COLD_RESET = "CPU Cold Reset"
+    REBOOT_CAUSE_CPU_WARM_RESET = "CPU Warm Reset"
+    REBOOT_CAUSE_BIOS_RESET = "BIOS Reset"
+    REBOOT_CAUSE_PSU_SHUTDOWN = "PSU Shutdown"
+    REBOOT_CAUSE_BMC_SHUTDOWN = "BMC Shutdown"
     def __init__(self, pddf_data=None, pddf_plugin_data=None):
         PddfChassis.__init__(self, pddf_data, pddf_plugin_data)
 
@@ -166,6 +170,7 @@ class Chassis(PddfChassis):
                                 addational_fault_cause)
                 os.remove(ADDITIONAL_FAULT_CAUSE_FILE)
                 # print("add reboot_cause {0}".format(reboot_cause))
+            return reboot_cause
                 
         #watchdog reboot cause
         wdt_indicator = '/sys_switch/watchdog/rst_occur'
@@ -176,6 +181,7 @@ class Chassis(PddfChassis):
             if '1' in val:
                 reboot_cause = (self.REBOOT_CAUSE_WATCHDOG, "FPGA Watchdog")
                 os.system('echo 1 > ' + wdt_indicator)
+            return reboot_cause
 
         #thermal policy reboot cause
         if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
@@ -194,6 +200,7 @@ class Chassis(PddfChassis):
                         self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, thermal_overload_pos)
 
                 os.remove(THERMAL_OVERLOAD_POSITION_FILE)
+            return reboot_cause
         
         try:
             with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
@@ -211,11 +218,11 @@ class Chassis(PddfChassis):
                         '05': (self.REBOOT_CAUSE_INSUFFICIENT_FAN_SPEED, 'Insufficient Fan Speed'),
                         '06': (self.REBOOT_CAUSE_WATCHDOG, 'Watchdog'),
                         '07': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'Hardware - Other'),
-                        '08': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'CPU Cold Reset'),
-                        '09': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'CPU Warm Reset'),
-                        '10': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'BIOS Reset'),
-                        '11': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'PSU Shutdown'),
-                        '12': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'BMC Shutdown')
+                        '08': (self.REBOOT_CAUSE_CPU_COLD_RESET, 'CPU Cold Reset'),
+                        '09': (self.REBOOT_CAUSE_CPU_WARM_RESET, 'CPU Warm Reset'),
+                        '10': (self.REBOOT_CAUSE_BIOS_RESET, 'BIOS Reset'),
+                        '11': (self.REBOOT_CAUSE_PSU_SHUTDOWN, 'PSU Shutdown'),
+                        '12': (self.REBOOT_CAUSE_BMC_SHUTDOWN, 'BMC Shutdown')
                     }.get(hw_reboot_cause, (self.REBOOT_CAUSE_HARDWARE_OTHER, f'Hardware - Other (0x{hw_reboot_cause})'))
 
                     try:
