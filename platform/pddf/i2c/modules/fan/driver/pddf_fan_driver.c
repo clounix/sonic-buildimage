@@ -384,19 +384,45 @@ FAN_SYSFS_ATTR_DATA data_fan1_sn = {FAN1_SN, S_IRUGO, NULL, NULL, NULL, NULL, NU
 FAN_SYSFS_ATTR_DATA data_fan2_sn = {FAN2_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan3_sn = {FAN3_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan4_sn = {FAN4_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_sn = {FAN5_SN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan1_sn);
 EXPORT_SYMBOL(data_fan2_sn);
 EXPORT_SYMBOL(data_fan3_sn);
 EXPORT_SYMBOL(data_fan4_sn);
+EXPORT_SYMBOL(data_fan5_sn);
 
 FAN_SYSFS_ATTR_DATA data_fan1_pn = {FAN1_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan2_pn = {FAN2_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan3_pn = {FAN3_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan4_pn = {FAN4_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_pn = {FAN5_PN, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan1_pn);
 EXPORT_SYMBOL(data_fan2_pn);
 EXPORT_SYMBOL(data_fan3_pn);
 EXPORT_SYMBOL(data_fan4_pn);
+EXPORT_SYMBOL(data_fan5_pn);
+
+FAN_SYSFS_ATTR_DATA data_fan1_model_name = {FAN1_MODEL_NAME, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_model_name = {FAN2_MODEL_NAME, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_model_name = {FAN3_MODEL_NAME, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_model_name = {FAN4_MODEL_NAME, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_model_name = {FAN5_MODEL_NAME, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_model_name);
+EXPORT_SYMBOL(data_fan2_model_name);
+EXPORT_SYMBOL(data_fan3_model_name);
+EXPORT_SYMBOL(data_fan4_model_name);
+EXPORT_SYMBOL(data_fan5_model_name);
+
+FAN_SYSFS_ATTR_DATA data_fan1_eeprom = {FAN1_EEPROM, S_IRUGO | S_IWUSR, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan2_eeprom = {FAN2_EEPROM, S_IRUGO | S_IWUSR, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan3_eeprom = {FAN3_EEPROM, S_IRUGO | S_IWUSR, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan4_eeprom = {FAN4_EEPROM, S_IRUGO | S_IWUSR, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan5_eeprom = {FAN5_EEPROM, S_IRUGO | S_IWUSR, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(data_fan1_eeprom);
+EXPORT_SYMBOL(data_fan2_eeprom);
+EXPORT_SYMBOL(data_fan3_eeprom);
+EXPORT_SYMBOL(data_fan4_eeprom);
+EXPORT_SYMBOL(data_fan5_eeprom);
 
 FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
 {
@@ -554,10 +580,22 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan2_sn", &data_fan2_sn},
     { "fan3_sn", &data_fan3_sn},
     { "fan4_sn", &data_fan4_sn},
+    { "fan5_sn", &data_fan5_sn},
     { "fan1_pn", &data_fan1_pn},
     { "fan2_pn", &data_fan2_pn},
     { "fan3_pn", &data_fan3_pn},
-    { "fan4_pn", &data_fan4_pn}
+    { "fan4_pn", &data_fan4_pn},
+    { "fan5_pn", &data_fan5_pn},
+    { "fan1_model_name", &data_fan1_model_name},
+    { "fan2_model_name", &data_fan2_model_name},
+    { "fan3_model_name", &data_fan3_model_name},
+    { "fan4_model_name", &data_fan4_model_name},
+    { "fan5_model_name", &data_fan5_model_name},
+    { "fan1_eeprom", &data_fan1_eeprom},
+    { "fan2_eeprom", &data_fan2_eeprom},
+    { "fan3_eeprom", &data_fan3_eeprom},
+    { "fan4_eeprom", &data_fan4_eeprom},
+    { "fan5_eeprom", &data_fan5_eeprom}
 };
 
 void *get_fan_access_data(char *name)

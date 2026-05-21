@@ -1056,6 +1056,13 @@ static void __exit led_exit(void) {
 module_init(led_init);
 module_exit(led_exit);
 
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray1_led);
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray2_led);
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray3_led);
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray4_led);
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray5_led);
+EXPORT_SYMBOL(pddf_dev_cur_state_attr_fantray6_led);
+
 MODULE_AUTHOR("Broadcom");
 MODULE_DESCRIPTION("led driver");
 MODULE_LICENSE("GPL");

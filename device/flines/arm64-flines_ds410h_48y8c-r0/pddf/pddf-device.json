@@ -43,8 +43,6 @@
 			"at24",
 			"gpio-pca953x",
 			"tmp75",
-			"tps389006",
-			"jwh6374",
 			"rtc-pcf85063"
 		],
 		"pddf_kos": [
@@ -73,13 +71,15 @@
 		"custom_kos":
 		[
             "pddf_custom_fan",
-			"pddf_custom_fan_eeprom",
 			"pddf_custom_psu",
 			"pddf_custom_optoe",
 			"pddf_custom_wdt",
             "pddf_custom_debug",
 			"pddf_custom_ft_cpu_temp",
 			"pddf_custom_reboot_eeprom",
+			"pddf_custom_led",
+			"tps389006",
+			"jwh6374",
 			"clounix_fpga_sysfs"
 		]
 	},
@@ -740,7 +740,31 @@
 
 				{"attr_name": "fan_hw_version", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0", "attr_mask":"0xff", "attr_len":"1"},
 
-				{"attr_name": "fan_eepromwp", "attr_devtype": "FAN-CTRL", "attr_offset":"0x13", "attr_mask":"0xff", "attr_cmpval":"0x1", "attr_len":"1"}
+				{"attr_name": "fan_eepromwp", "attr_devtype": "FAN-CTRL", "attr_offset":"0x13", "attr_mask":"0xff", "attr_cmpval":"0x1", "attr_len":"1"},
+				
+				{"attr_name": "fan1_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
+				{"attr_name": "fan2_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
+				{"attr_name": "fan3_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
+				{"attr_name": "fan4_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
+				{"attr_name": "fan5_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
+
+				{"attr_name": "fan1_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan2_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan3_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan4_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan5_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+
+				{"attr_name": "fan1_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
+				{"attr_name": "fan2_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
+				{"attr_name": "fan3_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
+				{"attr_name": "fan4_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
+				{"attr_name": "fan5_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
+
+				{"attr_name": "fan1_pn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x30", "attr_mask": "0xff", "attr_len": "8"},
+				{"attr_name": "fan2_pn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x30", "attr_mask": "0xff", "attr_len": "8"},
+				{"attr_name": "fan3_pn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x30", "attr_mask": "0xff", "attr_len": "8"},
+				{"attr_name": "fan4_pn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x30", "attr_mask": "0xff", "attr_len": "8"},
+				{"attr_name": "fan5_pn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x30", "attr_mask": "0xff", "attr_len": "8"}
 			]
 		}
 	},

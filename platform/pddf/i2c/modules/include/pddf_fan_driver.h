@@ -174,10 +174,22 @@ enum fan_sysfs_attributes {
     FAN2_SN,
     FAN3_SN,
     FAN4_SN,
+    FAN5_SN,
     FAN1_PN,
     FAN2_PN,
     FAN3_PN,
     FAN4_PN,
+    FAN5_PN,
+    FAN1_MODEL_NAME,
+    FAN2_MODEL_NAME,
+    FAN3_MODEL_NAME,
+    FAN4_MODEL_NAME,
+    FAN5_MODEL_NAME,
+    FAN1_EEPROM,
+    FAN2_EEPROM,
+    FAN3_EEPROM,
+    FAN4_EEPROM,
+    FAN5_EEPROM,
 	FAN_MAX_ATTR 
 };
 /* Each client has this additional data */
