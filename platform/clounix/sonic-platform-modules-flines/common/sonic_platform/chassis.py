@@ -170,7 +170,8 @@ class Chassis(PddfChassis):
                                 addational_fault_cause)
                 os.remove(ADDITIONAL_FAULT_CAUSE_FILE)
                 # print("add reboot_cause {0}".format(reboot_cause))
-            return reboot_cause
+                self._write_reboot_history(reboot_cause[1])
+                return reboot_cause
                 
         #watchdog reboot cause
         wdt_indicator = '/sys_switch/watchdog/rst_occur'
@@ -181,7 +182,8 @@ class Chassis(PddfChassis):
             if '1' in val:
                 reboot_cause = (self.REBOOT_CAUSE_WATCHDOG, "FPGA Watchdog")
                 os.system('echo 1 > ' + wdt_indicator)
-            return reboot_cause
+                self._write_reboot_history(reboot_cause[1])
+                return reboot_cause
 
         #thermal policy reboot cause
         if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
@@ -200,7 +202,8 @@ class Chassis(PddfChassis):
                         self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, thermal_overload_pos)
 
                 os.remove(THERMAL_OVERLOAD_POSITION_FILE)
-            return reboot_cause
+                self._write_reboot_history(reboot_cause[1])
+                return reboot_cause
         
         try:
             with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
