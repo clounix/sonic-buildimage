@@ -6,7 +6,7 @@
 		"num_temps": 4,
 		"num_fantrays":5,
 		"num_fans_pertray":2,
-		"num_voltage_sensors":2,
+		"num_voltage_sensors":1,
 		"num_current_sensors":1,
 		"num_fpga_pvt_temp":1,
 		"fpga_pvt_temp_type":"kg",
@@ -510,24 +510,6 @@
 		"i2c": {
 			"attr_list":
 			[
-				{"attr_name":"volt1_input", "drv_attr_name":"in1_input"}
-			],
-			"virtual_attr_list":
-			[
-				{"attr_name": "volt1_crit_high_threshold", "attr_value": "13000"},
-				{"attr_name": "volt1_high_threshold", "attr_value":"12800"},
-				{"attr_name": "volt1_low_threshold", "attr_value":"11600"},
-				{"attr_name": "volt1_crit_low_threshold", "attr_value":"10675"}
-			]
-		}
-	},
-	"VOLTAGE2":
-	{
-		"dev_info": { "device_type": "VOLTAGE_SENSOR", "device_parent":"FPGAPCIE0", "virt_parent": "PMBUS-JWH_1"},
-		"dev_attr": { "display_name":"jwh6374:0x03-V2"},
-		"i2c": {
-			"attr_list":
-			[
 				{"attr_name":"volt1_input", "drv_attr_name":"in2_input"}
 			],
 			"virtual_attr_list":
@@ -678,16 +660,16 @@
 				{"attr_name": "fan9_present", "attr_devtype": "FAN-CTRL", "attr_offset":"0x2",  "attr_mask": "0x10", "attr_cmpval": "0x0", "attr_len": "1"},
                 {"attr_name": "fan10_present", "attr_devtype": "FAN-CTRL", "attr_offset":"0x2",  "attr_mask": "0x10", "attr_cmpval": "0x0", "attr_len": "1"},
 
-                {"attr_name": "fan1_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x70", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan2_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x80", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan3_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x72", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan4_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x82", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan5_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x74", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan6_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x84", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan7_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x76", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan8_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x86", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan9_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x78", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
-                {"attr_name": "fan10_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x88", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "1"},
+                {"attr_name": "fan1_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x70", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan2_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x80", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan3_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x72", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan4_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x82", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan5_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x74", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan6_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x84", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan7_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x76", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan8_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x86", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan9_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x78", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
+                {"attr_name": "fan10_input", "attr_devtype": "FAN-CTRL", "attr_offset": "0x88", "attr_mask": "0xff", "attr_mult": "60", "attr_len": "2"},
 
                 {"attr_name": "fan1_direction", "attr_devtype": "FAN-CTRL", "attr_offset": "0x14", "attr_mask": "0x1", "attr_cmpval": "0x1", "attr_len": "1"},
                 {"attr_name": "fan2_direction", "attr_devtype": "FAN-CTRL", "attr_offset": "0x14", "attr_mask": "0x1", "attr_cmpval": "0x1", "attr_len": "1"},
