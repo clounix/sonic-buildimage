@@ -541,8 +541,10 @@
 			],
 			"virtual_attr_list":
 			[
-				{"attr_name": "volt1_crit_high_threshold", "attr_value": "100000"},
-				{"attr_name": "volt1_high_threshold", "attr_value":"80000"}
+				{"attr_name": "volt1_crit_high_threshold", "attr_value": "13000"},
+				{"attr_name": "volt1_high_threshold", "attr_value":"12800"},
+				{"attr_name": "volt1_low_threshold", "attr_value":"11600"},
+				{"attr_name": "volt1_crit_low_threshold", "attr_value":"10675"}
 			]
 		}
 	},
@@ -557,8 +559,10 @@
 			],
 			"virtual_attr_list":
 			[
-				{"attr_name": "volt1_crit_high_threshold", "attr_value": "100000"},
-				{"attr_name": "volt1_high_threshold", "attr_value":"80000"}
+				{"attr_name": "volt1_crit_high_threshold", "attr_value": "880"},
+				{"attr_name": "volt1_high_threshold", "attr_value":"840"},
+				{"attr_name": "volt1_low_threshold", "attr_value":"760"},
+				{"attr_name": "volt1_crit_low_threshold", "attr_value": "720"}
 			]
 		}
 	},
@@ -573,8 +577,8 @@
 			],
 			"virtual_attr_list":
 			[
-				{"attr_name": "current1_crit_high_threshold", "attr_value": "10000"},
-				{"attr_name": "current1_high_threshold", "attr_value":"8000"}
+				{"attr_name": "current1_crit_high_threshold", "attr_value": "132000"},
+				{"attr_name": "current1_high_threshold", "attr_value":"121000"}
 			]
 		}
 	},
@@ -587,9 +591,12 @@
 			"topo_info": { "parent_bus":"0x65", "dev_addr":"0x49", "dev_type":"tmp75c"},
 			"attr_list":
 			[
-				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"},
-				{ "attr_name": "temp1_high_crit_threshold", "drv_attr_name":"temp1_max"},
-				{ "attr_name": "temp1_high_threshold", "drv_attr_name":"temp1_max_hyst"}
+				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"}
+			],
+			"virtual_attr_list":
+			[
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"62000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"56000"}
 			]
 		}
 	},
@@ -602,9 +609,12 @@
 			"topo_info": { "parent_bus":"0x64", "dev_addr":"0x4a", "dev_type":"tmp75c"},
 			"attr_list":
 			[
-				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"},
-				{ "attr_name": "temp1_high_crit_threshold", "drv_attr_name":"temp1_max"},
-				{ "attr_name": "temp1_high_threshold", "drv_attr_name":"temp1_max_hyst"}
+				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"}
+			],
+			"virtual_attr_list":
+			[
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"60000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"56000"}
 			]
 		}
 	},
@@ -617,9 +627,12 @@
 			"topo_info": { "parent_bus":"0x66", "dev_addr":"0x48", "dev_type":"tmp75c"},
 			"attr_list":
 			[
-				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"},
-				{ "attr_name": "temp1_high_crit_threshold", "drv_attr_name":"temp1_max"},
-				{ "attr_name": "temp1_high_threshold", "drv_attr_name":"temp1_max_hyst"}
+				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"}
+			],
+			"virtual_attr_list":
+			[
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"66000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"59000"}
 			]
 		}
 	},
@@ -632,9 +645,12 @@
 			"topo_info": { "parent_bus":"0x68", "dev_addr":"0x4B", "dev_type":"tmp75c"},
 			"attr_list":
 			[
-				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"},
-				{ "attr_name": "temp1_high_crit_threshold", "drv_attr_name":"temp1_max"},
-				{ "attr_name": "temp1_high_threshold", "drv_attr_name":"temp1_max_hyst"}
+				{ "attr_name": "temp1_input", "drv_attr_name":"temp1_input"}
+			],
+			"virtual_attr_list":
+			[
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"62000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"56000"}
 			]
 		}
 	},
