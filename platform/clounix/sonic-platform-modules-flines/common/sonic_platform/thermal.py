@@ -87,6 +87,9 @@ class Thermal(PddfThermal):
                 if output['mode'] != 0:
                     cmd = "cat " + core_temp_path + "temp{}_max".format(self.thermal_index)
                     output['mode'], output['status'] = getstatusoutput(cmd)
+                #CPU_Package use 62 for thermal control (add:20260520)
+                if 'Package' in self.thermal_obj_name:
+                    output['status'] = '62000'
                 
                 if output['mode'] != 0:
                     return 0
@@ -206,7 +209,10 @@ class Thermal(PddfThermal):
                 if output['mode'] != 0:
                     cmd = "cat " + core_temp_path + "temp{}_crit".format(self.thermal_index)
                     output['mode'], output['status'] = getstatusoutput(cmd)
-                
+                #CPU_Package use 69 for thermal control (add:20260520)
+                if 'Package' in self.thermal_obj_name:
+                    output['status'] = '69000'
+
                 if output['mode'] != 0:
                     return 0
                 

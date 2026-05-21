@@ -55,6 +55,9 @@
 #define FPGA_VENDOR_ID 0x10ee
 #define FPGA_DEVICE_ID 0x7021
 
+/*xcvf power on*/
+#define FPGA_PORT_POWER_CFG (0x3b8)
+
 /*power cycle*/
 #define FPGA_GLOBAL_CFG_BASE 0x300
 #define FPGA_RESET_CFG_BASE  (FPGA_GLOBAL_CFG_BASE+0xb8) 

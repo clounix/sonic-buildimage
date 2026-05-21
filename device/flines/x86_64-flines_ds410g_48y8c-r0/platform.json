@@ -107,32 +107,20 @@
         ],
         "thermals": [
             {
-                "name": "TMP75C_temp_0x48",
+                "name": "TMP75C / ASIC 0x48",
                 "position": "fpga i2c temp"
             },
             {
-                "name": "TMP75C_temp_0x49",
+                "name": "TMP75C / temp 0x49",
                 "position": "fpga i2c temp"
             },
             {
-                "name": "TMP75C_temp_0x4a",
+                "name": "TMP75C / temp 0x4a",
                 "position": "fpga i2c temp"
             },
             {
-                "name": "TMP75C_temp_0x4b",
+                "name": "TMP75C / fan 0x4b",
                 "position": "fpga i2c temp"
-            },
-            {
-                "name": "TMP75_temp_0x4b",
-                "position": "fan board temp"
-            },
-            {
-                "name": "xdpe132g5h_0x40_rail-1",
-                "position": "XDPE132G5H"
-            },
-            {
-                "name": "xdpe132g5h_0x40_rail-2",
-                "position": "XDPE132G5H"
             },
             {
                 "name": "CPU_Package",
@@ -409,124 +397,19 @@
                     {
                         "dir":"input1",
                         "vol":"in1_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr1_input",
-                        "curr_resol":"0.001",
-                        "power":"power1_input",
-                        "power_resol":"0.000001"
+                        "vol_resol":"0.001"
+
                     },
                     {
-                        "dir":"input2",
+                        "dir":"output1",
                         "vol":"in2_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr2_input",
+                        "vol_resol":"0.000001",
+                        "curr":"curr1_input",
                         "curr_resol":"0.001",
                         "power":"power2_input",
                         "power_resol":"0.000001"
-                    },
-                    {
-            	    	"asic_power":"1",
-                        "dir":"output1",
-                        "vol":"in3_input",
-                        "vol_resol":"0.001",
-                        "curr":"curr3_input",
-                        "curr_resol":"0.001",
-                        "power":"power3_input",
-                        "power_resol":"0.000001"
-                    },
-                    {
-                        "dir":"output2",
-                        "vol":"in4_input",
-                        "vol_resol":"0.002",
-                        "curr":"curr4_input",
-                        "curr_resol":"0.001",
-                        "power":"power4_input",
-                        "power_resol":"0.000001"
-                    }
-                ],
-                "temp_sensors":[
-                    {
-                        "temp":"temp1_input",
-                        "temp_resol":"0.001"
-                    },
-                    {
-                        "temp":"temp2_input",
-                        "temp_resol":"0.001"
                     }
                 ]
-            }
-        ],
-        "voltages": [
-            {
-                "name": "P0V79_XDPE",
-                "class":"XDPE132G5H",
-                "adapter": 102,
-                "slave_addr":64,
-                "pages":2,
-                "page":0,
-                "step":625,
-                "step_multiple":1000000,
-                "vout_mask":"0xffff",
-                "vout_cmd_mask":"0xffff",
-                "default":3276,
-                "range":3
-            },
-            {
-                "name": "P3V3_XDPE",
-                "class":"XDPE132G5H",
-                "adapter": 102,
-                "slave_addr":64,
-                "pages":2,
-                "page":1,
-                "step":625,
-                "factor":2,
-                "step_multiple":1000000,
-                "vout_mask":"0xffff",
-                "vout_cmd_mask":"0xffff",
-                "default":6758,
-                "range":3
-            },
-            {
-                "name": "P1V5_TPS546_24",
-                "class":"TPS546B24A",
-                "adapter": 102,
-                "slave_addr":36,
-                "pages":1,
-                "page":0,
-                "step":1953,
-                "step_multiple":1000,
-                "vout_mask":"0xffff",
-                "vout_cmd_mask":"0xffff",
-                "default":765,
-                "range":3
-            },
-            {
-                "name": "P1V8_TPS546_27",
-                "class":"TPS546B24A",
-                "adapter": 102,
-                "slave_addr":39,
-                "pages":1,
-                "page":0,
-                "step":1953,
-                "step_multiple":1000,
-                "vout_mask":"0xffff",
-                "vout_cmd_mask":"0xffff",
-                "default":918,
-                "range":3
-            },
-            {
-                "name": "P1V25_TPS546_29",
-                "class":"TPS546B24A",
-                "adapter": 102,
-                "slave_addr":41,
-                "pages":1,
-                "page":0,
-                "step":1953,
-                "step_multiple":1000,
-                "vout_mask":"0xffff",
-                "vout_cmd_mask":"0xffff",
-                "default":638,
-                "range":3
             }
         ]
     },

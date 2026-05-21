@@ -62,6 +62,42 @@
 #include <linux/platform_device.h>
 #include "clounix_fpga.h"
 
+/*xcvr power on
+ */
+static ssize_t get_sys_fpga_power_on(struct device *dev, struct device_attribute *da,
+             char *buf)
+{
+    uint32_t data = 0;
+    uint32_t value = 0;
+
+    if(NULL != fpga_ctl_addr){
+        data= readl(fpga_ctl_addr + FPGA_PORT_POWER_CFG);
+        GET_BIT(data, 0, value);
+    }
+    return sprintf(buf, "%d\n", !value);
+}
+
+static ssize_t set_sys_fpga_power_on(struct device *dev, struct device_attribute *da,
+             const char *buf, size_t count)
+{
+    uint32_t value = 0;
+    uint32_t data = 0;
+
+    if (kstrtouint(buf, 16, &value))
+    {
+        return -EINVAL;
+    }
+    if(NULL != fpga_ctl_addr){
+        data= readl(fpga_ctl_addr + FPGA_PORT_POWER_CFG);
+        if (value)
+            CLEAR_BIT(data, 0);
+        else
+            SET_BIT(data, 0);
+        writel(data, fpga_ctl_addr + FPGA_PORT_POWER_CFG);
+    }
+    return count;
+}
+
 static ssize_t get_sys_fpga_power_cycle(struct device *dev, struct device_attribute *da,
              char *buf)
 {  
@@ -210,6 +246,8 @@ static ssize_t set_sys_fpga_pvt_temp_crit(struct device *dev,
 
     return count;
 }
+
+static DEVICE_ATTR(power_on,S_IRUGO | S_IWUSR, get_sys_fpga_power_on, set_sys_fpga_power_on);
 static DEVICE_ATTR(power_cycle,S_IRUGO | S_IWUSR, get_sys_fpga_power_cycle, set_sys_fpga_power_cycle);
 static DEVICE_ATTR(power_history_record,S_IRUGO, get_sys_fpga_power_history_record, NULL);
 static DEVICE_ATTR(ctrl_history_record,S_IRUGO | S_IWUSR, get_sys_fpga_ctrl_history_record, set_sys_fpga_ctrl_history_record);
@@ -219,6 +257,7 @@ static SENSOR_DEVICE_ATTR(pvt_temp1_crit,S_IRUGO | S_IWUSR, get_sys_fpga_pvt_tem
 static SENSOR_DEVICE_ATTR(pvt_temp1_label,S_IRUGO | S_IWUSR, get_sys_fpga_pvt_temp_label, NULL,0);
 static struct attribute *fpga_attributes[] =
 {
+    &dev_attr_power_on.attr,
     &dev_attr_power_cycle.attr,
     &dev_attr_power_history_record.attr,
     &dev_attr_ctrl_history_record.attr,
