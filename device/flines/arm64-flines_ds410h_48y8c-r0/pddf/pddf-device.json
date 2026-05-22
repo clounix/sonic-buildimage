@@ -47,8 +47,8 @@
 		],
 		"pddf_kos": [
 				"pddf_client_module",
-				"pddf_multifpgapci_i2c_module",
 				"pddf_multifpgapci_driver",
+				"pddf_multifpgapci_i2c_module",
                 "pddf_fpgapci_driver",
                 "pddf_fpgapci_module",
                 "pddf_xilinx_device_algo",
@@ -70,6 +70,7 @@
 		],
 		"custom_kos":
 		[
+			"tps389006",
             "pddf_custom_fan",
 			"pddf_custom_psu",
 			"pddf_custom_optoe",
@@ -78,8 +79,6 @@
 			"pddf_custom_ft_cpu_temp",
 			"pddf_custom_reboot_eeprom",
 			"pddf_custom_led",
-			"tps389006",
-			"jwh6374",
 			"clounix_fpga_sysfs"
 		]
 	},
