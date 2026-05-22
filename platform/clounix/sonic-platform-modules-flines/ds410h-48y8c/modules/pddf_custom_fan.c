@@ -94,11 +94,21 @@ extern FAN_SYSFS_ATTR_DATA data_fan2_speed_tolerance;
 extern FAN_SYSFS_ATTR_DATA data_fan3_speed_tolerance;
 extern FAN_SYSFS_ATTR_DATA data_fan4_speed_tolerance;
 extern FAN_SYSFS_ATTR_DATA data_fan5_speed_tolerance;
+extern FAN_SYSFS_ATTR_DATA data_fan6_speed_tolerance;
+extern FAN_SYSFS_ATTR_DATA data_fan7_speed_tolerance;
+extern FAN_SYSFS_ATTR_DATA data_fan8_speed_tolerance;
+extern FAN_SYSFS_ATTR_DATA data_fan9_speed_tolerance;
+extern FAN_SYSFS_ATTR_DATA data_fan10_speed_tolerance;
 extern FAN_SYSFS_ATTR_DATA data_fan1_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan2_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan3_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan4_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan5_speed_target;
+extern FAN_SYSFS_ATTR_DATA data_fan6_speed_target;
+extern FAN_SYSFS_ATTR_DATA data_fan7_speed_target;
+extern FAN_SYSFS_ATTR_DATA data_fan8_speed_target;
+extern FAN_SYSFS_ATTR_DATA data_fan9_speed_target;
+extern FAN_SYSFS_ATTR_DATA data_fan10_speed_target;
 extern FAN_SYSFS_ATTR_DATA data_fan_eeprom_size;
 
 extern FAN_SYSFS_ATTR_DATA data_fan1_sn;
@@ -585,26 +595,36 @@ static ssize_t show_fan_string(struct device *dev, struct device_attribute *da, 
 
 static int get_fan_speed_tolerance(void *client, FAN_DATA_ATTR *udata, void *info)
 {
-    int status = 0;
     struct fan_attr_info *painfo = (struct fan_attr_info *)info;
-
-    painfo->val.intval = FAN_MAX_SPEED_DS410G / 10;
-
-    return status;
+    
+    painfo->val.intval = udata->mult;
+    
+    pddf_dbg(FAN, "get_fan_speed_tolerance: fan=%s, tolerance=%d RPM\n",
+             udata->aname, painfo->val.intval);
+    
+    return 0;
 }
 
 static int get_fan_speed_target(void *client, FAN_DATA_ATTR *udata, void *info)
 {
     int status = 0;
-    int val = 0;
+    int pwm_val = 0;
     struct fan_attr_info *painfo = (struct fan_attr_info *)info;
 
-    val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
-    if (val < 0)
-        status = val;
-    else
-        painfo->val.intval = val * FAN_MAX_SPEED_DS410G / 100;
- 
+    pwm_val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+    if (pwm_val < 0) {
+        pddf_err(FAN, "get_fan_speed_target: failed to read PWM register at 0x%02x, ret=%d\n",
+                 udata->offset, pwm_val);
+        status = pwm_val;
+        goto out;
+    }
+
+    painfo->val.intval = pwm_val * udata->mult / 100;
+    
+    pddf_dbg(FAN, "get_fan_speed_target: fan=%s, pwm=%d, max_rpm=%d, target_rpm=%d\n",
+             udata->aname, pwm_val, udata->mult, painfo->val.intval);
+
+out:
     return status;
 }
 
@@ -685,11 +705,22 @@ static int __init pddf_custom_fan_init(void)
     data_fan3_speed_tolerance.do_get = get_fan_speed_tolerance;
     data_fan4_speed_tolerance.do_get = get_fan_speed_tolerance;
     data_fan5_speed_tolerance.do_get = get_fan_speed_tolerance;
+    data_fan6_speed_tolerance.do_get = get_fan_speed_tolerance;
+    data_fan7_speed_tolerance.do_get = get_fan_speed_tolerance;
+    data_fan8_speed_tolerance.do_get = get_fan_speed_tolerance;
+    data_fan9_speed_tolerance.do_get = get_fan_speed_tolerance;
+    data_fan10_speed_tolerance.do_get = get_fan_speed_tolerance;
+
     data_fan1_speed_target.do_get = get_fan_speed_target;
     data_fan2_speed_target.do_get = get_fan_speed_target;
     data_fan3_speed_target.do_get = get_fan_speed_target;
     data_fan4_speed_target.do_get = get_fan_speed_target;
     data_fan5_speed_target.do_get = get_fan_speed_target;
+    data_fan6_speed_target.do_get = get_fan_speed_target;
+    data_fan7_speed_target.do_get = get_fan_speed_target;
+    data_fan8_speed_target.do_get = get_fan_speed_target;
+    data_fan9_speed_target.do_get = get_fan_speed_target;
+    data_fan10_speed_target.do_get = get_fan_speed_target;
 
     data_fan1_eeprom.show = fan_eeprom_show;
     data_fan1_eeprom.store = fan_eeprom_store;

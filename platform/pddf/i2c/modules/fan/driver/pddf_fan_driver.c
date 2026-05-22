@@ -288,6 +288,8 @@ FAN_SYSFS_ATTR_DATA data_fan5_speed_target = {FAN5_SPEED_TARGET, S_IRUGO, fan_sh
 FAN_SYSFS_ATTR_DATA data_fan6_speed_target = {FAN6_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan7_speed_target = {FAN7_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan8_speed_target = {FAN8_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan9_speed_target = {FAN9_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan10_speed_target = {FAN10_SPEED_TARGET, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan1_speed_target);
 EXPORT_SYMBOL(data_fan2_speed_target);
 EXPORT_SYMBOL(data_fan3_speed_target);
@@ -296,6 +298,8 @@ EXPORT_SYMBOL(data_fan5_speed_target);
 EXPORT_SYMBOL(data_fan6_speed_target);
 EXPORT_SYMBOL(data_fan7_speed_target);
 EXPORT_SYMBOL(data_fan8_speed_target);
+EXPORT_SYMBOL(data_fan9_speed_target);
+EXPORT_SYMBOL(data_fan10_speed_target);
 
 FAN_SYSFS_ATTR_DATA data_fan1_speed_tolerance = {FAN1_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan2_speed_tolerance = {FAN2_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
@@ -305,6 +309,8 @@ FAN_SYSFS_ATTR_DATA data_fan5_speed_tolerance = {FAN5_SPEED_TOLERANCE, S_IRUGO, 
 FAN_SYSFS_ATTR_DATA data_fan6_speed_tolerance = {FAN6_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan7_speed_tolerance = {FAN7_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan8_speed_tolerance = {FAN8_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan9_speed_tolerance = {FAN9_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+FAN_SYSFS_ATTR_DATA data_fan10_speed_tolerance = {FAN10_SPEED_TOLERANCE, S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(data_fan1_speed_tolerance);
 EXPORT_SYMBOL(data_fan2_speed_tolerance);
 EXPORT_SYMBOL(data_fan3_speed_tolerance);
@@ -313,6 +319,8 @@ EXPORT_SYMBOL(data_fan5_speed_tolerance);
 EXPORT_SYMBOL(data_fan6_speed_tolerance);
 EXPORT_SYMBOL(data_fan7_speed_tolerance);
 EXPORT_SYMBOL(data_fan8_speed_tolerance);
+EXPORT_SYMBOL(data_fan9_speed_tolerance);
+EXPORT_SYMBOL(data_fan10_speed_tolerance);
 
 FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l0  = {FAN_SPEED_TARGET_F_L0 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 FAN_SYSFS_ATTR_DATA data_fan_speed_target_f_l1  = {FAN_SPEED_TARGET_F_L1 , S_IRUGO, fan_show_default, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
@@ -536,6 +544,8 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan6_speed_target", &data_fan6_speed_target},
     { "fan7_speed_target", &data_fan7_speed_target},
     { "fan8_speed_target", &data_fan8_speed_target},
+    { "fan9_speed_target", &data_fan9_speed_target},
+    { "fan10_speed_target", &data_fan10_speed_target},
     { "fan1_speed_tolerance", &data_fan1_speed_tolerance},
     { "fan2_speed_tolerance", &data_fan2_speed_tolerance},
     { "fan3_speed_tolerance", &data_fan3_speed_tolerance},
@@ -544,6 +554,8 @@ FAN_SYSFS_ATTR_DATA_ENTRY fan_sysfs_attr_data_tbl[]=
     { "fan6_speed_tolerance", &data_fan6_speed_tolerance},
     { "fan7_speed_tolerance", &data_fan7_speed_tolerance},
     { "fan8_speed_tolerance", &data_fan8_speed_tolerance},
+    { "fan9_speed_tolerance", &data_fan9_speed_tolerance},
+    { "fan10_speed_tolerance", &data_fan10_speed_tolerance},
     { "fan_speed_target_f_l0", &data_fan_speed_target_f_l0 },
     { "fan_speed_target_f_l1", &data_fan_speed_target_f_l1 },
     { "fan_speed_target_f_l2", &data_fan_speed_target_f_l2 },
