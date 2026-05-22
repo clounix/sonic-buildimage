@@ -43,6 +43,7 @@
 			"at24",
 			"gpio-pca953x",
 			"tmp75",
+			"jwh6374",
 			"rtc-pcf85063"
 		],
 		"pddf_kos": [

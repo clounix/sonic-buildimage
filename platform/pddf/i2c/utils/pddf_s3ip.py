@@ -599,7 +599,7 @@ def create_s3ip_fan_sysfs():
         try:
             bus = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['parent_bus'], 0)
             dev_addr = int(pddf_api.data['FAN-CTRL']['i2c']['topo_info']['dev_addr'], 0)
-            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_part_number /sys_switch/fan/fan{}/part_number'.format(bus, dev_addr, f, f)
+            cmd = 'sudo ln -s /sys/bus/i2c/devices/{}-{:04x}/fan{}_pn /sys_switch/fan/fan{}/part_number'.format(bus, dev_addr, f, f)
         except Exception:
             cmd = 'echo "NA" > /sys_switch/fan/fan{}/part_number'.format(f)
 
@@ -670,28 +670,6 @@ def create_s3ip_fan_sysfs():
                     cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/ratio'.format(dc, f)
         except Exception as err:
             cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/ratio'.format(dc, f)
-
-        log_os_system(cmd, 1)
-
-        # eeprom
-        try:
-            dc = 'NA'
-            attr = 'fan{}_present'.format((f-1)*mot_num + 1)
-            bmc_attr = pddf_api.check_bmc_based_attr('FAN-CTRL', attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                dc = output.rstrip()
-                cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path('FAN-CTRL', attr)
-                if node:
-                    new_node = node.replace("_present", "_eeprom")
-                    cmd = 'sudo ln -s {} /sys_switch/fan/fan{}/eeprom'.format(new_node, f)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/fan/fan{}/eeprom'.format(dc, f)
 
         log_os_system(cmd, 1)
 
@@ -1225,56 +1203,7 @@ def create_s3ip_psu_sysfs():
             cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_min_vol, p)
 
         log_os_system(cmd, 1)
-
-        # out_max_vol
-        try:
-            out_vol = 'NA'
-            dev = 'PSU{}'.format(p)
-            attr = 'psu_v_out_max'
-            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                output = output.rstrip()
-                if output.replace('.', '', 1).isdigit():
-                    out_vol = float(output)
-                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path(dev, attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_max_vol'.format(node, p)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_max_vol'.format(out_vol, p)
-
-        log_os_system(cmd, 1)
-
-        # out_min_vol
-        try:
-            out_vol = 'NA'
-            dev = 'PSU{}'.format(p)
-            attr = 'psu_v_out_min'
-            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
-            if bmc_attr is not None and bmc_attr!={}:
-                output = pddf_api.bmc_get_cmd(bmc_attr)
-                output = output.rstrip()
-                if output.replace('.', '', 1).isdigit():
-                    out_vol = float(output)
-                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
-            else:
-                # I2C based attribute
-                node = pddf_api.get_path(dev, attr)
-                if node:
-                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/out_min_vol'.format(node, p)
-                else:
-                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
-        except Exception as err:
-            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/out_min_vol'.format(out_vol, p)
-
-        log_os_system(cmd, 1)
-
-
+        
         # num_temp_sensors
         ntemps = 0
         patten = 'PSU{}'.format(p)
