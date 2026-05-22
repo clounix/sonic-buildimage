@@ -24,6 +24,7 @@ SFP_STATUS_REMOVED = '0'
 REBOOT_EEPROM_PATH = "/sys_switch/cpld/reboot_cause"
 REBOOT_HISTORY_DIR = "/var/log/reboot-cause"
 REBOOT_HISTORY_FILE = "/var/log/reboot-cause/history"
+REBOOT_CAUSE_FILE = "/host/reboot-cause/reboot-cause.txt"
 
 def get_platform_cpu_num():
     cpu_sensor_label = []
@@ -146,6 +147,14 @@ class Chassis(PddfChassis):
         except Exception as e:
             syslog.syslog(syslog.LOG_ERR, f"Failed to write reboot history: {e}")
 
+    def find_software_reboot_cause_from_reboot_cause_file(self):
+        software_reboot_cause = "Unknown"
+        if os.path.isfile(REBOOT_CAUSE_FILE):
+            with open(REBOOT_CAUSE_FILE) as cause_file:
+                software_reboot_cause = cause_file.readline().rstrip('\n')
+
+        return software_reboot_cause
+
     def get_reboot_cause(self):
         """
         Retrieves the cause of the previous reboot
@@ -160,6 +169,8 @@ class Chassis(PddfChassis):
         ADDITIONAL_FAULT_CAUSE_FILE = "/host/reboot-cause/platform/additional_fault_cause"
 
         reboot_cause = (self.REBOOT_CAUSE_NON_HARDWARE, "Unknown")
+        if self.find_software_reboot_cause_from_reboot_cause_file() != "Unknown":
+            return reboot_cause
         
         #ADM1166 cause
         if os.path.isfile(ADDITIONAL_FAULT_CAUSE_FILE):
