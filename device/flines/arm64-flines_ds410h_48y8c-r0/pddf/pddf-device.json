@@ -6,7 +6,7 @@
 		"num_temps": 4,
 		"num_fantrays":5,
 		"num_fans_pertray":2,
-		"num_voltage_sensors":2,
+		"num_voltage_sensors":1,
 		"num_current_sensors":1,
 		"num_fpga_pvt_temp":1,
 		"fpga_pvt_temp_type":"kg",
@@ -533,24 +533,6 @@
 	{
 		"dev_info": { "device_type": "VOLTAGE_SENSOR", "device_parent":"FPGAPCIE0", "virt_parent": "PMBUS-JWH_1"},
 		"dev_attr": { "display_name":"jwh6374:0x03-V1"},
-		"i2c": {
-			"attr_list":
-			[
-				{"attr_name":"volt1_input", "drv_attr_name":"in1_input"}
-			],
-			"virtual_attr_list":
-			[
-				{"attr_name": "volt1_crit_high_threshold", "attr_value": "13000"},
-				{"attr_name": "volt1_high_threshold", "attr_value":"12800"},
-				{"attr_name": "volt1_low_threshold", "attr_value":"11600"},
-				{"attr_name": "volt1_crit_low_threshold", "attr_value":"10675"}
-			]
-		}
-	},
-	"VOLTAGE2":
-	{
-		"dev_info": { "device_type": "VOLTAGE_SENSOR", "device_parent":"FPGAPCIE0", "virt_parent": "PMBUS-JWH_1"},
-		"dev_attr": { "display_name":"jwh6374:0x03-V2"},
 		"i2c": {
 			"attr_list":
 			[
