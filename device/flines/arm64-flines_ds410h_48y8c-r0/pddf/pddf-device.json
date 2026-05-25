@@ -80,6 +80,7 @@
 			"pddf_custom_ft_cpu_temp",
 			"pddf_custom_reboot_eeprom",
 			"pddf_custom_led",
+			"pddf_custom_sysstatus",
 			"clounix_fpga_sysfs"
 		]
 	},
@@ -320,14 +321,14 @@
 		}
 	},
 	"CPLD4":
-    {
-        "dev_info": {
+	{
+		"dev_info": {
 			"device_type": "FPGAPCIE", 
 			"device_name": "CPLD-4", 
 			"device_parent": "PCIE0",
 			"dev_type":"PGC1KG_6ILPG-4"
 		}
-    },
+ 	},
 	"PSU2": {
 		"dev_info": {
 			"device_type": "PSU",
@@ -3024,7 +3025,7 @@
 			{ "attr_name":"cpld1_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld2_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x8","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld3_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
-			{ "attr_name":"cpld4_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
+			{ "attr_name":"cpld4_version","attr_devtype":"FAN-CTRL","attr_devaddr":"0x0","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"reg_test", "attr_devtype":"fpgapci", "attr_devaddr":"0x10", "attr_offset":"0x0", "attr_mask":"0x80000003", "attr_len": "0x4"},
 			{ "attr_name":"r_cpld3_power_state", "attr_devtype":"fpgapci", "attr_devaddr":"0x3ac", "attr_offset":"0x0", "attr_mask":"0xffff", "attr_len":"0x2"}
 		]

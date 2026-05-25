@@ -8,8 +8,8 @@
 
 #define DRV_NAME        "scpi_temp_thresh_attach"
 #define MAX_SENSORS     2
-#define DEFAULT_MAX     85000
-#define DEFAULT_CRIT    95000
+#define DEFAULT_MAX     62000
+#define DEFAULT_CRIT    69000
 
 static struct device *scpi_hwmon_dev = NULL;
 static long temp_crit_val[MAX_SENSORS] = {[0 ... MAX_SENSORS-1] = DEFAULT_CRIT};
