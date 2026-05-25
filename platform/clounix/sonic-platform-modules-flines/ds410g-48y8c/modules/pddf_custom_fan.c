@@ -467,6 +467,93 @@ int sonic_i2c_set_fan_pwm_custom(void *client, FAN_DATA_ATTR *udata, void *info)
     return status;
 }
 
+static int fan_update_attr(struct device *dev, struct fan_attr_info *info, FAN_DATA_ATTR *udata)
+{
+	int status = 0;
+    struct i2c_client *client = to_i2c_client(dev);
+	FAN_SYSFS_ATTR_DATA *sysfs_attr_data = NULL;
+
+
+    mutex_lock(&info->update_lock);
+
+    if (time_after(jiffies, info->last_updated + HZ + HZ / 2) || !info->valid)
+	{
+        info->valid = 0;
+
+		sysfs_attr_data = udata->access_data;
+		if (sysfs_attr_data->pre_get != NULL)
+		{
+			status = (sysfs_attr_data->pre_get)(client, udata, info);
+			if (status!=0)
+				pddf_err(FAN, "%s: pre_get function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+		}
+		if (sysfs_attr_data->do_get != NULL)
+		{
+			status = (sysfs_attr_data->do_get)(client, udata, info);
+			if (status!=0)
+				pddf_err(FAN, "%s: do_get function fails for %s attribute. ret %d\n", __FUNCTION__, udata->aname, status);
+
+		}
+		if (sysfs_attr_data->post_get != NULL)
+		{
+			status = (sysfs_attr_data->post_get)(client, udata, info);
+			if (status!=0)
+				pddf_err(FAN, "%s: post_get function fails for %s attribute.ret %d\n", __FUNCTION__, udata->aname, status);
+		}
+
+        info->last_updated = jiffies;
+        info->valid = 1;
+    }
+
+    mutex_unlock(&info->update_lock);
+
+    return 0;
+}
+
+static ssize_t fan_show_hw_version(struct device *dev, struct device_attribute *da, char *buf)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    struct i2c_client *client = to_i2c_client(dev);
+    struct fan_data *data = i2c_get_clientdata(client);
+    FAN_PDATA *pdata = (FAN_PDATA *)(client->dev.platform_data);
+    FAN_DATA_ATTR *usr_data = NULL;
+    struct fan_attr_info *attr_info = NULL;
+    int i, status=0;
+	FAN_SYSFS_ATTR_DATA *ptr = NULL;
+
+    for (i=0;i<data->num_attr;i++)
+    {
+		ptr = (FAN_SYSFS_ATTR_DATA *)pdata->fan_attrs[i].access_data;
+        if (strcmp(attr->dev_attr.attr.name, pdata->fan_attrs[i].aname) == 0)
+        {
+			attr_info = &data->attr_info[i];
+            usr_data = &pdata->fan_attrs[i];
+        }
+    }
+
+    if (attr_info==NULL || usr_data==NULL)
+    {
+        pddf_err(FAN, "%s is not supported attribute for this client\n", usr_data->aname);
+        goto exit;
+    }
+
+    fan_update_attr(dev, attr_info, usr_data);
+
+	/*Decide the o/p based on attribute type */
+	switch(attr->index)
+	{
+        case FAN_HW_VERSION:
+            status = attr_info->val.intval;
+			break;
+		default:
+            pddf_dbg(FAN, "%s: Unable to find the attribute index for %s\n", __FUNCTION__, usr_data->aname);
+			status = 0;
+	}
+
+exit:
+    return sprintf(buf, "0x%x\n", status);
+}
+
 static int sonic_i2c_get_fan_hw_version(void *client, FAN_DATA_ATTR *udata, void *info)
 {
     int status = 0;
@@ -716,7 +803,7 @@ static int __init pddf_custom_fan_init(void)
     data_fan11_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
     data_fan12_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
 
-    data_fan_hw_version.show = fan_show_default;
+    data_fan_hw_version.show = fan_show_hw_version;
     data_fan_hw_version.do_get = sonic_i2c_get_fan_hw_version;
     data_fan1_input.do_get = sonic_i2c_get_fan_rpm;
     data_fan2_input.do_get = sonic_i2c_get_fan_rpm;
