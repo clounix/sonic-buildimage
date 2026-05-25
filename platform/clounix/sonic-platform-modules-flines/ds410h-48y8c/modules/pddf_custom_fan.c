@@ -493,13 +493,13 @@ static int sonic_i2c_get_fan_rpm(void *client, FAN_DATA_ATTR *udata, void *info)
 
     if (udata->len == 1)
     {
-        val_l = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
-        val_h = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset+1);
-        val = (val_h << 8) + val_l;
+        val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
     }
     else if (udata->len ==2)
     {
-        val = i2c_smbus_read_word_swapped((struct i2c_client *)client, udata->offset);
+        val_l = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+        val_h = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset+1);
+        val = (val_h << 8) + val_l;
     }
     else
     {
@@ -628,6 +628,38 @@ out:
     return status;
 }
 
+
+static int init_fan_pwm(int val)
+{
+    int i =  0, ret = 0;
+    if (g_fan_priv) {
+        struct fan_data *data = i2c_get_clientdata(g_fan_priv->client);
+        FAN_PDATA *pdata = (FAN_PDATA *)(g_fan_priv->client->dev.platform_data);
+        FAN_DATA_ATTR *usr_data = NULL;
+        struct fan_attr_info *attr_info = NULL;
+        FAN_SYSFS_ATTR_DATA *ptr = NULL;
+        for (i=0;i<data->num_attr;i++)
+        {
+            ptr = (FAN_SYSFS_ATTR_DATA *)pdata->fan_attrs[i].access_data;
+            if (strcmp("fan1_pwm", pdata->fan_attrs[i].aname) == 0)
+            {
+                attr_info = &data->attr_info[i];
+                usr_data = &pdata->fan_attrs[i];
+            }
+        }
+        if (attr_info==NULL || usr_data==NULL) {
+            pddf_err(FAN, "%s is not supported attribute for this client\n", "fan1_pwm");
+            goto exit;
+        }
+        attr_info->val.intval = val;
+        mutex_lock(&attr_info->update_lock);
+        ret = sonic_i2c_set_fan_pwm_custom(g_fan_priv->client, usr_data, attr_info);
+        mutex_unlock(&attr_info->update_lock);
+    }
+exit:
+	return ret;
+}
+
 static int fan_post_probe(struct i2c_client *client, const struct i2c_device_id *dev_id)
 {
     struct fan_eeprom_priv *priv;
@@ -648,6 +680,8 @@ static int fan_post_probe(struct i2c_client *client, const struct i2c_device_id 
 
     pddf_info(FAN, "fan-eeprom: initialized successfully, priv=%pK\n", g_fan_priv);
 
+    //init fan_cpld pwm=>60% for thermal
+    init_fan_pwm(60);
 out:
     pddf_info(FAN, "fan_post_probe returning %d\n", ret);
     return ret;
