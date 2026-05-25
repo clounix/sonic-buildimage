@@ -395,12 +395,6 @@
                 "slave":"0x03",
                 "sensors":[
                     {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001"
-
-                    },
-                    {
                         "dir":"output1",
                         "vol":"in2_input",
                         "vol_resol":"0.000001",
