@@ -515,14 +515,6 @@
 			]
 		}
 	},
-	"TPS389006":
-	{
-		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
-		"dev_attr": { "display_name":"tps389006:0x30"},
-		"i2c": {
-			"topo_info": {"parent_bus":"0x69", "dev_addr":"0x30", "dev_type":"tps389006"}
-		}
-	},
 	"PMBUS-JWH_1":
 	{
 		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
@@ -534,7 +526,11 @@
 	"VOLTAGE1":
 	{
 		"dev_info": { "device_type": "VOLTAGE_SENSOR", "device_parent":"FPGAPCIE0", "virt_parent": "PMBUS-JWH_1"},
-		"dev_attr": { "display_name":"jwh6374:0x03-V1"},
+		"dev_attr": { 
+			"display_name":"jwh6374:0x03-V1",
+			"range":"40",
+			"nominal":"800"
+		},
 		"i2c": {
 			"attr_list":
 			[
@@ -563,6 +559,14 @@
 				{"attr_name": "current1_crit_high_threshold", "attr_value": "132000"},
 				{"attr_name": "current1_high_threshold", "attr_value":"121000"}
 			]
+		}
+	},
+	"TPS389006":
+	{
+		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
+		"dev_attr": { "display_name":"tps389006:0x30"},
+		"i2c": {
+			"topo_info": {"parent_bus":"0x69", "dev_addr":"0x30", "dev_type":"tps389006"}
 		}
 	},
 	"TEMP1" :
