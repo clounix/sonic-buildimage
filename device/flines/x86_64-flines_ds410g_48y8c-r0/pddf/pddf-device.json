@@ -301,6 +301,15 @@
 			"dev_type":"PGC1KG_6ILPG-3"
 		}
 	},
+	"CPLD4":
+	{
+		"dev_info": {
+			"device_type": "FPGAPCIE", 
+			"device_name": "CPLD-4", 
+			"device_parent": "PCIE0",
+			"dev_type":"PGC1KG_6ILPG-4"
+		}
+ 	},
 	"PSU2": {
 		"dev_info": {
 			"device_type": "PSU",
@@ -371,7 +380,7 @@
 				{ "attr_name":"psu_v_out_max", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xa5", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_i_out", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x8c", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_i_out_max", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xa6", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_p_in", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x97", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_p_in", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x97", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_p_out", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x96", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_p_out_max", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xa7", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_fan1_speed_rpm", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x90", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -454,7 +463,7 @@
 				{ "attr_name":"psu_v_out_min", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xa4", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_v_out_max", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xa5", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_i_out", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x8c", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
-				{ "attr_name":"psu_i_out_max", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0xa6", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
+				{ "attr_name":"psu_i_out_max", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xa6", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_p_in", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x97", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_p_out", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x96", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
 				{ "attr_name":"psu_p_out_max", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0xa7", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -487,14 +496,6 @@
 			]
 		}
 	},
-	"TPS389006":
-	{
-		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
-		"dev_attr": { "display_name":"tps389006:0x30"},
-		"i2c": {
-			"topo_info": {"parent_bus":"0x69", "dev_addr":"0x30", "dev_type":"tps389006"}
-		}
-	},
 	"PMBUS-JWH_1":
 	{
 		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
@@ -506,7 +507,11 @@
 	"VOLTAGE1":
 	{
 		"dev_info": { "device_type": "VOLTAGE_SENSOR", "device_parent":"FPGAPCIE0", "virt_parent": "PMBUS-JWH_1"},
-		"dev_attr": { "display_name":"jwh6374:0x03-V1"},
+		"dev_attr": { 
+			"display_name":"jwh6374:0x03-V1",
+			"range":"40",
+			"nominal":"800"
+		},
 		"i2c": {
 			"attr_list":
 			[
@@ -535,6 +540,14 @@
 				{"attr_name": "current1_crit_high_threshold", "attr_value": "132000"},
 				{"attr_name": "current1_high_threshold", "attr_value":"121000"}
 			]
+		}
+	},
+	"TPS389006":
+	{
+		"dev_info": { "device_type":"DPM", "device_parent":"FPGAPCIE0"},
+		"dev_attr": { "display_name":"tps389006:0x30"},
+		"i2c": {
+			"topo_info": {"parent_bus":"0x69", "dev_addr":"0x30", "dev_type":"tps389006"}
 		}
 	},
 	"TEMP1" :
@@ -2997,6 +3010,7 @@
 			{ "attr_name":"cpld1_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld2_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x8","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld3_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
+			{ "attr_name":"cpld4_version","attr_devtype":"FAN-CTRL","attr_devaddr":"0x0","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"reg_test", "attr_devtype":"fpgapci", "attr_devaddr":"0x10", "attr_offset":"0x0", "attr_mask":"0x80000003", "attr_len": "0x4"},
 			{ "attr_name":"r_cpld3_power_state", "attr_devtype":"fpgapci", "attr_devaddr":"0x3ac", "attr_offset":"0x0", "attr_mask":"0xffff", "attr_len":"0x2"}
 		]
