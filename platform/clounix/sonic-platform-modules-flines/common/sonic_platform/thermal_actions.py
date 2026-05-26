@@ -329,9 +329,9 @@ class NormalizationAction(ThermalPolicyActionBase):
             for fan in fans:
                 fan.set_speed(self.speed)
         except Exception as e:
-            helper_logger.log_critical(f"Critical error in thermal normalization action: {e}. Setting all fans to 80% for safety.")
+            helper_logger.log_critical(f"Critical error in thermal normalization action: {e}. Setting all fans to 100% for safety.")
             try:
                 for fan in fans:
-                    fan.set_speed(80)
+                    fan.set_speed(100)
             except:
                 pass

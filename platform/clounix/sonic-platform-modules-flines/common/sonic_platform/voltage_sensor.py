@@ -21,7 +21,7 @@ class VoltageSensor(PddfVoltageSensor):
             attr_value = None
         else:
             attr_value = float(output['status'])
-        if self.sensor_index == 2:
-            attr_value /= 1000
+            if attr_value > 100000:
+                attr_value /= 1000
 
         return attr_value

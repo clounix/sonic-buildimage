@@ -670,11 +670,7 @@ static const struct dev_pm_ops lm75_dev_pm_ops = {
 
 void lm75_del(struct i2c_client *client)
 {
-    struct lm75_data *data = i2c_get_clientdata(client);
- 
-    hwmon_device_unregister(data->hwmon_dev);
-    kfree(data);
-    //hwmon_sensor_del(hwmon_dev);
+    return;
 }
 
 static struct i2c_driver tmp75_driver = {

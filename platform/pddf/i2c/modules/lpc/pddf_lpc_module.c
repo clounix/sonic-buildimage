@@ -95,7 +95,7 @@ unsigned char lpc_cpld_read_reg(u32 address)
 	
     reg_val =  readb(g_cpld_lpc_base + address);
     
-    //printk(KERN_INFO "cpld_base:0x%p, address:0x%x, value:0x%02x\n", 
+    //pddf_info(LPC, "cpld_base:0x%p, address:0x%x, value:0x%02x\n", 
     //    g_cpld_lpc_base, address, reg_val);
 
     mutex_unlock(&lpc_lock); 
@@ -109,7 +109,7 @@ void lpc_cpld_write_reg(u32 address, u8 reg_val)
 
     writeb(reg_val, g_cpld_lpc_base + address);
     
-    //printk(KERN_INFO "cpld_base:0x%p, address:0x%x, value:0x%02x\r\n", 
+    //pddf_info(LPC, "cpld_base:0x%p, address:0x%x, value:0x%02x\r\n", 
      //   g_cpld_lpc_base, address, reg_val);
 
     mutex_unlock(&lpc_lock);   
@@ -125,7 +125,7 @@ static int __init pddf_lpc_cpld_init(void)
 {
     struct pci_dev *pdev = NULL;
     uint32_t status = 0;
-    printk("pddf_lpc_cpld_init\n");
+    pddf_info(LPC, "pddf_lpc_cpld_init\n");
 
     pdev = pci_get_device(LPC_PCI_VENDOR_ID_INTEL, LPC_PCI_DEVICE_ID_INTEL, pdev);
     if (pdev) {
@@ -226,13 +226,9 @@ static int cpld_lpc_drv_probe(struct platform_device *pdev)
 }
 static int cpld_lpc_drv_remove(struct platform_device *pdev)
 {
-    struct lpc_pdata *pdata = platform_get_drvdata(pdev);
-
     pddf_dbg(LPC, "clounix_cpld_lpc_remove\n");
-    if(pdata)
-    {
-        kfree(pdata);
-    }
+    /* pdata and ioremap are devm-managed; do not kfree/iounmap here */
+    g_cpld_lpc_base = NULL;
     return 0;
 }
 

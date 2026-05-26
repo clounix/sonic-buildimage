@@ -17,13 +17,13 @@
             },
             {
                 "name": "CPLD-3",
-                "description":"FB CPLD#1",
-                "firmware_version_path":"/sys/bus/i2c/devices/104-0060/fan_hw_version"
+                "description":"SEQ CPLD#1",
+                "firmware_version_path":"/sys_switch/cpld/cpld3/firmware_version"
             },
             {
                 "name": "CPLD-4",
-                "description":"SEQ CPLD#1",
-                "firmware_version_path":"/sys_switch/cpld/cpld3/firmware_version"
+                "description":"FB CPLD#1",
+                "firmware_version_path":"/sys/bus/i2c/devices/104-0060/fan_hw_version"
             },
             {
                 "name": "FPGA",
@@ -394,12 +394,6 @@
                 "master":"0x6a",
                 "slave":"0x03",
                 "sensors":[
-                    {
-                        "dir":"input1",
-                        "vol":"in1_input",
-                        "vol_resol":"0.001"
-
-                    },
                     {
                         "dir":"output1",
                         "vol":"in2_input",

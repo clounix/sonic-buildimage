@@ -499,6 +499,9 @@ void __exit sysstatus_data_exit(void)
 module_init(sysstatus_data_init);
 module_exit(sysstatus_data_exit);
 
+EXPORT_SYMBOL(sysstatus_data);
+EXPORT_SYMBOL(attr_cpld4_version);
+
 MODULE_AUTHOR("Broadcom");
 MODULE_DESCRIPTION("SYSSTATUS platform data");
 MODULE_LICENSE("GPL");
