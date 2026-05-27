@@ -1987,17 +1987,6 @@ def create_s3ip_cpld_sysfs():
     cmd = 'sudo ln -s {} /sys_switch/cpld/loglevel'.format(leglevel_node)
     log_os_system(cmd, 1)
 
-    #reboot_cause
-    reboot_cause = 'NA'
-    dev = 'RC_EEPROM'
-    attr = 'eeprom'
-    node = pddf_api.get_path(dev, attr)
-    if node:
-        cmd = 'sudo ln -s {} /sys_switch/cpld/reboot_cause'.format(node)
-    else:
-        cmd = 'sudo echo "{}" > /sys_switch/cpld/reboot_cause'.format(reboot_cause)
-    log_os_system(cmd, 1)
-
     n = 0
     for c in cpld_dev:
         n = n + 1
