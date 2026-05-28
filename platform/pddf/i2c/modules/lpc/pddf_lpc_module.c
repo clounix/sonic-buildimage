@@ -267,6 +267,7 @@ static int __init pddf_lpc_cpld_init(void)
     // Register platform device and platform driver
     platform_device_register(&cpld_lpc_dev);
     platform_driver_register(&cpld_lpc_drv);
+    pddf_info(LPC, "PDDF LPC MODULE init done..\n");
     return 0;
 }
 
@@ -275,6 +276,7 @@ static void __exit pddf_lpc_cpld_exit(void)
     // Unregister platform device and platform driver
     platform_driver_unregister(&cpld_lpc_drv);
     platform_device_unregister(&cpld_lpc_dev);
+    pddf_info(LPC, "PDDF LPC MODULE exit..\n");
 }
 module_init(pddf_lpc_cpld_init);
 module_exit(pddf_lpc_cpld_exit);

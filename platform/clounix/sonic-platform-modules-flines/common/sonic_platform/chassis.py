@@ -21,7 +21,6 @@ except ImportError as e:
 
 SFP_STATUS_INSERTED = '1'
 SFP_STATUS_REMOVED = '0'
-REBOOT_EEPROM_PATH = "/sys_switch/cpld/reboot_cause"
 REBOOT_HISTORY_DIR = "/var/log/reboot-cause"
 REBOOT_HISTORY_FILE = "/var/log/reboot-cause/history"
 REBOOT_CAUSE_FILE = "/host/reboot-cause/reboot-cause.txt"
@@ -217,6 +216,9 @@ class Chassis(PddfChassis):
                 return reboot_cause
         
         try:
+            bus = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['dev_addr'], 0)
+            REBOOT_EEPROM_PATH = '/sys/bus/i2c/devices/{}-{:04x}/eeprom'.format(bus, dev_addr)
             with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
                 binfile.seek(0)
                 raw_byte = binfile.read(1)
