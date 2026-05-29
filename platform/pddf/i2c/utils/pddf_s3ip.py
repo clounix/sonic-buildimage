@@ -1507,9 +1507,10 @@ def create_s3ip_xcvr_sysfs():
 
     # power_on
     power_on = 1
-    path = '/sys/bus/pci/devices/0000:03:00.0/power_on'
-    if os.path.isfile(path):
-        cmd = 'sudo ln -s {} /sys_switch/transceiver/power_on'.format(path)
+    cmd = 'sudo echo "{}" > /sys_switch/transceiver/power_on'.format(power_on)
+    power_on_path = pddf_api.get_fpga_pci_sysfs_attr('power_on')
+    if power_on_path:
+        cmd = 'sudo ln -sf {} /sys_switch/transceiver/power_on'.format(power_on_path)
     else:
         cmd = 'sudo echo "{}" > /sys_switch/transceiver/power_on'.format(power_on)
     log_os_system(cmd, 1)
