@@ -60,7 +60,9 @@ XCVR_SYSFS_ATTR_OPS xcvr_ops[XCVR_ATTR_MAX] = {
     {XCVR_RXLOS, get_module_rxlos, NULL, sonic_i2c_get_mod_rxlos, NULL, NULL, NULL, NULL, NULL},
     {XCVR_TXDISABLE, get_module_txdisable, NULL, sonic_i2c_get_mod_txdisable, NULL, set_module_txdisable, NULL, sonic_i2c_set_mod_txdisable, NULL},
     {XCVR_TXFAULT, get_module_txfault, NULL, sonic_i2c_get_mod_txfault, NULL, NULL, NULL, NULL, NULL},
-    {XCVR_OVERWRITE_EN, get_module_overwrite_en, NULL, sonic_i2c_get_mod_overwrite_en, NULL, set_module_overwrite_en, NULL, sonic_i2c_set_mod_overwrite_en, NULL}
+    {XCVR_OVERWRITE_EN, get_module_overwrite_en, NULL, sonic_i2c_get_mod_overwrite_en, NULL, set_module_overwrite_en, NULL, sonic_i2c_set_mod_overwrite_en, NULL},
+    {XCVR_LED_EN, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+    {XCVR_RED_LED, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 };
 EXPORT_SYMBOL(xcvr_ops);
 
@@ -77,7 +79,11 @@ static SENSOR_DEVICE_ATTR(xcvr_rxlos,   S_IWUSR|S_IRUGO, get_module_rxlos, NULL,
 static SENSOR_DEVICE_ATTR(xcvr_txdisable,   S_IWUSR|S_IRUGO, get_module_txdisable, set_module_txdisable, XCVR_TXDISABLE);
 static SENSOR_DEVICE_ATTR(xcvr_txfault, S_IWUSR|S_IRUGO, get_module_txfault, NULL, XCVR_TXFAULT);
 static SENSOR_DEVICE_ATTR(xcvr_overwrite_en, S_IWUSR|S_IRUGO, get_module_overwrite_en, set_module_overwrite_en, XCVR_OVERWRITE_EN);
+SENSOR_DEVICE_ATTR(xcvr_led_en, S_IWUSR|S_IRUGO, NULL, NULL, XCVR_LED_EN);
+SENSOR_DEVICE_ATTR(xcvr_red_led, S_IWUSR|S_IRUGO, NULL, NULL, XCVR_RED_LED);
 
+EXPORT_SYMBOL(sensor_dev_attr_xcvr_led_en);
+EXPORT_SYMBOL(sensor_dev_attr_xcvr_red_led);
 /* List of all the xcvr attribute structures 
  * to get name, use sensor_dev_attr_<>.dev_attr.attr.name
  * to get the id, use sensor_dev_attr_<>.dev_attr.index 
@@ -93,6 +99,8 @@ static struct sensor_device_attribute *xcvr_attr_list[MAX_XCVR_ATTRS] = {
     &sensor_dev_attr_xcvr_txdisable,
     &sensor_dev_attr_xcvr_txfault,
     &sensor_dev_attr_xcvr_overwrite_en,
+    &sensor_dev_attr_xcvr_led_en,
+    &sensor_dev_attr_xcvr_red_led,
 };
 
 static struct attribute *xcvr_attributes[MAX_XCVR_ATTRS] = {NULL};
