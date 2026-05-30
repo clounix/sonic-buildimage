@@ -5,14 +5,13 @@ from .thermal_infos import *
 from .helper import APIHelper
 
 class ThermalManager(ThermalManagerBase):
-    FSC_ALGORITHM_CMD = 'supervisorctl {} fancontrol'
     @classmethod
     def start_thermal_control_algorithm(cls):
         """
         Start vendor specific thermal control algorithm. The default behavior of this function is a no-op.
         :return:
         """
-        return cls._enable_fancontrol_service(True)
+        return True
 
     @classmethod
     def stop_thermal_control_algorithm(cls):
@@ -21,7 +20,7 @@ class ThermalManager(ThermalManagerBase):
         Returns:
             bool: True if set success, False if fail.
         """
-        return cls._enable_fancontrol_service(False)
+        return True
 
     @classmethod
     def deinitialize(cls):
@@ -30,17 +29,4 @@ class ThermalManager(ThermalManagerBase):
         is a no-op.
         :return:
         """
-        return cls._enable_fancontrol_service(True)
-
-    @classmethod
-    def _enable_fancontrol_service(cls, enable):
-        """
-        Control thermal by fcs algorithm
-        Args:
-            enable: Bool, indicate enable the algorithm or not
-        Returns:
-            bool: True if set success, False if fail.
-        """
-        cmd = 'start' if enable else 'stop'
-        print(cmd)
-        return APIHelper().run_command(cls.FSC_ALGORITHM_CMD.format(cmd))
+        return True

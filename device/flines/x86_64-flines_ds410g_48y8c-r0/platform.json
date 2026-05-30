@@ -123,6 +123,10 @@
                 "position": "fpga i2c temp"
             },
             {
+                "name": "FPGA_PVT_TEMP_1",
+                "position": "fpga pvt temp"
+            },
+            {
                 "name": "CPU_Package",
                 "position": "CPU"
             },

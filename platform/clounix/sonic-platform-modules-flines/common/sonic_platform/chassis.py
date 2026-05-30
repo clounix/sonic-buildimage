@@ -265,8 +265,7 @@ class Chassis(PddfChassis):
         return reboot_cause
      
     def get_thermal_manager(self):
-        from .thermal_manager import ThermalManager
-        return ThermalManager
+        return None
 		
     def __initialize_components(self):
         from sonic_platform.component import Component
