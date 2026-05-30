@@ -13,6 +13,10 @@
 		"enable_s3ip":"yes",
 		"pddf_dev_types": {
 			"description": "dev info",
+			"FPGAPCIE":
+			[
+				"FPGAPCIE"
+			],
 			"PSU":
 			[
 				"psu_eeprom",
@@ -27,10 +31,6 @@
 			"PORT_MODULE":
 			[
 				"pddf_xcvr"
-			],
-			"FPGAPCIE":
-			[
-				"FPGAPCIE"
 			]
 		},
 		"perm_kos": [
@@ -62,6 +62,7 @@
 				"pddf_mux_module",
 				"pddf_gpio_module",
 				"pddf_led_module",
+				"pddf_psu_driver_module",
 				"pddf_psu_module",
 				"pddf_sysstatus_module",
 				"pddf_xcvr_module",
@@ -78,6 +79,7 @@
 			"pddf_custom_reboot_eeprom",
 			"pddf_custom_led",
 			"pddf_custom_sysstatus",
+			"pddf_custom_xcvr",
 			"clounix_fpga_sysfs"
 		]
 	},
@@ -795,7 +797,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT1-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x0", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -835,7 +839,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT2-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -875,7 +881,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT3-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x2", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -915,7 +923,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT4-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x3", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -955,7 +965,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT5-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x4", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -995,7 +1007,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT6-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x5", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1035,7 +1049,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT7-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x6", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1075,7 +1091,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT8-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x7", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1115,7 +1133,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT9-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x8", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1155,7 +1175,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT10-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x9", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1195,7 +1217,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT11-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xa", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1235,7 +1259,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT12-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xb", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1275,7 +1301,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT13-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xc", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1315,7 +1343,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT14-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xd", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1355,7 +1385,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT15-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xe", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1395,7 +1427,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT16-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0xf", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1435,7 +1469,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT17-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x10", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1475,7 +1511,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT18-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x11", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1515,7 +1553,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x12", "attr_cmpval":"0x40000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x12", "attr_cmpval":"0x40000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x12", "attr_cmpval":"0x40000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x12", "attr_cmpval":"0x40000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x12", "attr_cmpval":"0x40000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT19-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x12", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1555,7 +1595,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x13", "attr_cmpval":"0x80000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x13", "attr_cmpval":"0x80000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x13", "attr_cmpval":"0x80000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x13", "attr_cmpval":"0x80000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x13", "attr_cmpval":"0x80000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT20-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x13", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1595,7 +1637,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x14", "attr_cmpval":"0x100000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x14", "attr_cmpval":"0x100000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x14", "attr_cmpval":"0x100000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x14", "attr_cmpval":"0x100000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x14", "attr_cmpval":"0x100000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT21-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x14", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1635,7 +1679,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x15", "attr_cmpval":"0x200000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x15", "attr_cmpval":"0x200000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x15", "attr_cmpval":"0x200000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x15", "attr_cmpval":"0x200000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x15", "attr_cmpval":"0x200000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT22-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x15", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1675,7 +1721,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x16", "attr_cmpval":"0x400000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x16", "attr_cmpval":"0x400000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x16", "attr_cmpval":"0x400000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x16", "attr_cmpval":"0x400000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x16", "attr_cmpval":"0x400000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT23-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x16", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1715,7 +1763,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x17", "attr_cmpval":"0x800000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x17", "attr_cmpval":"0x800000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x17", "attr_cmpval":"0x800000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x17", "attr_cmpval":"0x800000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x17", "attr_cmpval":"0x800000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT24-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x17", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1755,7 +1805,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x18", "attr_cmpval":"0x1000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x18", "attr_cmpval":"0x1000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x18", "attr_cmpval":"0x1000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x18", "attr_cmpval":"0x1000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x18", "attr_cmpval":"0x1000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT25-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x18", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1795,7 +1847,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x19", "attr_cmpval":"0x2000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x19", "attr_cmpval":"0x2000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x19", "attr_cmpval":"0x2000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x19", "attr_cmpval":"0x2000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x19", "attr_cmpval":"0x2000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT26-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x19", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1835,7 +1889,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x1a", "attr_cmpval":"0x4000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x1a", "attr_cmpval":"0x4000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x1a", "attr_cmpval":"0x4000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1a", "attr_cmpval":"0x4000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1a", "attr_cmpval":"0x4000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT27-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1a", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1875,7 +1931,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x1b", "attr_cmpval":"0x8000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x1b", "attr_cmpval":"0x8000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x1b", "attr_cmpval":"0x8000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1b", "attr_cmpval":"0x8000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1b", "attr_cmpval":"0x8000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT28-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1b", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1915,7 +1973,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x1c", "attr_cmpval":"0x10000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x1c", "attr_cmpval":"0x10000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x1c", "attr_cmpval":"0x10000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1c", "attr_cmpval":"0x10000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1c", "attr_cmpval":"0x10000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT29-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1c", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1955,7 +2015,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x10", "attr_mask":"0x1d", "attr_cmpval":"0x20000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x38", "attr_mask":"0x1d", "attr_cmpval":"0x20000000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x18", "attr_mask":"0x1d", "attr_cmpval":"0x20000000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1d", "attr_cmpval":"0x20000000", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x1c", "attr_mask":"0x1d", "attr_cmpval":"0x20000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT30-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x50", "attr_mask":"0x1d", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -1995,7 +2057,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT31-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x0", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2035,7 +2099,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT32-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2075,7 +2141,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT33-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x2", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2115,7 +2183,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT34-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x3", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2155,7 +2225,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT35-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x4", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2195,7 +2267,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT36-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x5", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2235,7 +2309,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT37-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x6", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2275,7 +2351,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT38-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x7", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2315,7 +2393,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT39-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x8", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2355,7 +2435,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT40-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x9", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2395,7 +2477,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT41-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xa", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2436,7 +2520,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT42-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xb", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2476,7 +2562,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT43-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xc", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2516,7 +2604,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT44-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xd", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2556,7 +2646,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT45-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xe", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2596,7 +2688,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT46-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0xf", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2636,7 +2730,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x10", "attr_cmpval":"0x10000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT47-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x10", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2676,7 +2772,9 @@
 				{ "attr_name":"xcvr_txdisable", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x20", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
 				{ "attr_name":"xcvr_txfault", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x48", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
 				{ "attr_name":"xcvr_rxlos", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x28", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"} 
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x2c", "attr_mask":"0x11", "attr_cmpval":"0x20000", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT48-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x11", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2716,7 +2814,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x0", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x8", "attr_cmpval":"0x100", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x0", "attr_cmpval":"0x1", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT49-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x12", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2756,7 +2856,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x1", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x9", "attr_cmpval":"0x200", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x1", "attr_cmpval":"0x2", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT50-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x13", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2796,7 +2898,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x2", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xa", "attr_cmpval":"0x400", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x2", "attr_cmpval":"0x4", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT51-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x14", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2836,7 +2940,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x3", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xb", "attr_cmpval":"0x800", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x3", "attr_cmpval":"0x8", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT52-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x15", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2876,7 +2982,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x4", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xc", "attr_cmpval":"0x1000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x4", "attr_cmpval":"0x10", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT53-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x16", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2916,7 +3024,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x5", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xd", "attr_cmpval":"0x2000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x5", "attr_cmpval":"0x20", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT54-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x17", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2956,7 +3066,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x6", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xe", "attr_cmpval":"0x4000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x6", "attr_cmpval":"0x40", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT55-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x18", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
@@ -2996,7 +3108,9 @@
 				{ "attr_name":"xcvr_reset", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0x7", "attr_cmpval":"0x0", "attr_len":"4"},
 				{ "attr_name":"xcvr_lpmode", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x30", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
 				{ "attr_name":"xcvr_intr_status", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0xf", "attr_cmpval":"0x8000", "attr_len":"4"},
-				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"}
+				{ "attr_name":"xcvr_present", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x34", "attr_mask":"0x7", "attr_cmpval":"0x80", "attr_len":"4"},
+				{ "attr_name":"xcvr_led_en", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x1f", "attr_cmpval":"0x80000000", "attr_len":"4"},
+				{ "attr_name":"xcvr_red_led", "attr_devtype":"fpgapci", "attr_devname":"PORT56-CTRL", "attr_devaddr":"0x300", "attr_offset":"0x54", "attr_mask":"0x19", "attr_cmpval":"0x0", "attr_len":"4"}
 			]
 		}
 	},
