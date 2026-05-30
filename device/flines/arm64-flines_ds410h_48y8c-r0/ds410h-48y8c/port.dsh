@@ -78,9 +78,7 @@ init set port-map unit=0 port=75 eth-macro=5 lane=11 max-speed=25g active=false
 init set port-map unit=0 port=76 eth-macro=5 lane=0 max-speed=400g active=true
 init set port-map unit=0 port=77 eth-macro=5 lane=1 max-speed=25g active=false
 init set port-map unit=0 port=78 eth-macro=5 lane=2 max-speed=50g active=false
-init set port-map unit=0 port=79 eth-macro=5 lane=3 max-speed=25g active=false
-init set port-map unit=0 port=80 eth-macro=5 lane=13 max-speed=25g active=true
-init set port-map unit=0 port=81 eth-macro=5 lane=15 max-speed=25g active=true init-done=true
+init set port-map unit=0 port=79 eth-macro=5 lane=3 max-speed=25g active=false init-done=true
 init start stage unit=0 task-rsrc
 init start stage unit=0 module
 init start stage unit=0 task-all
@@ -140,8 +138,6 @@ phy set lane-swap unit=0 portlist=64 lane-cnt=4 property=tx data=0xC.D.E.F
 phy set lane-swap unit=0 portlist=68 lane-cnt=4 property=tx data=0x8.B.A.9
 phy set lane-swap unit=0 portlist=72 lane-cnt=4 property=tx data=0x4.5.6.7
 phy set lane-swap unit=0 portlist=76 lane-cnt=4 property=tx data=0x1.0.2.3
-phy set lane-swap unit=0 portlist=80 lane-cnt=1 property=tx data=0x8
-phy set lane-swap unit=0 portlist=81 lane-cnt=1 property=tx data=0x9
 phy set lane-swap unit=0 portlist=0 lane-cnt=1 property=rx data=0x2
 phy set lane-swap unit=0 portlist=1 lane-cnt=1 property=rx data=0x1
 phy set lane-swap unit=0 portlist=2 lane-cnt=1 property=rx data=0x0
@@ -198,8 +194,6 @@ phy set lane-swap unit=0 portlist=64 lane-cnt=4 property=rx data=0xC.D.E.F
 phy set lane-swap unit=0 portlist=68 lane-cnt=4 property=rx data=0x8.B.A.9
 phy set lane-swap unit=0 portlist=72 lane-cnt=4 property=rx data=0x4.5.6.7
 phy set lane-swap unit=0 portlist=76 lane-cnt=4 property=rx data=0x1.0.2.3
-phy set lane-swap unit=0 portlist=80 lane-cnt=1 property=rx data=0x8
-phy set lane-swap unit=0 portlist=81 lane-cnt=1 property=rx data=0x9
 phy set polarity-rev unit=0 portlist=0 lane-cnt=1 property=tx data=0x0
 phy set polarity-rev unit=0 portlist=1 lane-cnt=1 property=tx data=0x0
 phy set polarity-rev unit=0 portlist=2 lane-cnt=1 property=tx data=0x1
@@ -256,8 +250,6 @@ phy set polarity-rev unit=0 portlist=64 lane-cnt=4 property=tx data=0x1.0.1.1
 phy set polarity-rev unit=0 portlist=68 lane-cnt=4 property=tx data=0x0.0.0.1
 phy set polarity-rev unit=0 portlist=72 lane-cnt=4 property=tx data=0x1.0.0.0
 phy set polarity-rev unit=0 portlist=76 lane-cnt=4 property=tx data=0x0.0.0.0
-phy set polarity-rev unit=0 portlist=80 lane-cnt=1 property=tx data=0x0
-phy set polarity-rev unit=0 portlist=81 lane-cnt=1 property=tx data=0x0
 phy set polarity-rev unit=0 portlist=0 lane-cnt=1 property=rx data=0x0
 phy set polarity-rev unit=0 portlist=1 lane-cnt=1 property=rx data=0x0
 phy set polarity-rev unit=0 portlist=2 lane-cnt=1 property=rx data=0x0
@@ -314,8 +306,6 @@ phy set polarity-rev unit=0 portlist=64 lane-cnt=4 property=rx data=0x1.1.1.1
 phy set polarity-rev unit=0 portlist=68 lane-cnt=4 property=rx data=0x0.1.1.0
 phy set polarity-rev unit=0 portlist=72 lane-cnt=4 property=rx data=0x0.1.1.0
 phy set polarity-rev unit=0 portlist=76 lane-cnt=4 property=rx data=0x0.1.1.1
-phy set polarity-rev unit=0 portlist=80 lane-cnt=1 property=rx data=0x0
-phy set polarity-rev unit=0 portlist=81 lane-cnt=1 property=rx data=0x0
 phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn2 data=0x00
 phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=cn1 data=0xfa
 phy set pre-emphasis unit=0 portlist=0 lane-cnt=1 property=c0 data=0x32
@@ -596,16 +586,6 @@ phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=cn1 data=0xfa.fa.fa.
 phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c0 data=0x32.32.32.32
 phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c1 data=0xfa.fa.fa.fa
 phy set pre-emphasis unit=0 portlist=76 lane-cnt=4 property=c2 data=0x00.00.00.00
-phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=80 lane-cnt=1 property=c2 data=0x0
-phy set pre-emphasis unit=0 portlist=81 lane-cnt=1 property=cn2 data=0x1
-phy set pre-emphasis unit=0 portlist=81 lane-cnt=1 property=cn1 data=0xf9
-phy set pre-emphasis unit=0 portlist=81 lane-cnt=1 property=c0 data=0x2a
-phy set pre-emphasis unit=0 portlist=81 lane-cnt=1 property=c1 data=0x0
-phy set pre-emphasis unit=0 portlist=81 lane-cnt=1 property=c2 data=0x0
 port set cfg unit=0 portlist=0 speed=25g
 port set cfg unit=0 portlist=1 speed=25g
 port set cfg unit=0 portlist=2 speed=25g
@@ -662,8 +642,6 @@ port set cfg unit=0 portlist=64 speed=100g
 port set cfg unit=0 portlist=68 speed=100g
 port set cfg unit=0 portlist=72 speed=100g
 port set cfg unit=0 portlist=76 speed=100g
-port set cfg unit=0 portlist=80 speed=25g
-port set cfg unit=0 portlist=81 speed=25g
 port set cfg unit=0 portlist=0 medium-type=cr
 port set cfg unit=0 portlist=1 medium-type=cr
 port set cfg unit=0 portlist=2 medium-type=cr
@@ -720,8 +698,6 @@ port set cfg unit=0 portlist=64 medium-type=cr4
 port set cfg unit=0 portlist=68 medium-type=cr4
 port set cfg unit=0 portlist=72 medium-type=cr4
 port set cfg unit=0 portlist=76 medium-type=cr4
-port set cfg unit=0 portlist=80 medium-type=cr
-port set cfg unit=0 portlist=81 medium-type=cr
 port set cfg unit=0 portlist=0 fec=rs528
 port set cfg unit=0 portlist=1 fec=rs528
 port set cfg unit=0 portlist=2 fec=rs528
@@ -778,8 +754,6 @@ port set cfg unit=0 portlist=64 fec=rs528
 port set cfg unit=0 portlist=68 fec=rs528
 port set cfg unit=0 portlist=72 fec=rs528
 port set cfg unit=0 portlist=76 fec=rs528
-port set cfg unit=0 portlist=80 fec=rs528
-port set cfg unit=0 portlist=81 fec=rs528
 port set cfg unit=0 portlist=0 admin=enable
 port set cfg unit=0 portlist=1 admin=enable
 port set cfg unit=0 portlist=2 admin=enable
@@ -836,6 +810,3 @@ port set cfg unit=0 portlist=64 admin=enable
 port set cfg unit=0 portlist=68 admin=enable
 port set cfg unit=0 portlist=72 admin=enable
 port set cfg unit=0 portlist=76 admin=enable
-port set cfg unit=0 portlist=80 admin=disable
-port set cfg unit=0 portlist=81 admin=disable
-
