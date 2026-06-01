@@ -683,13 +683,24 @@ static ssize_t show_fan_string(struct device *dev, struct device_attribute *da, 
 static int get_fan_speed_tolerance(void *client, FAN_DATA_ATTR *udata, void *info)
 {
     struct fan_attr_info *painfo = (struct fan_attr_info *)info;
+    int pwm_val = 0;
+    int status = 0;
     
-    painfo->val.intval = udata->mult;
+    pwm_val = i2c_smbus_read_byte_data((struct i2c_client *)client, udata->offset);
+    if (pwm_val < 0) {
+        pddf_err(FAN, "get_fan_speed_tolerance: failed to read PWM register at 0x%02x, ret=%d\n",
+                 udata->offset, pwm_val);
+        status = pwm_val;
+        goto out;
+    }
+
+    painfo->val.intval = pwm_val * udata->mult / 100;
     
     pddf_dbg(FAN, "get_fan_speed_tolerance: fan=%s, tolerance=%d RPM\n",
              udata->aname, painfo->val.intval);
-    
-    return 0;
+
+out:
+    return status;
 }
 
 static int get_fan_speed_target(void *client, FAN_DATA_ATTR *udata, void *info)
@@ -713,6 +724,186 @@ static int get_fan_speed_target(void *client, FAN_DATA_ATTR *udata, void *info)
 
 out:
     return status;
+}
+
+static ssize_t fan_show_custom(struct device *dev, struct device_attribute *da, char *buf)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    struct i2c_client *client = to_i2c_client(dev);
+    struct fan_data *data = i2c_get_clientdata(client);
+    FAN_PDATA *pdata = (FAN_PDATA *)(client->dev.platform_data);
+    FAN_DATA_ATTR *usr_data = NULL;
+    struct fan_attr_info *attr_info = NULL;
+    int i, status=0;
+	char new_str[ATTR_NAME_LEN] = "";
+	FAN_SYSFS_ATTR_DATA *ptr = NULL;
+
+    for (i=0;i<data->num_attr;i++)
+    {
+		ptr = (FAN_SYSFS_ATTR_DATA *)pdata->fan_attrs[i].access_data;
+        if (strcmp(attr->dev_attr.attr.name, pdata->fan_attrs[i].aname) == 0 || strcmp(attr->dev_attr.attr.name, new_str) == 0)
+        {
+			attr_info = &data->attr_info[i];
+            usr_data = &pdata->fan_attrs[i];
+			strcpy(new_str, "");
+        }
+    }
+
+    if (attr_info==NULL || usr_data==NULL)
+    {
+        pddf_err(FAN, "%s is not supported attribute for this client\n", usr_data->aname);
+        goto exit;
+    }
+
+    fan_update_attr(dev, attr_info, usr_data);
+
+	/*Decide the o/p based on attribute type */
+	switch(attr->index)
+	{
+		case FAN1_PRESENT:
+		case FAN2_PRESENT:
+		case FAN3_PRESENT:
+		case FAN4_PRESENT:
+		case FAN5_PRESENT:
+		case FAN6_PRESENT:
+		case FAN7_PRESENT:
+		case FAN8_PRESENT:
+		case FAN9_PRESENT:
+		case FAN10_PRESENT:
+		case FAN11_PRESENT:
+		case FAN12_PRESENT:
+		case FAN13_PRESENT:
+		case FAN14_PRESENT:
+		case FAN15_PRESENT:
+		case FAN16_PRESENT:
+		case FAN1_DIRECTION:
+		case FAN2_DIRECTION:
+		case FAN3_DIRECTION:
+		case FAN4_DIRECTION:
+		case FAN5_DIRECTION:
+		case FAN6_DIRECTION:
+		case FAN7_DIRECTION:
+		case FAN8_DIRECTION:
+		case FAN9_DIRECTION:
+		case FAN10_DIRECTION:
+		case FAN11_DIRECTION:
+		case FAN12_DIRECTION:
+		case FAN13_DIRECTION:
+		case FAN14_DIRECTION:
+		case FAN15_DIRECTION:
+		case FAN16_DIRECTION:
+		case FAN1_INPUT:
+		case FAN2_INPUT:
+		case FAN3_INPUT:
+		case FAN4_INPUT:
+		case FAN5_INPUT:
+		case FAN6_INPUT:
+		case FAN7_INPUT:
+		case FAN8_INPUT:
+		case FAN9_INPUT:
+		case FAN10_INPUT:
+		case FAN11_INPUT:
+		case FAN12_INPUT:
+		case FAN13_INPUT:
+		case FAN14_INPUT:
+		case FAN15_INPUT:
+		case FAN16_INPUT:
+		case FAN1_PWM:
+		case FAN2_PWM:
+		case FAN3_PWM:
+		case FAN4_PWM:
+		case FAN5_PWM:
+		case FAN6_PWM:
+		case FAN7_PWM:
+		case FAN8_PWM:
+		case FAN9_PWM:
+		case FAN10_PWM:
+		case FAN11_PWM:
+		case FAN12_PWM:
+		case FAN13_PWM:
+		case FAN14_PWM:
+		case FAN15_PWM:
+		case FAN16_PWM:
+		case FAN1_FAULT:
+		case FAN2_FAULT:
+		case FAN3_FAULT:
+		case FAN4_FAULT:
+		case FAN5_FAULT:
+		case FAN6_FAULT:
+		case FAN7_FAULT:
+		case FAN8_FAULT:
+		case FAN9_FAULT:
+		case FAN10_FAULT:
+		case FAN11_FAULT:
+		case FAN12_FAULT:
+		case FAN13_FAULT:
+		case FAN14_FAULT:
+		case FAN15_FAULT:
+		case FAN16_FAULT:
+		case FAN_DUTY_CYCLE:
+        case FAN_HW_VERSION:
+        case FAN_EEPROMWP:
+        case FAN1_SPEED_TARGET:
+        case FAN2_SPEED_TARGET:
+        case FAN3_SPEED_TARGET:
+        case FAN4_SPEED_TARGET:
+        case FAN5_SPEED_TARGET:
+        case FAN6_SPEED_TARGET:
+        case FAN7_SPEED_TARGET:
+        case FAN8_SPEED_TARGET:
+        case FAN9_SPEED_TARGET:
+        case FAN10_SPEED_TARGET:
+        case FAN1_SPEED_TOLERANCE:
+        case FAN2_SPEED_TOLERANCE:
+        case FAN3_SPEED_TOLERANCE:
+        case FAN4_SPEED_TOLERANCE:
+        case FAN5_SPEED_TOLERANCE:
+        case FAN6_SPEED_TOLERANCE:
+        case FAN7_SPEED_TOLERANCE:
+        case FAN8_SPEED_TOLERANCE:
+        case FAN9_SPEED_TOLERANCE:
+        case FAN10_SPEED_TOLERANCE:
+        case FAN_SPEED_TARGET_F_L0:
+        case FAN_SPEED_TARGET_F_L1:
+        case FAN_SPEED_TARGET_F_L2:
+        case FAN_SPEED_TARGET_F_L3:
+        case FAN_SPEED_TARGET_F_L4:
+        case FAN_SPEED_TARGET_F_L5:
+        case FAN_SPEED_TARGET_F_L6:
+        case FAN_SPEED_TARGET_F_L7:
+        case FAN_SPEED_TARGET_F_L8:
+        case FAN_SPEED_TARGET_F_L9:
+        case FAN_SPEED_TARGET_F_L10:
+        case FAN_SPEED_TARGET_F_L11:
+        case FAN_SPEED_TARGET_F_L12:
+        case FAN_SPEED_TARGET_F_L13:
+        case FAN_SPEED_TARGET_F_L14:
+        case FAN_SPEED_TARGET_F_L15:
+        case FAN_SPEED_TARGET_R_L0:
+        case FAN_SPEED_TARGET_R_L1:
+        case FAN_SPEED_TARGET_R_L2:
+        case FAN_SPEED_TARGET_R_L3:
+        case FAN_SPEED_TARGET_R_L4:
+        case FAN_SPEED_TARGET_R_L5:
+        case FAN_SPEED_TARGET_R_L6:
+        case FAN_SPEED_TARGET_R_L7:
+        case FAN_SPEED_TARGET_R_L8:
+        case FAN_SPEED_TARGET_R_L9:
+        case FAN_SPEED_TARGET_R_L10:
+        case FAN_SPEED_TARGET_R_L11:
+        case FAN_SPEED_TARGET_R_L12:
+        case FAN_SPEED_TARGET_R_L13:
+        case FAN_SPEED_TARGET_R_L14:
+        case FAN_SPEED_TARGET_R_L15:
+            status = attr_info->val.intval;
+			break;
+		default:
+            pddf_dbg(FAN, "%s: Unable to find the attribute index for %s\n", __FUNCTION__, usr_data->aname);
+			status = 0;
+	}
+
+exit:
+    return sprintf(buf, "%d\n", status);
 }
 
 static int init_fan_pwm(int val)
@@ -790,86 +981,125 @@ static int __init pddf_custom_fan_init(void)
 {
     pddf_info(FAN, "pddf_custom_fan_init called (late init)\n");
 
-    data_fan1_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan2_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan3_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan4_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan5_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan6_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan7_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan8_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan9_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan10_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan11_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
-    data_fan12_pwm.do_set = sonic_i2c_set_fan_pwm_custom;
+    struct FAN_SYSFS_ATTR_DATA *const fan_pwm_attrs[] = {
+        &data_fan1_pwm,
+        &data_fan2_pwm,
+        &data_fan3_pwm,
+        &data_fan4_pwm,
+        &data_fan5_pwm,
+        &data_fan6_pwm,
+        &data_fan7_pwm,
+        &data_fan8_pwm,
+        &data_fan9_pwm,
+        &data_fan10_pwm,
+        &data_fan11_pwm,
+        &data_fan12_pwm,
+    };
+
+    struct FAN_SYSFS_ATTR_DATA *const fan_input_attrs[] = {
+        &data_fan1_input,
+        &data_fan2_input,
+        &data_fan3_input,
+        &data_fan4_input,
+        &data_fan5_input,
+        &data_fan6_input,
+        &data_fan7_input,
+        &data_fan8_input,
+        &data_fan9_input,
+        &data_fan10_input,
+    };
+
+    struct FAN_SYSFS_ATTR_DATA *const fan_tolerance_attrs[] = {
+        &data_fan1_speed_tolerance,
+        &data_fan2_speed_tolerance,
+        &data_fan3_speed_tolerance,
+        &data_fan4_speed_tolerance,
+        &data_fan5_speed_tolerance,
+        &data_fan6_speed_tolerance,
+        &data_fan7_speed_tolerance,
+        &data_fan8_speed_tolerance,
+        &data_fan9_speed_tolerance,
+        &data_fan10_speed_tolerance,
+    };
+
+    struct FAN_SYSFS_ATTR_DATA *const fan_speed_target_attrs[] = {
+        &data_fan1_speed_target,
+        &data_fan2_speed_target,
+        &data_fan3_speed_target,
+        &data_fan4_speed_target,
+        &data_fan5_speed_target,
+        &data_fan6_speed_target,
+        &data_fan7_speed_target,
+        &data_fan8_speed_target,
+        &data_fan9_speed_target,
+        &data_fan10_speed_target,
+    };
+
+    struct FAN_SYSFS_ATTR_DATA *const fan_eeprom_attrs[] = {
+        &data_fan1_eeprom,
+        &data_fan2_eeprom,
+        &data_fan3_eeprom,
+        &data_fan4_eeprom,
+        &data_fan5_eeprom,
+    };
+
+    struct FAN_SYSFS_ATTR_DATA *const fan_model_sn_pn_attrs[] = {
+        &data_fan1_model_name,
+        &data_fan2_model_name,
+        &data_fan3_model_name,
+        &data_fan4_model_name,
+        &data_fan5_model_name,
+        &data_fan1_sn,
+        &data_fan2_sn,
+        &data_fan3_sn,
+        &data_fan4_sn,
+        &data_fan5_sn,
+        &data_fan1_pn,
+        &data_fan2_pn,
+        &data_fan3_pn,
+        &data_fan4_pn,
+        &data_fan5_pn,
+    };
 
     data_fan_hw_version.show = fan_show_hw_version;
     data_fan_hw_version.do_get = sonic_i2c_get_fan_hw_version;
-    data_fan1_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan2_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan3_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan4_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan5_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan6_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan7_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan8_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan9_input.do_get = sonic_i2c_get_fan_rpm;
-    data_fan10_input.do_get = sonic_i2c_get_fan_rpm;
 
     data_fan_model_name.show = show_fan_string;
     data_fan_serial_num.show = show_fan_string;
     data_fan_part_num.show = show_fan_string;
 
-    data_fan1_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan2_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan3_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan4_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan5_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan6_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan7_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan8_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan9_speed_tolerance.do_get = get_fan_speed_tolerance;
-    data_fan10_speed_tolerance.do_get = get_fan_speed_tolerance;
+    /* fan_input */
+    for (int i = 0; i < ARRAY_SIZE(fan_input_attrs); i++) {
+        fan_input_attrs[i]->do_get = sonic_i2c_get_fan_rpm;
+    }
 
-    data_fan1_speed_target.do_get = get_fan_speed_target;
-    data_fan2_speed_target.do_get = get_fan_speed_target;
-    data_fan3_speed_target.do_get = get_fan_speed_target;
-    data_fan4_speed_target.do_get = get_fan_speed_target;
-    data_fan5_speed_target.do_get = get_fan_speed_target;
-    data_fan6_speed_target.do_get = get_fan_speed_target;
-    data_fan7_speed_target.do_get = get_fan_speed_target;
-    data_fan8_speed_target.do_get = get_fan_speed_target;
-    data_fan9_speed_target.do_get = get_fan_speed_target;
-    data_fan10_speed_target.do_get = get_fan_speed_target;
+    /* fan_pwm */
+    for (int i = 0; i < ARRAY_SIZE(fan_pwm_attrs); i++) {
+        fan_pwm_attrs[i]->do_set = sonic_i2c_set_fan_pwm_custom;
+    }
 
-    data_fan1_eeprom.show = fan_eeprom_show;
-    data_fan1_eeprom.store = fan_eeprom_store;
-    data_fan2_eeprom.show = fan_eeprom_show;
-    data_fan2_eeprom.store = fan_eeprom_store;
-    data_fan3_eeprom.show = fan_eeprom_show;
-    data_fan3_eeprom.store = fan_eeprom_store;
-    data_fan4_eeprom.show = fan_eeprom_show;
-    data_fan4_eeprom.store = fan_eeprom_store;
-    data_fan5_eeprom.show = fan_eeprom_show;
-    data_fan5_eeprom.store = fan_eeprom_store;
+    /* fan_tolerance */
+    for (int i = 0; i < ARRAY_SIZE(fan_tolerance_attrs); i++) {
+        fan_tolerance_attrs[i]->show = fan_show_custom;
+        fan_tolerance_attrs[i]->do_get = get_fan_speed_tolerance;
+    }
 
-    data_fan1_model_name.show = show_fan_string;
-    data_fan2_model_name.show = show_fan_string;
-    data_fan3_model_name.show = show_fan_string;
-    data_fan4_model_name.show = show_fan_string;
-    data_fan5_model_name.show = show_fan_string;
+    /* fan_speed_target */
+    for (int i = 0; i < ARRAY_SIZE(fan_speed_target_attrs); i++) {
+        fan_speed_target_attrs[i]->show = fan_show_custom;
+        fan_speed_target_attrs[i]->do_get = get_fan_speed_target;
+    }
 
-    data_fan1_sn.show = show_fan_string;
-    data_fan2_sn.show = show_fan_string;
-    data_fan3_sn.show = show_fan_string;
-    data_fan4_sn.show = show_fan_string;
-    data_fan5_sn.show = show_fan_string;
+    /* fan_eeprom */
+    for (int i = 0; i < ARRAY_SIZE(fan_eeprom_attrs); i++) {
+        fan_eeprom_attrs[i]->show = fan_eeprom_show;
+        fan_eeprom_attrs[i]->store = fan_eeprom_store;
+    }
 
-    data_fan1_pn.show = show_fan_string;
-    data_fan2_pn.show = show_fan_string;
-    data_fan3_pn.show = show_fan_string;
-    data_fan4_pn.show = show_fan_string;
-    data_fan5_pn.show = show_fan_string;
+    /* fan_model_name 、 sn 、 pn */
+    for (int i = 0; i < ARRAY_SIZE(fan_model_sn_pn_attrs); i++) {
+        fan_model_sn_pn_attrs[i]->show = show_fan_string;
+    }
 
     pddf_fan_ops.post_probe = fan_post_probe;
     pddf_fan_ops.post_remove = fan_post_remove;

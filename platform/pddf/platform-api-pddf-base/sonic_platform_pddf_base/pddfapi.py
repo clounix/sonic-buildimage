@@ -16,6 +16,7 @@ SONIC_CFGGEN_PATH = '/usr/local/bin/sonic-cfggen'
 LED_CTRL_LOCK_PATH = '/var/lock/pddf-api-led.lock'
 HWSKU_KEY = 'DEVICE_METADATA.localhost.hwsku'
 PLATFORM_KEY = 'DEVICE_METADATA.localhost.platform'
+PCI_DEVICES_PATH = '/sys/bus/pci/devices'
 
 dirname = os.path.dirname(os.path.realpath(__file__))
 
@@ -67,6 +68,75 @@ class PddfApi():
         pdev = self.data[parent]
 
         return pdev['dev_attr']['dev_idx']
+
+    def find_pci_sysfs_attr(self, vendor_id, device_id, attr_name):
+        """
+        Find a sysfs attribute on a PCI device matching vendor/device IDs.
+
+        vendor_id and device_id accept hex strings (e.g. '0x10EE') or integers.
+        Returns the full sysfs path, or None if not found.
+        """
+        try:
+            vid = int(vendor_id, 16) if isinstance(vendor_id, str) else int(vendor_id)
+            did = int(device_id, 16) if isinstance(device_id, str) else int(device_id)
+        except (TypeError, ValueError):
+            print("find_pci_sysfs_attr: invalid vendor_id=%s device_id=%s",
+                        vendor_id, device_id)
+            return None
+
+        if not os.path.isdir(PCI_DEVICES_PATH):
+            return None
+
+        for dev in os.listdir(PCI_DEVICES_PATH):
+            dev_path = os.path.join(PCI_DEVICES_PATH, dev)
+            if not os.path.isdir(dev_path):
+                continue
+            try:
+                with open(os.path.join(dev_path, 'vendor'), 'r') as f:
+                    v = int(f.read().strip(), 16)
+                with open(os.path.join(dev_path, 'device'), 'r') as f:
+                    d = int(f.read().strip(), 16)
+            except (IOError, OSError, ValueError):
+                continue
+            if v == vid and d == did:
+                attr_path = os.path.join(dev_path, attr_name)
+                if os.path.exists(attr_path):
+                    return attr_path
+        return None
+
+    def get_fpga_pcie_dev_attr(self, fpga_key=None):
+        """
+        Return dev_attr dict for an FPGAPCIE device from pddf-device.json.
+
+        If fpga_key is None, use the first device whose key matches FPGAPCIE\\d+.
+        """
+        if fpga_key is not None:
+            if fpga_key not in self.data:
+                return None
+            dev = self.data[fpga_key]
+            if dev.get('dev_info', {}).get('device_type') != 'FPGAPCIE':
+                return None
+            return dev.get('i2c', {}).get('dev_attr')
+
+        for key in sorted(self.data.keys()):
+            if re.search(r'FPGAPCIE\d+$', key):
+                dev_attr = self.data[key].get('i2c', {}).get('dev_attr')
+                if dev_attr and 'vendor_id' in dev_attr and 'device_id' in dev_attr:
+                    return dev_attr
+        return None
+
+    def get_fpga_pci_sysfs_attr(self, attr_name, fpga_key=None):
+        """
+        Resolve a sysfs attribute path for the platform FPGA PCI device.
+
+        Reads vendor_id/device_id from FPGAPCIE dev_attr in pddf-device.json
+        (e.g. FPGAPCIE0: vendor 0x10EE, device 0x7021 on ds410h).
+        """
+        dev_attr = self.get_fpga_pcie_dev_attr(fpga_key)
+        if not dev_attr:
+            print('get_fpga_pci_sysfs_attr: no FPGAPCIE device in PDDF config')
+            return None
+        return self.find_pci_sysfs_attr(dev_attr['vendor_id'], dev_attr['device_id'], attr_name)
 
     def get_paths(self, target, attr):
         aa = target + attr

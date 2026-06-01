@@ -118,6 +118,8 @@ enum xcvr_sysfs_attributes {
     XCVR_TXDISABLE,
     XCVR_TXFAULT,
     XCVR_OVERWRITE_EN,
+    XCVR_LED_EN,
+    XCVR_RED_LED,
     XCVR_ATTR_MAX
 };
 
