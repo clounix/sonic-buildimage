@@ -20,7 +20,7 @@ KVERSION   ?= $(shell uname -r)
 KERNEL_SRC := /lib/modules/$(KVERSION)
 export KERNEL_SRC
 MOD_SRC_DIR:= $(shell pwd)
-MODULE_DIRS:=  clx12800-48d8e clx25600-48d8e clx2000-48y8c
+MODULE_DIRS:=  clx12800-48d8e clx25600-48d8e clx2000-48y8c clx4000-24c8d
 MODULE_DIR := modules
 UTILS_DIR := utils
 SERVICE_DIR := service
@@ -113,6 +113,11 @@ binary-indep:
 			dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx2000_48y8c-r0/pddf; \
 		    cp $(MOD_SRC_DIR)/common/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx2000_48y8c-r0/pddf/; \
 	        cp $(MOD_SRC_DIR)/common/fpga_utils/fpga debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx2000_48y8c-r0/clx_fpga; \
+		fi; \
+		if [ $${mod} = "clx4000-24c8d" ]; then \
+			dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx4000_24c8d-r0/pddf; \
+		    cp $(MOD_SRC_DIR)/common/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx4000_24c8d-r0/pddf/; \
+	        cp $(MOD_SRC_DIR)/common/fpga_utils/fpga debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-clounix_clx4000_24c8d-r0/clx_fpga; \
 		fi; \
 		cp $(MOD_SRC_DIR)/common/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
 	done)

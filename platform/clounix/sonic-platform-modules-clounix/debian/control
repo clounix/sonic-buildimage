@@ -16,3 +16,7 @@ Description: kernel modules for platform devices such as fan, led, sfp
 Package: sonic-platform-clounix-clx2000-48y8c
 Architecture: any
 Description: kernel modules for platform devices such as fan, led, sfp
+
+Package: sonic-platform-clounix-clx4000-24c8d
+Architecture: any
+Description: kernel modules for platform devices such as fan, led, sfp

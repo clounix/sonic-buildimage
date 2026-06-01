@@ -1,0 +1,6 @@
+{
+    "FPGA": {
+        "version": "0x1002",
+        "description": "Performs initialization of hardware components during booting"
+    }
+}
