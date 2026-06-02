@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -36,6 +36,7 @@
 #include <linux/pci.h>
 #include <linux/interrupt.h>
 #include <linux/uaccess.h>
+#include <linux/log2.h>
 
 #include "knet_pci.h"
 #include "knet_dev.h"
@@ -49,18 +50,24 @@ clx_intx_usr_handler(int irq, uint32_t unit)
 {
     struct clx_pci_dev_s *ptr_clx_dev = clx_misc_dev->clx_pci_dev[unit];
     clx_intr_info_t info;
+    unsigned long flags = 0;
 
     info.unit = unit;
     info.irq = irq - ptr_clx_dev->pci_dev->irq;
     info.valid = CLX_INTR_VALID_CODE;
 
-    dbg_print(DBG_INTR, "in unit:%u info:0x%lx,irq:%d\n", unit, (unsigned long)&info, info.irq);
-    spin_lock(&clx_misc_dev->fifo_lock);
+    dbg_print(DBG_INTR, "in info:unit:%u,irq:%d,valid:0x%x\n", info.unit,info.irq, info.valid);
+    /* Use irqsave variant to keep locking scheme consistent with the
+     * process-context paths (e.g. clx_disconnect_isr) that share this lock. */
+    spin_lock_irqsave(&clx_misc_dev->fifo_lock, flags);
     if (!kfifo_put(&clx_misc_dev->intr_fifo, info)) {
-        spin_unlock(&clx_misc_dev->fifo_lock);
+        dbg_print(DBG_INTR, "kfifo_put failed\n");
+        clx_misc_dev->kfifo_put_fail_count++;
+        spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
+        dbg_print(DBG_INTR, "kfifo_put failed. unit:%u, kfifo_put_fail_count:%d\n", unit,clx_misc_dev->kfifo_put_fail_count);
         return IRQ_HANDLED;
     }
-    spin_unlock(&clx_misc_dev->fifo_lock);
+    spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
 
     wake_up_interruptible(&clx_misc_dev->isr_wait_queue);
 
@@ -123,6 +130,8 @@ clx_intr_handler(int irq, void *cookie)
     return IRQ_HANDLED;
 }
 
+static void clx_interrupt_intx_deinit(uint32_t unit);
+
 static int
 clx_interrupt_intx_init(uint32_t unit)
 {
@@ -143,6 +152,11 @@ clx_interrupt_intx_init(uint32_t unit)
 
     rc =
         request_irq(pci_dev->irq, clx_intr_handler, 0, CLX_DRIVER_NAME, (void *)((clx_addr_t)unit));
+    if (0 != rc) {
+        dbg_print(DBG_ERR, "unit:%u request_irq failed. irq=%d\n", unit, pci_dev->irq);
+        clx_interrupt_intx_deinit(unit);
+        return rc;
+    }
 
     dbg_print(DBG_INTR, "unit:%u init intx interrupt ok. irq=%d\n", unit, pci_dev->irq);
     return rc;
@@ -171,15 +185,19 @@ irqreturn_t
 clx_msi_usr_handler(int irq, void *cookie)
 {
     clx_intr_info_t *info = (clx_intr_info_t *)cookie;
+    unsigned long flags = 0;
 
-    dbg_print(DBG_INTR, "unit:%u in info:0x%lx,irq:%d\n", info->unit, (unsigned long)info,
-              info->irq);
-    spin_lock(&clx_misc_dev->fifo_lock);
+    dbg_print(DBG_INTR, "in info:unit:%u,irq:%d,valid:0x%x\n", info->unit,info->irq, info->valid);
+    /* Use irqsave variant to keep locking scheme consistent with the
+     * process-context paths (e.g. clx_disconnect_isr) that share this lock. */
+    spin_lock_irqsave(&clx_misc_dev->fifo_lock, flags);
     if (!kfifo_put(&clx_misc_dev->intr_fifo, *info)) {
-        spin_unlock(&clx_misc_dev->fifo_lock);
+        clx_misc_dev->kfifo_put_fail_count++;
+        spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
+        dbg_print(DBG_INTR, "kfifo_put failed. unit:%u, kfifo_put_fail_count:%d\n", info->unit,clx_misc_dev->kfifo_put_fail_count);
         return IRQ_HANDLED;
     }
-    spin_unlock(&clx_misc_dev->fifo_lock);
+    spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
 
     wake_up_interruptible(&clx_misc_dev->isr_wait_queue);
 
@@ -191,27 +209,41 @@ clx_interrupt_msi_init(uint32_t unit)
 {
     struct clx_pci_dev_s *ptr_clx_dev = clx_misc_dev->clx_pci_dev[unit];
     struct pci_dev *pci_dev = ptr_clx_dev->pci_dev;
+    uint32_t used_cnt = clx_intr_drv(unit)->msi_cnt;
+    uint32_t alloc_cnt;
     int32_t msi_cnt;
     int rc;
 
-    msi_cnt = pci_alloc_irq_vectors(pci_dev, 1, clx_intr_drv(unit)->msi_cnt, PCI_IRQ_MSI);
-    if (msi_cnt != clx_intr_drv(unit)->msi_cnt) {
+    /* Legacy MSI requires the vector count to be a power of two (HW
+     * "Multiple Message Capable" field is log2-encoded). A chip may use
+     * a non-power-of-two number of real vectors (e.g. NB uses 21), so
+     * round the PCI allocation up to the next power of two. Per-chip
+     * register_msi_irq() only calls request_irq() for the first used_cnt
+     * vectors; the extra padding vectors stay unbound. */
+    alloc_cnt = roundup_pow_of_two(used_cnt);
+
+    msi_cnt = pci_alloc_irq_vectors(pci_dev, alloc_cnt, alloc_cnt, PCI_IRQ_MSI);
+    if (msi_cnt != (int32_t)alloc_cnt) {
         dbg_print(
             DBG_ERR,
-            "pci_alloc_irq_vectors failed. support msi_cnt=%d, reg msi_cnt=%d msi_enabled=%d msix_enabled=%d current_state=%d no_msi=%d\n",
-            msi_cnt, clx_intr_drv(unit)->msi_cnt, pci_dev->msi_enabled, pci_dev->msix_enabled,
+            "pci_alloc_irq_vectors failed. got=%d, alloc(pow2)=%u, used=%u, msi_enabled=%d msix_enabled=%d current_state=%d no_msi=%d\n",
+            msi_cnt, alloc_cnt, used_cnt, pci_dev->msi_enabled, pci_dev->msix_enabled,
             pci_dev->current_state, pci_dev->no_msi);
+        if (msi_cnt > 0)
+            pci_free_irq_vectors(pci_dev);
         return -EFAULT;
     }
 
     rc = clx_intr_drv(unit)->register_msi_irq(unit, pci_dev->irq);
     if (0 != rc) {
         dbg_print(DBG_ERR, "request_irq failed. unit=%d, irq=%d.\n", unit, pci_dev->irq);
+        pci_free_irq_vectors(pci_dev);
         return rc;
     }
 
-    dbg_print(DBG_INTR, "init msi interrupt ok. unit=%d, irq=%d, msi_cnt=%d\n", unit, pci_dev->irq,
-              clx_intr_drv(unit)->msi_cnt);
+    dbg_print(DBG_INTR,
+              "init msi interrupt ok. unit=%d, irq=%d, used=%u, alloc(pow2)=%u\n",
+              unit, pci_dev->irq, used_cnt, alloc_cnt);
     return 0;
 }
 
@@ -296,6 +328,8 @@ clx_intx_connect_isr(uint32_t unit, unsigned long arg)
 
     if (copy_to_user((void __user *)arg, &kcookie, sizeof(struct clx_ioctl_intr_cookie)))
         return -EFAULT;
+
+    atomic_set(&clx_misc_dev->isr_disconnect_flag, 0);
     return 0;
 }
 
@@ -305,18 +339,48 @@ clx_disconnect_isr(uint32_t unit, unsigned long arg)
     clx_intr_info_t info;
     unsigned long flags = 0;
 
-    memset(&info, 0, sizeof(clx_intr_info_t));
-    info.valid = CLX_INTR_DISCONNECT_ISR;
-    dbg_print(DBG_INTR, "unit:%u in info:0x%lx, irq:%d\n", unit, (unsigned long)&info, info.irq);
-    spin_lock_irqsave(&clx_misc_dev->fifo_lock, flags);
-    if (!kfifo_put(&clx_misc_dev->intr_fifo, info)) {
-        spin_unlock(&clx_misc_dev->fifo_lock);
-        return IRQ_HANDLED;
-    }
-    spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
-    wake_up_interruptible(&clx_misc_dev->isr_wait_queue);
-
+    /*
+     * Free the IRQ first. free_irq() synchronously waits for any in-flight
+     * IRQ handler to finish, so after this point no IRQ context will
+     * kfifo_put() into intr_fifo any more. This lets the subsequent
+     * reset + put sequence run without racing the IRQ path.
+     */
     clx_interrupt_deinit(unit);
 
+    /*
+     * Only the first unit that disconnects is responsible for waking up
+     * the single user-space ISR task. The others must not touch the fifo
+     * here, otherwise a later unit could wipe the pending DISCONNECT
+     * message and leave the user task blocked forever in read().
+     */
+    if (atomic_cmpxchg(&clx_misc_dev->isr_disconnect_flag, 0, 1) != 0) {
+        dbg_print(DBG_INTR, "unit:%u skip notify isrtask when isr disconnect flag is 1\n", unit);
+        return 0;
+    }
+
+    dbg_print(DBG_INTR, "unit:%u isr disconnect flag is 0\n", unit);
+    memset(&info, 0, sizeof(info));
+    info.valid = CLX_INTR_DISCONNECT_ISR;
+    dbg_print(DBG_INTR, "in info:unit:%u,irq:%d,valid:0x%x\n", info.unit, info.irq, info.valid);
+
+    spin_lock_irqsave(&clx_misc_dev->fifo_lock, flags);
+    /*
+     * Drop any stale IRQ entries so the following kfifo_put() is guaranteed
+     * to succeed, and so that DISCONNECT_ISR is the very next item the user
+     * task dequeues. Resetting AFTER the put (as the previous implementation
+     * did) would wipe the DISCONNECT message and hang the user task.
+     */
+    kfifo_reset(&clx_misc_dev->intr_fifo);
+    if (!kfifo_put(&clx_misc_dev->intr_fifo, info)) {
+        /* Should not happen right after reset, but keep the counter updated. */
+        clx_misc_dev->kfifo_put_fail_count++;
+        spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
+        dbg_print(DBG_INTR, "kfifo_put failed. unit:%u, kfifo_put_fail_count:%d\n", unit,
+                  clx_misc_dev->kfifo_put_fail_count);
+        return -EFAULT;
+    }
+    spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
+
+    wake_up_interruptible(&clx_misc_dev->isr_wait_queue);
     return 0;
 }

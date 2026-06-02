@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -41,7 +41,7 @@
 #define CLX_DRIVER_NAME "clx_dev"
 
 #define KNET_DRV_VERSION_MAJOR    1
-#define KNET_DRV_VERSION_MINOR    19
+#define KNET_DRV_VERSION_MINOR    20
 #define KNET_DRV_VERSION_REVISION 0
 
 #define CLX_MISC_MAJOR_NUM (10)
@@ -161,6 +161,11 @@ struct clx_netif_ioctl_rx_cnt {
     uint32_t enqueue_fail;
     uint32_t deque_ok;
     uint32_t deque_fail;
+    /* fd_rx (ACTION_FD) enqueue/dequeue cnt */
+    uint32_t fd_rx_enqueue_ok;
+    uint32_t fd_rx_enqueue_fail;
+    uint32_t fd_rx_deque_ok;
+    uint32_t fd_rx_deque_fail;
     uint32_t trig_event;
     /* dma cnt */
     uint32_t channel;
@@ -255,6 +260,7 @@ typedef enum {
     ACTION_NETLINK,
     ACTION_SDK,
     ACTION_FAST_FWD,
+    ACTION_FD,
     ACTION_DROP
 } clx_rx_action_e;
 
@@ -328,6 +334,8 @@ typedef enum {
     CLX_IOCTL_TYPE_NETIF_RX_START,
     CLX_IOCTL_TYPE_NETIF_RX_STOP,
     CLX_IOCTL_TYPE_NETIF_DEV_TX,
+    /* Dequeue from fd_rx_queue (ACTION_FD), uapi same as WAIT_RX_FREE */
+    CLX_IOCTL_TYPE_NETIF_WAIT_FD_RX_FREE = 204,
     /* counter */
     CLX_IOCTL_TYPE_NETIF_GET_TX_CNT = 300,
     CLX_IOCTL_TYPE_NETIF_GET_RX_CNT,

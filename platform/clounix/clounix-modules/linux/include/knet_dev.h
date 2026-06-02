@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -104,6 +104,8 @@ typedef struct {
     DECLARE_KFIFO_PTR(intr_fifo, clx_intr_info_t);
     spinlock_t fifo_lock;
     wait_queue_head_t isr_wait_queue;
+    uint32_t kfifo_put_fail_count;
+    atomic_t isr_disconnect_flag;
 
     netif_perf_t test_perf;
     struct clx_pci_dev_s *clx_pci_dev[CLX_MAX_CHIP_NUM]; // pci device

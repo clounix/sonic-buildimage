@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -292,6 +292,16 @@ nb_dma_channel_disable(uint32_t unit, uint32_t channel)
     CLX_CLR_BITMAP(enable, 1 << channel);
     clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, NB_CFG_PDMA_CH_ENABLE, &enable,
                                               sizeof(uint32_t));
+    return 0;
+}
+
+static int
+nb_disable_all_dma_channel(uint32_t unit)
+{
+    uint32_t enable = 0;
+    dbg_print(DBG_DEBUG, "unit:%u disable all dma channel\n", unit);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, NB_CFG_PDMA_CH_ENABLE, &enable,
+                                               sizeof(uint32_t));
     return 0;
 }
 
@@ -997,6 +1007,7 @@ nb_pkt_dst_get(const uint32_t unit,
 
     // set cpu reason
     rx_packet->pph_info.cpu_reason = ptr_pph->cpu_reason;
+    rx_packet->pph_info.qos_dnt_modify = ptr_pph->qos_dnt_modify;
 
     /* mod mac*/
     ptr_pkt_dmac = (unsigned char *)(ptr_pph + 1);
@@ -1175,6 +1186,8 @@ nb_parse_netlink_info(const uint32_t unit, struct dma_rx_packet *rx_packet, void
     return 0;
 }
 
+static void nb_unregister_msi_irq(uint32_t unit);
+
 static int
 nb_register_msi_irq(uint32_t unit, uint32_t irq)
 {
@@ -1215,6 +1228,7 @@ nb_register_msi_irq(uint32_t unit, uint32_t irq)
                          clx_intr_drv(unit)->msi_vector[idx].msi_cookie);
         if (0 != rc) {
             dbg_print(DBG_CRIT, "request_irq failed. unit=%d, irq=%d.\n", unit, irq + idx);
+            nb_unregister_msi_irq(unit);
             return rc;
         }
     }
@@ -1227,6 +1241,10 @@ nb_unregister_msi_irq(uint32_t unit)
 {
     uint32_t i;
     struct pci_dev *pci_dev = clx_misc_dev->clx_pci_dev[unit]->pci_dev;
+
+    for (i = 0; i < clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num; i++) {
+        tasklet_kill(&clx_dma_drv(unit)->clx_dma_intr[i].dma_tasklets);
+    }
 
     for (i = 0; i < clx_intr_drv(unit)->msi_cnt; i++) {
         dbg_print(DBG_INTR, "free_irq. unit=%u, irq=%d.\n", unit, pci_irq_vector(pci_dev, i));
@@ -1286,6 +1304,7 @@ clx_dma_drv_cb_t nb_dma_driver = {
     .rxfifo_cfg_set = nb_rxfifo_cfg_set,
     .dbg_descriptor_show = nb_dbg_descriptor_show,
     .dbg_reg_show = nb_dbg_reg_show,
+    .disable_all_dma_channel = nb_disable_all_dma_channel,
 };
 
 static msi_isr_vector_t nb_msi_vector[NUM_MSI_IRQ] = {

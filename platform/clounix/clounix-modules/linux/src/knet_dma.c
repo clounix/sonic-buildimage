@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -167,6 +167,9 @@ clx_dma_init(void)
         // rx queue
         clx_dma_rx_packet_queue_init(&clx_dma_drv(unit)->rx_queue, 10240);
         init_waitqueue_head(&clx_dma_drv(unit)->rx_wait_queue);
+        clx_dma_rx_packet_queue_init(&clx_dma_drv(unit)->fd_rx_queue, 10240);
+        init_waitqueue_head(&clx_dma_drv(unit)->fd_rx_wait_queue);
+        WRITE_ONCE(clx_dma_drv(unit)->rx_stopped, false);
 
         for (channel = 0;
              channel < clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num;
@@ -255,6 +258,10 @@ clx_dma_deinit(void)
     uint32_t channel = 0;
     uint32_t desc_idx = 0;
     for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
+        WRITE_ONCE(clx_dma_drv(unit)->rx_stopped, true);
+        wake_up_interruptible(&clx_dma_drv(unit)->rx_wait_queue);
+        wake_up_interruptible(&clx_dma_drv(unit)->fd_rx_wait_queue);
+
         for (channel = 0;
              channel < clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num;
              channel++) {
@@ -284,7 +291,8 @@ int
 dma_enable_channel(uint32_t unit)
 {
     uint32_t channel;
-    for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
+    for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num + 
+        clx_dma_drv(unit)->tx_channel_num; channel++) {
         clx_intr_drv(unit)->unmask_dma_channel_irq(unit, channel);
         clx_intr_drv(unit)->unmask_dma_channel_error_irq(unit, channel);
         clx_dma_drv(unit)->enable_channel(unit, channel);
@@ -296,13 +304,15 @@ int
 dma_disable_channel(uint32_t unit)
 {
     uint32_t channel;
-    for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
+    for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num +
+        clx_dma_drv(unit)->tx_channel_num; channel++) {
         clx_dma_drv(unit)->disable_channel(unit, channel);
         clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
         clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
         clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
         clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
     }
+
     return 0;
 }
 
@@ -472,16 +482,25 @@ dma_rx_tasklet_func(unsigned long data)
                 }
                 break;
             case ACTION_SDK:
-                dbg_print(DBG_RX, "unit:%u enqueue size:%d\n", unit,
-                          clx_dma_drv(unit)->rx_queue.queue_size);
-                ret = clx_dma_rx_packet_queue_enqueue(&clx_dma_drv(unit)->rx_queue, rx_packet);
+            case ACTION_FD: {
+                struct dma_rx_packet_queue *pq = (rx_action == ACTION_FD) ?
+                                                     &clx_dma_drv(unit)->fd_rx_queue :
+                                                     &clx_dma_drv(unit)->rx_queue;
+                wait_queue_head_t *pwq = (rx_action == ACTION_FD) ?
+                                             &clx_dma_drv(unit)->fd_rx_wait_queue :
+                                             &clx_dma_drv(unit)->rx_wait_queue;
+                const char *qtag = (rx_action == ACTION_FD) ? "fd" : "sdk";
+
+                dbg_print(DBG_RX, "unit:%u %s rx enqueue size:%d\n", unit, qtag, pq->queue_size);
+                ret = clx_dma_rx_packet_queue_enqueue(pq, rx_packet);
                 if (ret != 0) {
-                    dbg_print(DBG_RX, "unit:%u enqueue failed. ret=%d\n", unit, ret);
+                    dbg_print(DBG_RX, "unit:%u %s rx enqueue failed. ret=%d\n", unit, qtag, ret);
                     dma_free_rx_packet(unit, rx_packet, true);
                     break;
                 }
-                wake_up_interruptible(&clx_dma_drv(unit)->rx_wait_queue);
+                wake_up_interruptible(pwq);
                 break;
+            }
 
             case ACTION_FAST_FWD:
                 /* ifa2 packet need to modify device id and send to new egress port */
@@ -540,15 +559,28 @@ dma_error_tasklet_func(unsigned long data)
 int
 clx_ioctl_rx_start(uint32_t unit, unsigned long arg)
 {
+    WRITE_ONCE(clx_dma_drv(unit)->rx_stopped, false);
+
     dma_enable_channel(unit);
+
     return 0;
 }
 
 int
 clx_ioctl_rx_stop(uint32_t unit, unsigned long arg)
 {
-    dma_disable_channel(unit);
+    uint32_t channel;
+    for (channel = 0; channel < clx_dma_drv(unit)->rx_channel_num; channel++) {
+        clx_dma_drv(unit)->disable_channel(unit, channel);
+        clx_intr_drv(unit)->mask_dma_channel_irq(unit, channel);
+        clx_intr_drv(unit)->clear_dma_channel_irq(unit, channel);
+        clx_intr_drv(unit)->mask_dma_channel_error_irq(unit, channel);
+        clx_intr_drv(unit)->clear_dma_channel_error_irq(unit, channel);
+    }
+
+    WRITE_ONCE(clx_dma_drv(unit)->rx_stopped, true);
     wake_up_interruptible(&clx_dma_drv(unit)->rx_wait_queue);
+    wake_up_interruptible(&clx_dma_drv(unit)->fd_rx_wait_queue);
     return 0;
 }
 
@@ -571,6 +603,10 @@ clx_ioctl_get_rx_cnt(uint32_t unit, unsigned long arg)
     k_cnt.enqueue_fail = clx_dma_drv(unit)->rx_queue.enqueue_fail;
     k_cnt.deque_ok = clx_dma_drv(unit)->rx_queue.dequeue_ok;
     k_cnt.deque_fail = clx_dma_drv(unit)->rx_queue.dequeue_fail;
+    k_cnt.fd_rx_enqueue_ok = clx_dma_drv(unit)->fd_rx_queue.enqueue_ok;
+    k_cnt.fd_rx_enqueue_fail = clx_dma_drv(unit)->fd_rx_queue.enqueue_fail;
+    k_cnt.fd_rx_deque_ok = clx_dma_drv(unit)->fd_rx_queue.dequeue_ok;
+    k_cnt.fd_rx_deque_fail = clx_dma_drv(unit)->fd_rx_queue.dequeue_fail;
     memcpy(&k_cnt.dma_cnt, &clx_dma_drv(unit)->dma_channel[k_cnt.channel].cnt,
            sizeof(struct clx_dma_channel_cnt));
 
@@ -628,6 +664,10 @@ clx_ioctl_clear_rx_cnt(uint32_t unit, unsigned long arg)
     clx_dma_drv(unit)->rx_queue.enqueue_fail = 0;
     clx_dma_drv(unit)->rx_queue.dequeue_ok = 0;
     clx_dma_drv(unit)->rx_queue.dequeue_fail = 0;
+    clx_dma_drv(unit)->fd_rx_queue.enqueue_ok = 0;
+    clx_dma_drv(unit)->fd_rx_queue.enqueue_fail = 0;
+    clx_dma_drv(unit)->fd_rx_queue.dequeue_ok = 0;
+    clx_dma_drv(unit)->fd_rx_queue.dequeue_fail = 0;
 
     return 0;
 }

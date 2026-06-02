@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -296,6 +296,16 @@ kg_dma_channel_disable(uint32_t unit, uint32_t channel)
     CLX_CLR_BITMAP(enable, 1 << channel);
     clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
                                               sizeof(uint32_t));
+    return 0;
+}
+
+static int
+kg_disable_all_dma_channel(uint32_t unit)
+{
+    uint32_t enable = 0;
+    dbg_print(DBG_DEBUG, "unit:%u disable all dma channel\n", unit);
+    clx_misc_dev->clx_pci_dev[unit]->write_cb(unit, KG_CFG_PDMA_CH_ENABLE, &enable,
+                                               sizeof(uint32_t));
     return 0;
 }
 
@@ -1235,6 +1245,7 @@ clx_dma_drv_cb_t kg_dma_driver = {
     .rxfifo_cfg_set = kg_rxfifo_cfg_set,
     .dbg_descriptor_show = kg_dbg_descriptor_show,
     .dbg_reg_show = kg_dbg_reg_show,
+    .disable_all_dma_channel = kg_disable_all_dma_channel,
 };
 
 static msi_isr_vector_t kg_msi_vector[] = {
@@ -1263,6 +1274,8 @@ static msi_isr_vector_t kg_msi_vector[] = {
     /* period intr */
     {.handler = clx_msi_usr_handler, .msi_cookie = NULL},
 };
+
+static void kg_unregister_msi_irq(uint32_t unit);
 
 static int
 kg_register_msi_irq(uint32_t unit, uint32_t irq)
@@ -1346,6 +1359,7 @@ kg_register_msi_irq(uint32_t unit, uint32_t irq)
                          clx_intr_drv(unit)->msi_vector[idx].msi_cookie);
         if (0 != rc) {
             dbg_print(DBG_CRIT, "unit:%u request_irq failed. irq=%d.\n", unit, irq + idx);
+            kg_unregister_msi_irq(unit);
             return rc;
         }
     }
@@ -1358,6 +1372,10 @@ kg_unregister_msi_irq(uint32_t unit)
 {
     uint32_t i;
     struct pci_dev *pci_dev = clx_misc_dev->clx_pci_dev[unit]->pci_dev;
+
+    for (i = 0; i < clx_dma_drv(unit)->rx_channel_num + clx_dma_drv(unit)->tx_channel_num; i++) {
+        tasklet_kill(&clx_dma_drv(unit)->clx_dma_intr[i].dma_tasklets);
+    }
 
     for (i = 0; i < clx_intr_drv(unit)->msi_cnt; i++) {
         dbg_print(DBG_INTR, "free_irq. unit=%u, irq=%d.\n", unit, pci_irq_vector(pci_dev, i));

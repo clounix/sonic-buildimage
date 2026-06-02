@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -780,6 +780,8 @@ netif_netlink_reveive_skb(uint32_t unit,
     struct netlink_rx_cookie *ptr_data = NULL;
     struct sk_buff *ptr_skb = NULL;
     unsigned long flags = 0;
+    uint32_t netif_id = 0;
+
 
     spin_lock_irqsave(&clx_netif_drv(unit)->netlink.lock, flags);
     if (NULL == ptr_cookie) {
@@ -792,7 +794,17 @@ netif_netlink_reveive_skb(uint32_t unit,
         (ptr_data->pkt.igr_port_si == (uint32_t)-1))) {
         ptr_skb = netif_construct_fast_skb_from_rx_packet(unit, rx_packet);
     } else {
-        ptr_skb = netif_construct_skb_from_rx_packet(unit, port_di, rx_packet);
+        netif_id = clx_netif_di2id_lookup(unit, ptr_data->pkt.igr_port_si);
+        if (netif_id == -1) {
+            ptr_skb = netif_construct_fast_skb_from_rx_packet(unit, rx_packet);
+        }
+        else {
+            ptr_skb = netif_construct_skb_from_rx_packet(unit, port_di, rx_packet);
+        }
+    }
+    if (!ptr_skb) {
+        dbg_print(DBG_NETLINK, "Failed to construct skb. unit=%u\n", unit);
+        return -EFAULT;
     }
 
     /* send the packet to netlink mcgroup */

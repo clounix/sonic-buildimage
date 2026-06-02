@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -102,13 +102,14 @@ nb_driver_init(uint32_t unit, clx_drv_cb_t *ptr_clx_drv)
     rc = nb_init_dma_driver(unit);
     if (0 != rc) {
         dbg_print(DBG_ERR, "Failed to init the dma driver. unit=%d\n", unit);
-        return rc;
+        goto err_free_dma_drv;
     }
 
     ptr_clx_drv->pkt_drv = (clx_netif_drv_cb_t *)kmalloc(sizeof(clx_netif_drv_cb_t), GFP_KERNEL);
     if (!ptr_clx_drv->pkt_drv) {
         dbg_print(DBG_ERR, "Failed to allocate memory for pkt_drv. unit=%d\n", unit);
-        return -ENOMEM;
+        rc = -ENOMEM;
+        goto err_free_dma_drv;
     }
     dbg_print(DBG_DEBUG, "Allocate pkt_drv. unit=%d ptr_clx_drv->pkt_drv=%p\n", unit,
               ptr_clx_drv->pkt_drv);
@@ -117,7 +118,8 @@ nb_driver_init(uint32_t unit, clx_drv_cb_t *ptr_clx_drv)
     ptr_clx_drv->intr_drv = (clx_intr_drv_cb_t *)kmalloc(sizeof(clx_intr_drv_cb_t), GFP_KERNEL);
     if (!ptr_clx_drv->intr_drv) {
         dbg_print(DBG_ERR, "Failed to allocate memory for intr_drv. unit=%d\n", unit);
-        return -ENOMEM;
+        rc = -ENOMEM;
+        goto err_free_pkt_drv;
     }
     dbg_print(DBG_DEBUG, "Allocate intr_drv. unit=%d ptr_clx_drv->intr_drv=%p\n", unit,
               ptr_clx_drv->intr_drv);
@@ -126,13 +128,25 @@ nb_driver_init(uint32_t unit, clx_drv_cb_t *ptr_clx_drv)
     ptr_clx_drv->pci_drv = (clx_pci_drv_cb_t *)kmalloc(sizeof(clx_pci_drv_cb_t), GFP_KERNEL);
     if (!ptr_clx_drv->pci_drv) {
         dbg_print(DBG_ERR, "Failed to allocate memory for pci_drv. unit=%d\n", unit);
-        return -ENOMEM;
+        rc = -ENOMEM;
+        goto err_free_intr_drv;
     }
     dbg_print(DBG_DEBUG, "Allocate pci_drv. unit=%d ptr_clx_drv->pci_drv=%p\n", unit,
               ptr_clx_drv->pci_drv);
     memcpy(ptr_clx_drv->pci_drv, &nb_pci_driver, sizeof(clx_pci_drv_cb_t));
 
     return 0;
+
+err_free_intr_drv:
+    kfree(ptr_clx_drv->intr_drv);
+    ptr_clx_drv->intr_drv = NULL;
+err_free_pkt_drv:
+    kfree(ptr_clx_drv->pkt_drv);
+    ptr_clx_drv->pkt_drv = NULL;
+err_free_dma_drv:
+    kfree(ptr_clx_drv->dma_drv);
+    ptr_clx_drv->dma_drv = NULL;
+    return rc;
 }
 
 int
