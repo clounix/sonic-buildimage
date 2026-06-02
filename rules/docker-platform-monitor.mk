@@ -60,6 +60,8 @@ $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /usr/share/sonic/device/pddf:/usr/share
 $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /var/lock/pddf-locks:/var/lock/pddf-locks:rw
 # Add sysfs mounts for hardware access
 $(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /sys/:/sys/:rw
+#Add s3ip mounts 
+$(DOCKER_PLATFORM_MONITOR)_RUN_OPT += -v /sys_switch:/sys_switch:ro
 
 # Mount Arista python library on Aboot images to be used by plugins
 $(DOCKER_PLATFORM_MONITOR)_aboot_RUN_OPT += -v /usr/lib/libsfp-eeprom.so:/usr/lib/libsfp-eeprom.so:ro
