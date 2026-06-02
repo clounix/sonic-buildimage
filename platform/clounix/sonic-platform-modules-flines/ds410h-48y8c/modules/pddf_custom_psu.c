@@ -63,6 +63,9 @@
 #include <linux/dmi.h>
 #include "pddf_psu_defs.h"
 #include "pddf_psu_driver.h"
+#include "pddf_client_defs.h"
+
+static int *log_level = &psu_log_level;
 
 #define PSU_REG_VOUT_MODE 0x20
 #define PSU_REG_READ_VOUT 0x8b
@@ -224,6 +227,7 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
     struct psu_attr_info *padata = (struct psu_attr_info *)data;
     char buf[33]="";  //temporary placeholder for block data
     uint8_t offset = (uint8_t)adata->offset;
+    int data_len = adata->len;
 
     while (retry)
     {
@@ -240,16 +244,14 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
     if (status < 0)
     {
         buf[0] = '\0';
-        strncpy(padata->val.strval, buf, adata->len);
-        // printk(KERN_ERR  "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
+        pddf_dbg(PSU, "%s unable to read block of data from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
     }
     else
     {
-        buf[status] = '\0';
-        strncpy(padata->val.strval, buf, status-1);
+        buf[data_len-1] = '\0';
     }
-        
-    // printk(KERN_ERR  "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
+    strncpy(padata->val.strval, buf, data_len);
+    pddf_dbg(PSU, "%s: status = %d, buf block: %s\n", __FUNCTION__, status, padata->val.strval);
     return 0;
 }
 
