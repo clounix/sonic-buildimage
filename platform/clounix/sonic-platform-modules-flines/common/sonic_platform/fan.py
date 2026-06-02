@@ -49,6 +49,21 @@ class Fan(PddfFan):
                 status = False
 
             return status
+
+    def get_status(self):
+        speed = self.get_speed()
+        speed_rpm = self.get_speed_rpm()
+        target_speed_rpm = self.get_target_speed_rpm()
+        tolerance_speed_rmp = self.get_speed_tolerance_rpm()
+        if speed != 0:
+            if speed_rpm > (target_speed_rpm - tolerance_speed_rmp) and speed_rpm < (target_speed_rpm + tolerance_speed_rmp):
+                status = True
+            else:
+                status = False
+        else:
+            status = False
+        return status
+
     def get_speed(self):
         """
         Retrieves the speed of fan as a percentage of full speed
@@ -136,7 +151,57 @@ class Fan(PddfFan):
                 rpm_speed = int(float(output['status']))
 
             return rpm_speed
-        
+
+    def get_target_speed_rpm(self):
+        """
+        Retrieves the target speed of fan in RPM
+
+        Returns:
+            An integer, Speed of fan in RPM
+        """
+        if self.is_psu_fan:
+            raise NotImplementedError
+        else:
+            idx = (self.fantray_index-1)*self.platform['num_fans_pertray'] + self.fan_index
+            attr = "fan" + str(idx) + "_speed_target"
+            output = self.pddf_obj.get_attr_name_output("FAN-CTRL", attr)
+
+            if output is None:
+                return 0
+
+            output['status'] = output['status'].rstrip()
+            if output['status'].isalpha():
+                return 0
+            else:
+                rpm_speed_target = int(float(output['status']))
+
+            return rpm_speed_target
+
+    def get_speed_tolerance_rpm(self):
+        """
+        Retrieves the tolerance speed of fan in RPM
+
+        Returns:
+            An integer, Speed of fan in RPM
+        """
+        if self.is_psu_fan:
+            raise NotImplementedError
+        else:
+            idx = (self.fantray_index-1)*self.platform['num_fans_pertray'] + self.fan_index
+            attr = "fan" + str(idx) + "_speed_tolerance"
+            output = self.pddf_obj.get_attr_name_output("FAN-CTRL", attr)
+
+            if output is None:
+                return 0
+
+            output['status'] = output['status'].rstrip()
+            if output['status'].isalpha():
+                return 0
+            else:
+                rpm_speed_tolerance = int(float(output['status']))
+
+            return rpm_speed_tolerance
+
     def set_status_led(self, color):
         result = False
         # led color descriptions are not same with BSP driver, so converts here

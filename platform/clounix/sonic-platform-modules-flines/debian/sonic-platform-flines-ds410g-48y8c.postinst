@@ -24,3 +24,9 @@ if [ "$(systemctl is-enabled flines-common-platform-init.service 2>/dev/null)" =
 fi
 systemctl enable flines-common-platform-init.service
 systemctl start flines-common-platform-init.service
+
+if [ "$(systemctl is-enabled fan-control.service 2>/dev/null)" = "masked" ]; then
+    systemctl unmask fan-control.service > /dev/null 2>&1
+fi
+systemctl enable fan-control.service
+systemctl start fan-control.service

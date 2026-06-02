@@ -127,22 +127,25 @@ class Chassis(PddfChassis):
             header = "Name,Cause,Time,User,Comment\n"
             record = f"{record_name},{cause},{timestamp},{user},{comment}\n"
             
+            existing_lines = []
             if os.path.exists(REBOOT_HISTORY_FILE):
                 with open(REBOOT_HISTORY_FILE, 'r') as f:
                     existing_content = f.read()
                 lines = existing_content.strip().split('\n')
                 if len(lines) > 1 and lines[0].startswith("Name"):
-                    data_lines = lines[1:]
-                    data_lines.insert(0, record.strip())
-                    content = header + '\n'.join(data_lines[:10]) + '\n'
-                else:
-                    content = header + record
-            else:
-                content = header + record
-            
+                     existing_lines = lines[1:]
+
+            new_data_lines = [record.strip()] + existing_lines[:9]
+            content = header + '\n'.join(new_data_lines) + '\n'
+
             with open(REBOOT_HISTORY_FILE, 'w') as f:
                 f.write(content)
-                
+                f.flush()
+                os.fsync(f.fileno())
+
+            syslog.syslog(syslog.LOG_DEBUG,
+                        f"Reboot cause written and fsynced to {REBOOT_HISTORY_FILE}")
+
         except Exception as e:
             syslog.syslog(syslog.LOG_ERR, f"Failed to write reboot history: {e}")
 
@@ -170,30 +173,6 @@ class Chassis(PddfChassis):
         reboot_cause = (self.REBOOT_CAUSE_NON_HARDWARE, "Unknown")
         if self.find_software_reboot_cause_from_reboot_cause_file() != "Unknown":
             return reboot_cause
-        
-        #ADM1166 cause
-        if os.path.isfile(ADDITIONAL_FAULT_CAUSE_FILE):
-            addational_fault_cause = self.__api_helper.read_one_line_file(
-                ADDITIONAL_FAULT_CAUSE_FILE) or "Unknown"
-            if addational_fault_cause != "Unknown":
-                reboot_cause = (self.REBOOT_CAUSE_HARDWARE_OTHER,
-                                addational_fault_cause)
-                os.remove(ADDITIONAL_FAULT_CAUSE_FILE)
-                # print("add reboot_cause {0}".format(reboot_cause))
-                self._write_reboot_history(reboot_cause[1])
-                return reboot_cause
-                
-        #watchdog reboot cause
-        wdt_indicator = '/sys_switch/watchdog/rst_occur'
-        if os.path.exists(wdt_indicator):
-            fd = os.popen('cat ' + wdt_indicator)
-            val = fd.read()
-            fd.close()
-            if '1' in val:
-                reboot_cause = (self.REBOOT_CAUSE_WATCHDOG, "FPGA Watchdog")
-                os.system('echo 1 > ' + wdt_indicator)
-                self._write_reboot_history(reboot_cause[1])
-                return reboot_cause
 
         #thermal policy reboot cause
         if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
@@ -204,7 +183,7 @@ class Chassis(PddfChassis):
                 if str.find('CPU_') >= 0:
                     reboot_cause = (
                         self.REBOOT_CAUSE_THERMAL_OVERLOAD_CPU, 'Thermal Overload: CPU')
-                elif str.find('asic') >= 0:
+                elif str.find('ASIC') >= 0:
                     reboot_cause = (
                         self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'Thermal Overload: ASIC')
                 else:
@@ -223,13 +202,13 @@ class Chassis(PddfChassis):
                 binfile.seek(0)
                 raw_byte = binfile.read(1)
                 hw_reboot_cause = raw_byte.hex().zfill(2)
-
+                print(f"hw_reboot_cause: {hw_reboot_cause}")
                 if (hw_reboot_cause != 'ff'):
                     reboot_cause = {
                         '00': (self.REBOOT_CAUSE_NON_HARDWARE, 'Non-Hardware'),
                         '01': (self.REBOOT_CAUSE_POWER_LOSS, 'Power Loss'),
                         '02': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_CPU, 'Thermal Overload: CPU'),
-                        '03': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'Thermal Overload: ASIC'),
+                        '03': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'FPGA PVT Overload: ASIC'),
                         '04': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, 'Thermal Overload: Other'),
                         '05': (self.REBOOT_CAUSE_INSUFFICIENT_FAN_SPEED, 'Insufficient Fan Speed'),
                         '06': (self.REBOOT_CAUSE_WATCHDOG, 'Watchdog'),
@@ -286,8 +265,7 @@ class Chassis(PddfChassis):
         return reboot_cause
      
     def get_thermal_manager(self):
-        from .thermal_manager import ThermalManager
-        return ThermalManager
+        return None
 		
     def __initialize_components(self):
         from sonic_platform.component import Component

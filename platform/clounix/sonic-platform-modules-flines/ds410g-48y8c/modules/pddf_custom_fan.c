@@ -957,8 +957,8 @@ static int fan_post_probe(struct i2c_client *client, const struct i2c_device_id 
 
     pddf_info(FAN, "fan-eeprom: initialized successfully, priv=%pK\n", g_fan_priv);
     
-    //init fan_cpld pwm=>60% for thermal
-    init_fan_pwm(60);
+    //init fan_cpld pwm=>100% for thermal
+    init_fan_pwm(100);
 out:
     pddf_info(FAN, "fan_post_probe returning %d\n", ret);
     return ret;

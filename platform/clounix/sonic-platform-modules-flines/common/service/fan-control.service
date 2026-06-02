@@ -1,0 +1,14 @@
+[Unit]
+Description=FAN control service
+Before=pmon.service
+After=pddf-platform-init.service pddf-s3ip-init.service
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u /usr/local/bin/flines_fan_control.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
