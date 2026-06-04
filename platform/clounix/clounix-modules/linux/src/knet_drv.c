@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -113,10 +113,20 @@ clx_drv_init(uint32_t unit, struct pci_dev *dev)
     rc = clx_pkt_drv_init(unit);
     if (0 != rc) {
         dbg_print(DBG_ERR, "Failed to init the pkt driver. unit=%u\n", unit);
-        return rc;
+        goto err_cleanup_drv;
     }
 
     return 0;
+
+err_cleanup_drv:
+    if (CLX_DEVICE_IS_NAMCHABARWA(pci_dev_data->device_id)) {
+        nb_driver_deinit(unit);
+    } else if (CLX_DEVICE_IS_KAWAGARBO(pci_dev_data->device_id)) {
+        kg_driver_deinit(unit);
+    }
+    kfree(pci_dev_data->clx_drv);
+    pci_dev_data->clx_drv = NULL;
+    return rc;
 }
 
 int

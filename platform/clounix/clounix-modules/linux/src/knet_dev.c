@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -116,6 +116,9 @@ clx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         case CLX_IOCTL_TYPE_NETIF_WAIT_RX_FREE:
             rc = clx_netif_receive_to_sdk(unit, arg);
             break;
+        case CLX_IOCTL_TYPE_NETIF_WAIT_FD_RX_FREE:
+            rc = clx_netif_receive_fd_to_sdk(unit, arg);
+            break;
         case CLX_IOCTL_TYPE_NETIF_RX_START:
             rc = clx_ioctl_rx_start(unit, arg);
             break;
@@ -205,7 +208,7 @@ clx_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
     }
     spin_unlock_irqrestore(&clx_misc_dev->fifo_lock, flags);
 
-    dbg_print(DBG_INTR, "out info:0x%lx,irq:%d\n", (unsigned long)&info, info.irq);
+    dbg_print(DBG_INTR, "out info:unit:%u,irq:%d,valid:0x%x\n", info.unit,info.irq, info.valid);
     if (copy_to_user(buf, &info, sizeof(info)))
         return -EFAULT;
 
@@ -224,6 +227,9 @@ clx_release(struct inode *ptr_inode, struct file *ptr_file)
     uint32_t unit = 0;
     for (unit = 0; unit < clx_misc_dev->pci_dev_num; unit++) {
         dma_disable_channel(unit);
+        WRITE_ONCE(clx_dma_drv(unit)->rx_stopped, true);
+        wake_up_interruptible(&clx_dma_drv(unit)->rx_wait_queue);
+        wake_up_interruptible(&clx_dma_drv(unit)->fd_rx_wait_queue);
     }
 
     dbg_print(DBG_DEBUG, "clx_release\n");
@@ -264,7 +270,7 @@ clx_mmap(struct file *filp, struct vm_area_struct *vma)
     for (unit = 0; unit < CLX_MAX_CHIP_NUM; unit++) {
         clx_pci_dev = clx_misc_dev->clx_pci_dev[unit];
         if (clx_pci_dev == NULL) {
-            break;
+            continue;
         }
         if (clx_pci_dev->bar_phys == phy_addr) {
             vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
@@ -292,7 +298,8 @@ rx_enable_test_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf
 static ssize_t
 rx_enable_test_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &clx_misc_dev->test_perf.rx_enable_test);
+    if (sscanf(buf, "%u", &clx_misc_dev->test_perf.rx_enable_test) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -305,7 +312,8 @@ tx_enable_test_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf
 static ssize_t
 tx_enable_test_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &clx_misc_dev->test_perf.tx_enable_test);
+    if (sscanf(buf, "%u", &clx_misc_dev->test_perf.tx_enable_test) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -318,7 +326,8 @@ target_len_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 static ssize_t
 target_len_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &clx_misc_dev->test_perf.target_len);
+    if (sscanf(buf, "%u", &clx_misc_dev->test_perf.target_len) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -331,7 +340,8 @@ target_count_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 static ssize_t
 target_count_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &clx_misc_dev->test_perf.target_count);
+    if (sscanf(buf, "%u", &clx_misc_dev->test_perf.target_count) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -369,7 +379,8 @@ unit_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 static ssize_t
 unit_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &dbg_uinit);
+    if (sscanf(buf, "%u", &dbg_uinit) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -382,7 +393,8 @@ channel_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 static ssize_t
 channel_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &dbg_channel);
+    if (sscanf(buf, "%u", &dbg_channel) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -395,7 +407,8 @@ descriptor_idx_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf
 static ssize_t
 descriptor_idx_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-    sscanf(buf, "%u", &dbg_descriptor_idx);
+    if (sscanf(buf, "%u", &dbg_descriptor_idx) != 1)
+        return -EINVAL;
     return count;
 }
 
@@ -463,7 +476,8 @@ static ssize_t test_fault_event_store(struct kobject *kobj, struct kobj_attribut
 {
     uint32_t unit = 0;
 
-    sscanf(buf, "%u", &fault_event_mgr);
+    if (sscanf(buf, "%u", &fault_event_mgr) != 1)
+        return -EINVAL;
     if (fault_event_mgr & KNET_FAULT_EVENT_MGR_TEST) {
         knet_fault_event_report(KNET_FAULT_EVENT_KENT_DMA_ALLOC_FAIL);
         knet_fault_event_report(KNET_FAULT_EVENT_KENT_NO_AVAILABLE_DESC);
@@ -522,7 +536,7 @@ clx_module_init(void)
 
     spin_lock_init(&clx_misc_dev->fifo_lock);
     init_waitqueue_head(&clx_misc_dev->isr_wait_queue);
-
+    atomic_set(&clx_misc_dev->isr_disconnect_flag, 0);
     if (kfifo_alloc(&clx_misc_dev->intr_fifo, CLX_MAX_CHIP_NUM * sizeof(clx_intr_info_t),
                     GFP_KERNEL)) {
         dbg_print(DBG_ERR, "Failed to allocate FIFO\n");
@@ -588,7 +602,7 @@ clx_module_init(void)
     }
 
     fault_test_kobj = kobject_create_and_add("fault_test", &__this_module.mkobj.kobj);
-    if (!dbg_kobj) {
+    if (!fault_test_kobj) {
         kobject_put(netif_perf_kobj);
         kobject_put(dbg_kobj);
         rc = -ENOMEM;

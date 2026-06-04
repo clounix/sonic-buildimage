@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -57,6 +57,7 @@ struct rx_pph_info {
     uint32_t vlan_tag;
     uint32_t vlan_pop_num;
     uint32_t cpu_reason;
+    uint32_t qos_dnt_modify; /* NB: from PPH; KG forced 1 (no ACL-IFA2 branch) */
 };
 
 struct dma_rx_frag_buffer {
@@ -171,11 +172,19 @@ typedef struct {
     clx_dma_tx_packet tx_packet;
     clx_dma_tx_callback tx_callback;
 
+    clx_dma_desc_set disable_all_dma_channel;
+
     CLX_DMA_HANDLE_ERROR handle_error;
     clx_dma_channel_t *dma_channel;
     /* receive to sdk */
     struct dma_rx_packet_queue rx_queue;
     wait_queue_head_t rx_wait_queue;
+    /* ACTION_FD: same queue model as SDK, dedicated wait queue */
+    struct dma_rx_packet_queue fd_rx_queue;
+    wait_queue_head_t fd_rx_wait_queue;
+
+    /* Set to true during rx_stop / deinit to unblock waiting rx threads */
+    bool rx_stopped;
 
     /* interrupt */
     clx_dma_intr_t *clx_dma_intr;

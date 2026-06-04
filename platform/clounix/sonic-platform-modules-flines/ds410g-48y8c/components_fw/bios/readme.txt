@@ -1,0 +1,1 @@
+在shell下输入命令spsfpt.efi -f xxx -bios

@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -47,11 +47,15 @@
 #define CLX_PROFILE_MAX_NUM       (288)
 #define CLX_NETLINK_MAX_NUM       (288)
 #define CLX_NETIF_PORT_DI_MAX_NUM (2048)
-#define CLX_NETIF_WAIT_RX_TIMEOUT (3000)
 #define CLX_NETIF_PKT_SEND_RETYR_NUM (100)
 #define CLX_NETIF_DFLT_VLAN       (1)
 
 #define IPPROTO_IFA 0x00FD /* IFA protocol */
+
+/* Wire IFA fixed header is always 4 bytes (IPv6 Hop-by-Hop / IPv4 proto payload).
+ * Do not use sizeof(struct ifa_header) for layout math unless it equals this:
+ * bitfields without packed can pad to a large size and shift UDP/TCP pointers. */
+#define IFA_HEADER_WIRE_LEN (4u)
 
 #define CLX_NETIF_PORT_MAP_INDEX(unit, slice, slice_port)                                        \
     (unit * clx_netif_drv(unit)->ports_num_unit + slice * clx_netif_drv(unit)->ports_per_slice + \
@@ -90,7 +94,16 @@ struct ifa_header {
         c_flag : 1;  /* C bit - Configuration flag */
 #endif
     __u8 max_length : 8; /* Maximum length field */
-};
+} __attribute__((packed));
+
+/* IFA Metadata Header structure (4 bytes). Packed only; do not use pragma pack
+ * around struct ifa_metadata (would corrupt layout / sizeof). */
+struct ifa_metadata_header {
+    __u8 request_vector; /* Request Vector */
+    __u8 action_vector;  /* Action Vector (L|C|R|R|R|R|R|R) */
+    __u8 hop_limit;      /* Hop Limit */
+    __u8 current_length; /* Current Length */
+} __attribute__((packed));
 
 struct ifa_metadata {
     union {
@@ -140,6 +153,7 @@ struct ifa_metadata {
 typedef struct clx_netif_ifa_cfg_s {
     uint32_t ip_prot; /* ifa protocol type in ipv4/v6 header */
     uint32_t node_id; /* node_id in metadata */
+    uint32_t is_flow_based; /* !0: ACL-based IFA2; NB uses rx PPH qos_dnt_modify */
 } clx_netif_ifa_cfg_t;
 
 struct net_device_priv {
@@ -279,6 +293,8 @@ clx_netif_clear_netdev_cnt(uint32_t unit, unsigned long arg);
 /* receive/send packet from/to sdk */
 int
 clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg);
+int
+clx_netif_receive_fd_to_sdk(uint32_t unit, unsigned long arg);
 int
 clx_netif_send_from_sdk(uint32_t unit, unsigned long arg);
 

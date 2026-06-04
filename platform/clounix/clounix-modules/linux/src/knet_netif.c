@@ -5,7 +5,7 @@
  *  copyright and other intellectual property laws and terms herein is
  *  confidential. The software may not be copied and the information
  *  contained herein may not be used or disclosed except with the written
- *  permission of Clounix (Shanghai) Technology Limited. (C) 2020-2026
+ *  permission of Clounix (Shanghai) Technology Co., Ltd. (C) 2020-2026
  *
  *  BY OPENING THIS FILE, BUYER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
  *  THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("CLOUNIX SOFTWARE")
@@ -44,14 +44,26 @@
 #include <linux/jiffies.h>
 #include <linux/rtnetlink.h>
 #include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <linux/udp.h>
 #include <linux/tcp.h>
+#include <linux/skbuff.h>
+#include <linux/printk.h>
 #include <net/checksum.h>
 
-static const char *action_str[] = {"UNKNOWN",    "ACTION_NETDEV",   "ACTION_NETLINK",
-                                   "ACTION_SDK", "ACTION_FAST_FWD", "ACTION_DROP"};
+static const char *action_str[] = {"UNKNOWN",       "ACTION_NETDEV",   "ACTION_NETLINK",
+                                   "ACTION_SDK",    "ACTION_FAST_FWD", "ACTION_FD",
+                                   "ACTION_DROP"};
 
 static const char *match_type_str[] = {"Don't Care", "Pattern"};
+
+/*
+ * Upper bound on the number of DMA fragments that a single rx packet can hold.
+ * The HAL layer caps this at 100 (HAL_MT_*_PKT_PDMA_MAX_GPD_PER_PKT); 256 here
+ * is a defensive ceiling used only to sanity-check list_count so that corrupt
+ * values do not lead to gigantic kmalloc requests.
+ */
+#define CLX_DMA_RX_MAX_FRAGS_PER_PKT (256)
 
 static unsigned char stp_mac[ETH_ALEN] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x00};
 static unsigned char pvst_mac[ETH_ALEN] = {0x01, 0x00, 0x0c, 0xcc, 0xcc, 0xcd};
@@ -434,6 +446,7 @@ clx_netif_fast_tx(uint32_t unit, struct sk_buff *ptr_skb, uint16_t di, uint8_t t
     uint32_t pkt_len = 0;
     uint32_t headroom = 0;
     struct sk_buff *new_skb;
+    int ret = 0;
 
     /* check skb */
     if (NULL == ptr_skb) {
@@ -463,7 +476,6 @@ clx_netif_fast_tx(uint32_t unit, struct sk_buff *ptr_skb, uint16_t di, uint8_t t
         if (pskb_expand_head(new_skb, headroom, 0, GFP_ATOMIC)) {
             dbg_print(DBG_ERR, "Failed to expand skb headroom:%d\n", headroom);
             kfree_skb(new_skb);
-            dev_kfree_skb_any(ptr_skb);
             return NETDEV_TX_BUSY;
         }
     }
@@ -495,14 +507,18 @@ clx_netif_fast_tx(uint32_t unit, struct sk_buff *ptr_skb, uint16_t di, uint8_t t
 
     print_packet(DBG_TX_PAYLOAD, new_skb->data, new_skb->len);
 
-    if (0 != clx_dma_drv(unit)->tx_packet(unit, channel, new_skb)) {
+    ret = clx_dma_drv(unit)->tx_packet(unit, channel, new_skb);
+    if (0 == ret) {
+        dev_kfree_skb_any(ptr_skb);
+        return NETDEV_TX_OK;
+    } else if (ret == -EBUSY) {
+        kfree_skb(new_skb);
+        return NETDEV_TX_BUSY;
+    } else {
         kfree_skb(new_skb);
         dev_kfree_skb_any(ptr_skb);
-        return NETDEV_TX_BUSY;
+        return NETDEV_TX_OK;
     }
-
-    dev_kfree_skb_any(ptr_skb);
-    return NETDEV_TX_OK;
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
@@ -593,6 +609,9 @@ clx_netif_setup(struct net_device *ptr_net_dev)
     ether_setup(ptr_net_dev);
     ptr_net_dev->netdev_ops = &clx_netif_net_dev_ops;
     ptr_net_dev->ethtool_ops = &clx_netif_net_dev_ethtool_ops;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
+    ptr_net_dev->priv_flags |= IFF_CHANGE_PROTO_DOWN;
+#endif
     ptr_net_dev->watchdog_timeo = 30 * HZ;
     ptr_net_dev->mtu = 1500;
 
@@ -659,7 +678,6 @@ clx_netif_net_dev_create(uint32_t unit, unsigned long arg)
     netif_cookie.id = find_first_zero_bit(clx_netif_drv(unit)->netif_id_bitmap, CLX_NETIF_MAX_NUM);
     if (netif_cookie.id == CLX_NETIF_MAX_NUM) {
         dbg_print(DBG_PROFILE, "No available netif id. unit=%u\n", unit);
-        unregister_netdev(ptr_net_dev);
         return -ENOSPC;
     }
     set_bit(netif_cookie.id, clx_netif_drv(unit)->netif_id_bitmap);
@@ -1372,13 +1390,14 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
     struct sk_buff *ptr_skb = NULL;
     uint8_t *ifa_md_start;
     __be16 eth_proto = 0;
-    int ip_offset = ETH_HLEN; // IP header offset in packet
     struct ethhdr *eth = NULL;
     struct iphdr *iph = NULL;
+    struct ipv6hdr *ipv6h = NULL;
     struct udphdr *udph = NULL;
     struct tcphdr *tcph = NULL;
     struct ifa_header *ifa_hdr = NULL;
     struct ifa_metadata *ifa_md = NULL;
+    struct ifa_metadata_header *ifa_meta_hdr = NULL;
     uint16_t ip_len = 0;
     uint16_t tcp_len = 0;
     uint16_t igr_port_di = 0;
@@ -1387,6 +1406,13 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
     uint8_t tc_from_queue_id = 0;
     uint8_t tcp_hdr_len = 0;
     uint16_t min_len = 0;
+    uint8_t *data_after_metadata = NULL;
+    uint32_t data_after_metadata_len = 0;
+    uint32_t strip_meta = 0;
+    const uint32_t ifa_strip_len = sizeof(struct ifa_metadata);
+    bool is_ipv6 = false;
+    uint8_t ip_hdr_len = 20;
+    int tx_ret = 0;
 
     if (clx_misc_dev->test_perf.rx_enable_test == 1) {
         clx_netif_performance_test_rx(unit, rx_packet);
@@ -1398,6 +1424,12 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
         return -EFAULT;
     }
 
+    /* Strip path memmove requires a linear skb; avoid overrunning frag buffers. */
+    if (skb_linearize(ptr_skb)) {
+        dbg_print(DBG_ERR, "skb_linearize failed\n");
+        goto FREE_MERGED_SKB;
+    }
+
     if (ptr_skb->len < ETH_HLEN) {
         dbg_print(DBG_ERR, "Packet too short, len:%d\n", ptr_skb->len);
         goto FREE_MERGED_SKB;
@@ -1405,46 +1437,65 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
     eth = (struct ethhdr *)ptr_skb->data;
     eth_proto = eth->h_proto;
 
-    if (eth_proto != htons(ETH_P_IP)) {
+    if (eth_proto == htons(ETH_P_IPV6)) {
+        is_ipv6 = true;
+        ip_hdr_len = sizeof(struct ipv6hdr);
+
+        if (ptr_skb->len < ETH_HLEN + sizeof(struct ipv6hdr)) {
+            dbg_print(DBG_ERR, "Packet too short for IPv6 header, len:%d\n", ptr_skb->len);
+            goto FREE_MERGED_SKB;
+        }
+        ipv6h = (struct ipv6hdr *)(ptr_skb->data + ETH_HLEN);
+        if (ipv6h->nexthdr != ifa_cfg.ip_prot) {
+            dbg_print(DBG_ERR, "Invalid IFA IPv6 packet, nexthdr:0x%x, expect:0x%x\n",
+                      ipv6h->nexthdr, ifa_cfg.ip_prot);
+            goto FREE_MERGED_SKB;
+        }
+        ifa_hdr = (struct ifa_header *)(ptr_skb->data + ETH_HLEN + sizeof(struct ipv6hdr));
+    } else if (eth_proto == htons(ETH_P_IP)) {
+        if (ptr_skb->len < ETH_HLEN + sizeof(struct iphdr)) {
+            dbg_print(DBG_ERR, "Packet too short for IP header, len:%d\n", ptr_skb->len);
+            goto FREE_MERGED_SKB;
+        }
+        iph = (struct iphdr *)(ptr_skb->data + ETH_HLEN);
+        if (iph->ihl < 5 || ptr_skb->len < ETH_HLEN + (iph->ihl * 4)) {
+            dbg_print(DBG_ERR, "Invalid IP header length, ihl:%d, len:%d\n", iph->ihl, ptr_skb->len);
+            goto FREE_MERGED_SKB;
+        }
+        if (iph->protocol != ifa_cfg.ip_prot) {
+            dbg_print(DBG_ERR, "Invalid IFA IPv4 packet, proto:0x%x, expect:0x%x\n",
+                      iph->protocol, ifa_cfg.ip_prot);
+            goto FREE_MERGED_SKB;
+        }
+        ip_hdr_len = iph->ihl * 4;
+        ifa_hdr = (struct ifa_header *)(ptr_skb->data + ETH_HLEN + ip_hdr_len);
+    } else {
         dbg_print(DBG_ERR, "Invalid IP packet, proto:0x%x\n", ntohs(eth_proto));
         goto FREE_MERGED_SKB;
     }
 
-    if (ptr_skb->len < ETH_HLEN + sizeof(struct iphdr)) {
-        dbg_print(DBG_ERR, "Packet too short for IP header, len:%d\n", ptr_skb->len);
-        goto FREE_MERGED_SKB;
-    }
-    iph = (struct iphdr *)(ptr_skb->data + ip_offset);
-    if (iph->ihl < 5 || ptr_skb->len < ETH_HLEN + (iph->ihl * 4)) {
-        dbg_print(DBG_ERR, "Invalid IP header length, ihl:%d, len:%d\n", iph->ihl, ptr_skb->len);
-        goto FREE_MERGED_SKB;
-    }
-    if (iph->protocol != ifa_cfg.ip_prot) {
-        dbg_print(DBG_ERR, "Invalid IFA packet, proto:0x%x\n", iph->protocol);
-        goto FREE_MERGED_SKB;
-    }
-    ifa_hdr = (struct ifa_header *)((char *)iph + (iph->ihl * 4));
     if (ifa_hdr->version != 2) {
-        dbg_print(
-            DBG_ERR,
-            "Invalid IFA packet, iph->ihl:0x%x, ifa_hdr->version:0x%x, ifa_hdr->next_hdr:0x%x, ifa_hdr->gns:0x%x\n",
-            iph->ihl, ifa_hdr->version, ifa_hdr->next_hdr, ifa_hdr->gns);
+        dbg_print(DBG_ERR,
+                  "Invalid IFA packet, ifa_hdr->version:0x%x, ifa_hdr->next_hdr:0x%x, ifa_hdr->gns:0x%x\n",
+                  ifa_hdr->version, ifa_hdr->next_hdr, ifa_hdr->gns);
         goto FREE_MERGED_SKB;
     }
     if (ifa_hdr->next_hdr == IPPROTO_UDP) {
-        udph = (struct udphdr *)((char *)ifa_hdr + sizeof(struct ifa_header));
+        udph = (struct udphdr *)((char *)ifa_hdr + IFA_HEADER_WIRE_LEN);
+        ifa_meta_hdr = (struct ifa_metadata_header *)((char *)udph + sizeof(struct udphdr));
         ifa_md_start = (uint8_t *)((char *)udph + sizeof(struct udphdr) + ifa_meda_hdr_len);
     } else if (ifa_hdr->next_hdr == IPPROTO_TCP) {
-        tcph = (struct tcphdr *)((char *)ifa_hdr + sizeof(struct ifa_header));
+        tcph = (struct tcphdr *)((char *)ifa_hdr + IFA_HEADER_WIRE_LEN);
         if (tcph->doff < 5) {
             dbg_print(DBG_ERR, "Invalid TCP header length, doff:%d\n", tcph->doff);
             goto FREE_MERGED_SKB;
         }
         tcp_hdr_len = tcph->doff * 4;
-        if (ptr_skb->len < ETH_HLEN + (iph->ihl * 4) + tcp_hdr_len) {
-            dbg_print(DBG_ERR, "Packet too short for TCP header, len:%d, iph_len:%d, tcp_hdr_len:%d\n", ptr_skb->len, iph->ihl * 4, tcp_hdr_len);
+        if (ptr_skb->len < ETH_HLEN + ip_hdr_len + tcp_hdr_len) {
+            dbg_print(DBG_ERR, "Packet too short for TCP header, len:%d, ip_hdr_len:%u, tcp_hdr_len:%d\n", ptr_skb->len, ip_hdr_len, tcp_hdr_len);
             goto FREE_MERGED_SKB;
         }
+        ifa_meta_hdr = (struct ifa_metadata_header *)((char *)tcph + tcp_hdr_len);
         ifa_md_start = (uint8_t *)((char *)tcph + tcp_hdr_len + ifa_meda_hdr_len);
     } else {
         dbg_print(DBG_ERR, "Invalid IFA packet, next_hdr:0x%x\n", ifa_hdr->next_hdr);
@@ -1458,42 +1509,153 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
     dbg_print(DBG_RX, "ifa_md first 32bit: 0x%08x, second 32bit: 0x%08x\n",
               ntohl(ifa_md->first_field), ntohl(ifa_md->second_field));
 
+    tc_from_queue_id = IFA_GET_QUEUE_ID(ifa_md->second_field);
+
     /* Modify the ingress port and egress port as system interface index */
     igr_port_di = CLX_NETIF_GET_PORT_DI(unit, ((ntohs(ifa_md->igr_sys_port) >> 6) & 0x7), (ntohs(ifa_md->igr_sys_port) & 0x3F));
     if (igr_port_di >= CLX_NETIF_PORT_DI_MAX_NUM) {
         dbg_print(DBG_ERR, "Invalid ingress destination port number %04x\n", ntohs(ifa_md->igr_sys_port));
         goto FREE_MERGED_SKB;
     }
-    ifa_md->igr_sys_port =  htons(igr_port_di);
     egr_port_di = CLX_NETIF_GET_PORT_DI(unit, ((ntohs(ifa_md->egr_sys_port) >> 6) & 0x7), (ntohs(ifa_md->egr_sys_port) & 0x3F));
     if (egr_port_di >= CLX_NETIF_PORT_DI_MAX_NUM) {
         dbg_print(DBG_ERR, "Invalid egress destination port number %04x\n", ntohs(ifa_md->egr_sys_port));
         goto FREE_MERGED_SKB;
     }
-    ifa_md->egr_sys_port =  htons(egr_port_di);
 
-    /* Modify the device id in the packet */
-    ifa_md->node_id = htonl(ifa_cfg.node_id);
+    /* ACL-based IFA2: strip INT metadata when PPH qos_dnt_modify==0 (NB); else legacy path */
+    if ((ifa_cfg.is_flow_based) && (!rx_packet->pph_info.qos_dnt_modify)) {
+        strip_meta = 1;
+    }
 
-    tc_from_queue_id = IFA_GET_QUEUE_ID(ifa_md->second_field); 
+    if (!strip_meta) {
+        ifa_md->igr_sys_port = htons(igr_port_di);
+        ifa_md->egr_sys_port = htons(egr_port_di);
+        /* Modify the device id in the packet */
+        ifa_md->node_id = htonl(ifa_cfg.node_id);
+    } else {
+        /*
+         * ACL IFA2 (NB): strip full struct ifa_metadata at ifa_md_start; keep
+         * the 4-byte ifa_metadata_header. On NB, wire stack bytes =
+         * current_length * 4; removing sizeof(ifa_metadata) (32) bytes
+         * matches current_length -= 8 (8 * 4B = 32B).
+         */
+        const uint32_t ifa_metadata_size = ifa_strip_len;
+        /* 8 units * 4 bytes/unit = 32B removed (sizeof struct ifa_metadata) */
+        const uint8_t ifa_md_raw_data_len = 8;
+
+        if (ifa_meta_hdr == NULL) {
+            dbg_print(DBG_ERR, "strip: no ifa_metadata_header\n");
+            goto FREE_MERGED_SKB;
+        }
+
+        if (ifa_md_start + ifa_metadata_size > ptr_skb->data + ptr_skb->len) {
+            dbg_print(DBG_ERR, "strip: ifa metadata past skb end (strip_len=%u len=%d)\n",
+                      ifa_metadata_size, ptr_skb->len);
+            goto FREE_MERGED_SKB;
+        }
+
+        ifa_meta_hdr->hop_limit += 1;
+        if (ifa_meta_hdr->current_length >= ifa_md_raw_data_len) {
+            ifa_meta_hdr->current_length -= ifa_md_raw_data_len;
+        } else {
+            dbg_print(DBG_ERR,
+                        "Invalid current_length in metadata header: %u, ifa_md_raw_data_len: %u\n",
+                        ifa_meta_hdr->current_length, ifa_md_raw_data_len);
+            goto FREE_MERGED_SKB;
+        }
+
+        data_after_metadata = ifa_md_start + ifa_metadata_size;
+        data_after_metadata_len =
+            (uint32_t)((ptr_skb->data + ptr_skb->len) - data_after_metadata);
+        if (data_after_metadata_len > 0) {
+            memmove(ifa_md_start, data_after_metadata, data_after_metadata_len);
+        }
+
+        ptr_skb->len -= ifa_metadata_size;
+        skb_set_tail_pointer(ptr_skb, ptr_skb->len);
+
+        if (is_ipv6) {
+            ip_len = ntohs(ipv6h->payload_len);
+        } else {
+            ip_len = ntohs(iph->tot_len);
+        }
+        if (ip_len < ifa_metadata_size + ip_hdr_len) {
+            dbg_print(DBG_ERR, "strip: ip len %u too small\n", ip_len);
+            goto FREE_MERGED_SKB;
+        }
+        ip_len -= ifa_metadata_size;
+        if (is_ipv6) {
+            ipv6h->payload_len = htons(ip_len);
+        } else {
+            iph->tot_len = htons(ip_len);
+            iph->check = 0;
+            iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
+            dbg_print(DBG_RX, "ip checksum recalculated: 0x%04x\n", ntohs(iph->check));
+        }
+
+        if (udph) {
+            uint16_t udp_len = ntohs(udph->len);
+
+            if (udp_len < ifa_metadata_size + sizeof(struct udphdr)) {
+                dbg_print(DBG_ERR, "strip: udp len %u too small\n", udp_len);
+                goto FREE_MERGED_SKB;
+            }
+            udp_len -= ifa_metadata_size;
+            udph->len = htons(udp_len);
+        } else if (tcph) {
+            if (is_ipv6) {
+                tcp_len = ip_len - IFA_HEADER_WIRE_LEN;
+            } else {
+                tcp_len = ntohs(iph->tot_len) - ip_hdr_len - IFA_HEADER_WIRE_LEN;
+            }
+        }
+    }
 
     /* Recalculate UDP/TCP checksum */
     if (udph) {
-        udph->check = 0;
-        udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, ntohs(udph->len), IPPROTO_UDP,
-                                        csum_partial(udph, ntohs(udph->len), 0));
-        dbg_print(DBG_RX, "udp checksum recalculated: 0x%04x\n", ntohs(udph->check));
+        if (udph->check != 0) {
+            udph->check = 0;
+            if (is_ipv6) {
+                udph->check = csum_ipv6_magic(&ipv6h->saddr, &ipv6h->daddr,
+                                               ntohs(udph->len), IPPROTO_UDP,
+                                               csum_partial(udph, ntohs(udph->len), 0));
+            } else {
+                udph->check = csum_tcpudp_magic(iph->saddr, iph->daddr,
+                                                 ntohs(udph->len), IPPROTO_UDP,
+                                                 csum_partial(udph, ntohs(udph->len), 0));
+            }
+            dbg_print(DBG_RX, "udp checksum recalculated: 0x%04x\n", ntohs(udph->check));
+        }
+        else {
+            dbg_print(DBG_RX, "udp checksum is not recalculated: 0x%04x\n", ntohs(udph->check));
+        }
     } else if (tcph) {
         tcph->check = 0;
-        ip_len = ntohs(iph->tot_len);
-        min_len = (iph->ihl * 4) + sizeof(struct ifa_header) + (tcph->doff * 4);
-        if (ip_len < min_len || ip_len > ptr_skb->len - ETH_HLEN) {
-            dbg_print(DBG_ERR, "Invalid IP total length: %u, min_len:%u, ptr_skb->len:%d\n", ip_len, min_len, ptr_skb->len);
-            goto FREE_MERGED_SKB;
+        if (is_ipv6) {
+            ip_len = ntohs(ipv6h->payload_len);
+            min_len = IFA_HEADER_WIRE_LEN + tcp_hdr_len;
+            if (ip_len < min_len || ip_len > ptr_skb->len - ETH_HLEN - ip_hdr_len) {
+                dbg_print(DBG_ERR, "Invalid IPv6 payload length: %u, min_len:%u, ptr_skb->len:%d\n",
+                          ip_len, min_len, ptr_skb->len);
+                goto FREE_MERGED_SKB;
+            }
+            tcp_len = ip_len - IFA_HEADER_WIRE_LEN;
+            tcph->check = csum_ipv6_magic(&ipv6h->saddr, &ipv6h->daddr,
+                                           tcp_len, IPPROTO_TCP,
+                                           csum_partial(tcph, tcp_len, 0));
+        } else {
+            ip_len = ntohs(iph->tot_len);
+            min_len = ip_hdr_len + IFA_HEADER_WIRE_LEN + (tcph->doff * 4);
+            if (ip_len < min_len || ip_len > ptr_skb->len - ETH_HLEN) {
+                dbg_print(DBG_ERR, "Invalid IP total length: %u, min_len:%u, ptr_skb->len:%d\n",
+                          ip_len, min_len, ptr_skb->len);
+                goto FREE_MERGED_SKB;
+            }
+            tcp_len = ip_len - ip_hdr_len - IFA_HEADER_WIRE_LEN;
+            tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, tcp_len, IPPROTO_TCP,
+                                             csum_partial(tcph, tcp_len, 0));
         }
-        tcp_len = ip_len - (iph->ihl * 4) - sizeof(struct ifa_header);
-        tcph->check = csum_tcpudp_magic(iph->saddr, iph->daddr, tcp_len, IPPROTO_TCP,
-                                        csum_partial(tcph, tcp_len, 0));
         dbg_print(DBG_RX, "tcp checksum recalculated: 0x%04x\n", ntohs(tcph->check));
     } else {
         dbg_print(DBG_ERR, "Invalid tcp/udp packet, next_hdr:0x%x\n", ifa_hdr->next_hdr);
@@ -1502,21 +1664,32 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
 
     dbg_print(
         DBG_RX,
-        "After insert device id: Node ID:0x%x, queue id:%d, protocol:0x%x, ptr_skb->head:0x%lx, data:0x%lx, end:%d, tail:%d, len:%d, data_len:%d, truesize:%d, ingress port:%d, egress port:%d\n",
-        ifa_cfg.node_id, tc_from_queue_id, htons(ptr_skb->protocol),
+        "After IFA2 fast path (strip=%u): Node ID:0x%x, queue id:%d, protocol:0x%x, ptr_skb->head:0x%lx, data:0x%lx, end:%d, tail:%d, len:%d, data_len:%d, truesize:%d, igr_di:%d, egr_di:%d\n",
+        strip_meta, ifa_cfg.node_id, tc_from_queue_id, htons(ptr_skb->protocol),
         (unsigned long)ptr_skb->head, (unsigned long)ptr_skb->data, ptr_skb->end, ptr_skb->tail,
-        ptr_skb->len, ptr_skb->data_len, ptr_skb->truesize,
-	ntohs(ifa_md->igr_sys_port), ntohs(ifa_md->egr_sys_port));
+        ptr_skb->len, ptr_skb->data_len, ptr_skb->truesize, igr_port_di, egr_port_di);
     print_packet(DBG_RX_PAYLOAD, ptr_skb->data, ptr_skb->len);
 
-    clx_netif_fast_tx(unit, ptr_skb, egr_port_di, tc_from_queue_id);
-
+    tx_ret = clx_netif_fast_tx(unit, ptr_skb, egr_port_di, tc_from_queue_id);
+    /*
+    * clx_netif_fast_tx return semantics:
+    * NETDEV_TX_OK    → ptr_skb already freed, new_skb consumed by DMA TX
+    * NETDEV_TX_BUSY  → ptr_skb NOT freed, caller must free
+    */
+    if (tx_ret == NETDEV_TX_BUSY) {
+        dev_kfree_skb_any(ptr_skb);
+        return -EBUSY;
+    }
+    /*
+        * TX_OK: ptr_skb already freed by fast_tx.
+        * The clone (new_skb) owns the data pages through DMA TX.
+        * For single-fragment, ptr_skb == rx_frag->ptr_skb, so pages
+        * are shared with new_skb — do NOT dma_free_rx_packet.
+        * For multi-fragment, a new skb was allocated — safe to free.
+        */
     if (rx_packet->list_count > 1) {
         dma_free_rx_packet(unit, rx_packet, true);
-    } else {
-        dma_free_rx_packet(unit, rx_packet, false);
     }
-
     return 0;
 
  FREE_MERGED_SKB:
@@ -1525,36 +1698,51 @@ clx_netif_netdev_receive_send_ifa(uint32_t unit, struct dma_rx_packet *rx_packet
     }
     return -EINVAL;
 }
-int
-clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
+
+static int
+_clx_netif_receive_to_sdk_from_queue(uint32_t unit, unsigned long arg,
+                                     struct dma_rx_packet_queue *pkt_queue,
+                                     wait_queue_head_t *pkt_wait_queue)
 {
-    struct dma_rx_packet *rx_packet;
+    struct dma_rx_packet *rx_packet = NULL;
     struct dma_rx_frag_buffer *rx_frag, *tmp;
     struct sk_buff *ptr_skb;
-    struct clx_netif_ioctl_rx_packet *kpacket;
+    struct clx_netif_ioctl_rx_packet *kpacket = NULL;
     struct clx_netif_ioctl_rx_fragment *kfragments;
     struct clx_netif_ioctl_rx_packet __user *user_packet = (void __user *)arg;
     int frag_idx = 0, ret = 0;
     size_t packet_struct_size;
-    uint32_t rc = 0;
+    int rc = 0;
+    uint32_t list_count;
 
-    ret = wait_event_interruptible_timeout(clx_dma_drv(unit)->rx_wait_queue,
-                                           clx_dma_drv(unit)->rx_queue.queue_size,
-                                           msecs_to_jiffies(CLX_NETIF_WAIT_RX_TIMEOUT));
-    if (ret <= 0) {
+    ret = wait_event_interruptible(*pkt_wait_queue,
+        pkt_queue->queue_size || READ_ONCE(clx_dma_drv(unit)->rx_stopped));
+    if (ret < 0) {
+        dbg_print(DBG_ERR, "wait event interrupted. unit=%u, queue_size %d, ret %d\n",
+            unit, pkt_queue->queue_size, ret);
+        rc = ret;
+    } else if (READ_ONCE(clx_dma_drv(unit)->rx_stopped)) {
         rc = -EAGAIN;
-        if (copy_to_user((void __user *)(&user_packet->rc), &rc, sizeof(uint32_t))) {
+    }
+
+    if (rc < 0) {
+        uint32_t urc = (uint32_t)rc;
+        if (copy_to_user((void __user *)(&user_packet->rc), &urc, sizeof(uint32_t))) {
             dbg_print(DBG_ERR, "copy to user pkt rc failed. unit=%u\n", unit);
             return -EFAULT;
         }
-        return 0;
+        /*
+         * For rx_stopped, return 0 so osal_mdc_ioctl() won't log a
+         * spurious error; user-space already checks user_packet->rc.
+         * For signal interrupts, propagate the real error code.
+         */
+        return (ret < 0) ? ret : 0;
     }
 
-    rx_packet =
-        list_first_entry(&clx_dma_drv(unit)->rx_queue.rx_packet, struct dma_rx_packet, rx_packet);
+    rx_packet = clx_dma_rx_packet_queue_dequeue(pkt_queue);
     if (!rx_packet) {
-        dbg_print(DBG_ERR, "No packer in the rx queue. queue_size:%u. unit=%u\n",
-                  clx_dma_drv(unit)->rx_queue.queue_size, unit);
+        dbg_print(DBG_ERR, "No packet in the rx queue. queue_size:%u. unit=%u\n",
+                  pkt_queue->queue_size, unit);
         return -EAGAIN;
     }
 
@@ -1562,14 +1750,28 @@ clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
         clx_netif_performance_test_rx(unit, rx_packet);
     }
 
+    /*
+     * Snapshot list_count into a local and sanity-check it before using it
+     * to size a kmalloc. An out-of-range value indicates memory corruption
+     * and must not be allowed to propagate into the allocator.
+     */
+    list_count = rx_packet->list_count;
+    if (list_count == 0 || list_count > CLX_DMA_RX_MAX_FRAGS_PER_PKT) {
+        dbg_print(DBG_ERR, "Invalid list_count:%u, unit=%u\n", list_count, unit);
+        knet_fault_event_report(KNET_FAULT_EVENT_KENT_DMA_ALLOC_FAIL);
+        ret = -EINVAL;
+        goto out_free_pkt;
+    }
+
     packet_struct_size = sizeof(struct clx_netif_ioctl_rx_packet) +
-        rx_packet->list_count * sizeof(struct clx_netif_ioctl_rx_fragment);
+        list_count * sizeof(struct clx_netif_ioctl_rx_fragment);
 
     kpacket = kmalloc(packet_struct_size, GFP_ATOMIC);
     if (!kpacket) {
         dbg_print(DBG_CRIT, "Failed to allocate kpacket\n");
         knet_fault_event_report(KNET_FAULT_EVENT_KENT_DMA_ALLOC_FAIL);
-        return -ENOMEM;
+        ret = -ENOMEM;
+        goto out_free_pkt;
     }
 
     if (copy_from_user(kpacket, user_packet, sizeof(struct clx_netif_ioctl_rx_packet))) {
@@ -1580,15 +1782,22 @@ clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
     dbg_print(DBG_RX, "unit:%u, num_fragments:%d\n", kpacket->unit, kpacket->num_fragments);
 
     kfragments = kpacket->fragments;
-    dbg_print(DBG_RX, "rx_packet->list_count:%d. unit=%u\n", rx_packet->list_count, unit);
+    dbg_print(DBG_RX, "rx_packet->list_count:%u. unit=%u\n", list_count, unit);
 
     list_for_each_entry_safe(rx_frag, tmp, &rx_packet->rx_frag, rx_frag)
     {
         struct clx_netif_ioctl_rx_fragment __user *user_fragment;
 
+        /* Guard against the frag list being longer than list_count. */
+        if (frag_idx >= list_count) {
+            dbg_print(DBG_WARN,
+                      "frag list longer than list_count:%u, stop at %d. unit=%u\n",
+                      list_count, frag_idx, unit);
+            break;
+        }
+
         ptr_skb = rx_frag->ptr_skb;
 
-        /* copy the fragment from user */
         user_fragment = &user_packet->fragments[frag_idx];
         if (copy_from_user(&kfragments[frag_idx], user_fragment,
                            sizeof(struct clx_netif_ioctl_rx_fragment))) {
@@ -1598,7 +1807,6 @@ clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
             goto out_free;
         }
 
-        /* copy dma data to the dma addr allocated by user */
         if (copy_to_user((void __user *)(clx_addr_t)kfragments[frag_idx].fragment_dma_addr,
                          ptr_skb->data, ptr_skb->len)) {
             dbg_print(DBG_ERR, "copy to user pkt data failed. unit=%u, frag_idx=%d\n", unit,
@@ -1607,7 +1815,6 @@ clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
             goto out_free;
         }
 
-        /* update fragment_size */
         kfragments[frag_idx].fragment_size = ptr_skb->len;
 
         if (copy_to_user(user_fragment, &kfragments[frag_idx],
@@ -1622,23 +1829,33 @@ clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
         frag_idx++;
     }
 
-    /* update num_fragments to user */
-    if (copy_to_user(&user_packet->num_fragments, &rx_packet->list_count, sizeof(uint32_t))) {
+    if (copy_to_user(&user_packet->num_fragments, &list_count, sizeof(uint32_t))) {
         dbg_print(DBG_ERR, "copy to user pkt num_fragments failed. unit=%u\n", unit);
         ret = -EFAULT;
         goto out_free;
     }
 
-    if (rx_packet != clx_dma_rx_packet_queue_dequeue(&clx_dma_drv(unit)->rx_queue)) {
-        dbg_print(DBG_ERR, "queue first entry error,rx_packet:%p. unit=%u\n", rx_packet, unit);
-    }
-
-    dma_free_rx_packet(unit, rx_packet, true);
     ret = 0;
 
 out_free:
     kfree(kpacket);
+out_free_pkt:
+    dma_free_rx_packet(unit, rx_packet, true);
     return ret;
+}
+
+int
+clx_netif_receive_to_sdk(uint32_t unit, unsigned long arg)
+{
+    return _clx_netif_receive_to_sdk_from_queue(unit, arg, &clx_dma_drv(unit)->rx_queue,
+                                                &clx_dma_drv(unit)->rx_wait_queue);
+}
+
+int
+clx_netif_receive_fd_to_sdk(uint32_t unit, unsigned long arg)
+{
+    return _clx_netif_receive_to_sdk_from_queue(unit, arg, &clx_dma_drv(unit)->fd_rx_queue,
+                                                &clx_dma_drv(unit)->fd_rx_wait_queue);
 }
 
 int
