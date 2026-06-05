@@ -37,6 +37,9 @@
                 {
                     "type": "fan.all.set_speed",
                     "speed": "100"
+                },
+                {
+                    "type": "fan.led.set"
                 }
             ]
         },
@@ -51,6 +54,22 @@
                 {
                     "type": "fan.all.set_speed",
                     "speed": "100"
+                },
+                {
+                    "type": "fan.led.set"
+                }
+            ]
+        },
+        {
+            "name": "insufficient fan speed",
+            "conditions": [
+                {
+                    "type": "insufficient.fan.fault"
+                }
+            ],
+            "actions":[
+                {
+                    "type": "insufficient.fan.speed"
                 }
             ]
         },
@@ -84,6 +103,9 @@
             "actions": [
                 {
                     "type": "thermal_control.normalization"
+                },
+                {
+                    "type": "fan.led.set"
                 }
             ]
         }

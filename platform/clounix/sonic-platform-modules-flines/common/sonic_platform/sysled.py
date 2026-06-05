@@ -31,10 +31,10 @@ class SYSLED(DeviceBase):
 
     STATUS_LED_COLOR_OFF = "off"
     STATUS_LED_COLOR_GREEN = "green"
-    STATUS_LED_COLOR_AMBER = "amber"
+    STATUS_LED_COLOR_AMBER = "yellow"
     STATUS_LED_COLOR_RED = "red"
     STATUS_LED_COLOR_GREEN_FLASHING = "green_blink"
-    STATUS_LED_COLOR_AMBER_FLASHING = "amber_blink"
+    STATUS_LED_COLOR_AMBER_FLASHING = "yellow_blink"
     STATUS_LED_COLOR_RED_FLASHING = "red_blink"
     STATUS_LED_COLOR_BLUE = "blue"
     STATUS_LED_COLOR_BLUE_FLASHING = "blue_blink"
@@ -73,7 +73,7 @@ class SYSLED(DeviceBase):
     DEVICE_NAME = ['sys_led_status', 'bmc_led_status', 'fan_led_status', 'psu_led_status', 'id_led_status']
 
     def __init__(self):
-        self._sysled_path = '/sys/switch/sysled/'
+        self._sysled_path = '/sys_switch/sysled/'
         self.logger = Logger()
 
     def _is_ascii(self, s):
@@ -215,6 +215,22 @@ class SYSLED(DeviceBase):
             specified.
         """
         return self._get_led_status('fan_led_status', 'N/A')
+
+    def set_fan_led_status(self, color):
+        """
+        Set the location led status front color
+
+        Args:
+            color: A string representing the color with which to set the
+                   system LED
+
+        Returns:
+            bool: True if system LED state is set successfully, False if not
+        """
+        if color not in self.led_dict_id:
+            return False
+
+        return self._set_attr_val('fan_led_status', self.led_dict_id[color])
 
     def get_psu_led_status(self):
         """

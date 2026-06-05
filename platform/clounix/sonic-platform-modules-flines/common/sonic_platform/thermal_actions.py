@@ -86,6 +86,93 @@ class SetFanSpeedAction(ThermalPolicyActionBase):
       for fan in thermal_info_dict['fan_info'].fans.values():
          fan.set_speed(self.speed)
 
+@thermal_json_object("fan.led.set")
+class SetFanLedAction(ThermalPolicyActionBase):
+    STATUS_LED_COLOR_GREEN = "green"
+    STATUS_LED_COLOR_AMBER = "yellow"
+    STATUS_LED_COLOR_RED = "red"
+
+    def execute(self, thermal_info_dict):
+        fan_info = thermal_info_dict['fan_info']
+        absence = len(fan_info.get_absence_fans())
+        fault = len(fan_info.get_fault_fans())
+        try:
+            from sonic_platform.sysled import SYSLED
+            fanled = SYSLED()
+            fanled_color = fanled.get_fan_led_status()
+            if absence >= 4 or fault >= 4:
+                if fanled_color != self.STATUS_LED_COLOR_RED:
+                    fanled.set_fan_led_status(self.STATUS_LED_COLOR_RED)
+            if (absence < 4 and absence >= 1) or (fault < 4 and fault >= 1):
+                if fanled_color != self.STATUS_LED_COLOR_AMBER:
+                    fanled.set_fan_led_status(self.STATUS_LED_COLOR_AMBER)
+            if absence == 0 and fault == 0:
+                if fanled_color != self.STATUS_LED_COLOR_GREEN:
+                    fanled.set_fan_led_status(self.STATUS_LED_COLOR_GREEN)
+        except Exception as e:
+            print(e)
+
+
+@thermal_json_object("insufficient.fan.speed")
+class InsufficientFanSpeedAction(ThermalPolicyActionBase):
+    JSON_FILED_FAN_WINDOW = 'window'
+
+    def __init__(self):
+      self.last_time = 0
+      self.curr_time = 0
+      self.count = 0
+      self.window = 6
+
+    def load_from_json(self, json_obj):
+        if self.JSON_FILED_FAN_WINDOW in json_obj:
+            window = float(json_obj[self.JSON_FILED_FAN_FAULT_NUM])
+            if window < 0:
+                raise ValueError('InsufficientFanSpeedAction invalid window value {} in JSON policy file, valid value should be > 0'.format(window))
+            self.window = window
+
+    def get_uptime(self):
+        """
+        Utility to get the system up time.
+        :return: System up time in seconds.
+        """
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+        return uptime_seconds
+
+    def execute(self, thermal_info_dict):
+        self.curr_time = self.get_uptime()
+        if self.last_time - self.curr_time >= 300:
+            self.count = 0
+        self.last_time = self.curr_time
+
+        self.count += 1
+        if self.count >= self.window:
+            self.count = 0
+            helper_logger.log_error("insufficient fan speed, will reboot now!!")
+            print('insufficient fan speed, will reboot now!!')
+            if ChassisInfo.INFO_NAME in thermal_info_dict:
+                chassis_info_obj = thermal_info_dict[ChassisInfo.INFO_NAME]
+                chassis = chassis_info_obj.get_chassis()
+                try:
+                    REBOOT_EEPROM_PATH = chassis.pddf_obj.get_path("RC_EEPROM", "eeprom")
+                    if os.path.isfile(REBOOT_EEPROM_PATH):
+                        with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
+                            try:
+                                binfile.seek(0)
+                                binfile.write(bytes([0x5]))
+                                binfile.flush()
+                            except Exception as e:
+                                print(f"Failed to set reboot eeprom: {e}")
+                        os.system("sync")
+                        time.sleep(5)
+                        power_cycle_path = chassis.pddf_obj.get_fpga_pci_sysfs_attr('power_cycle')
+                        cmd = 'echo 0x4 > {}'.format(power_cycle_path)
+                        APIHelper().run_command(cmd)
+                    else:
+                        print('check reboot eeprom path!!!')
+                except Exception as e:
+                        print('insufficient fan speed set reboot eeprom fail!!', e)
+
 
 @thermal_json_object('switch.power_cycling')
 class SwitchPolicyAction(ThermalPolicyActionBase):
@@ -129,7 +216,6 @@ class SwitchPolicyAction(ThermalPolicyActionBase):
 @thermal_json_object('thermal_control.normalization')
 class NormalizationAction(ThermalPolicyActionBase):
     LAST_TEMP = '/tmp/last_temp'
-    SAFE_TEMP = 60.0
 
     def __init__(self):
         self.speed = 50
@@ -190,126 +276,123 @@ class NormalizationAction(ThermalPolicyActionBase):
         return default_ratio
 
     def step_speed(self, thermal_info_dict):
-        thermals = {}
-        nows = []
+        current_temps = {}
+        temp_list = []
         warning = []
         required_sensors = ['CPU', '0x48', '0x49', '0x4a', '0x4b', 'FPGA_PVT']
         chassis = thermal_info_dict['chassis_info'].get_chassis()
-        temps = [self.cpu_up_threshold[3],
+
+        max_thresholds = [self.cpu_up_threshold[3],
                 self.u48_up_threshold[3], 
                 self.u49_up_threshold[3],
                 self.u4a_up_threshold[3],
                 self.u4b_up_threshold[3],
                 self.pvt_up_threshold[3]]
-        for i in range(chassis.get_num_thermals()):
-            thermal = chassis.get_thermal(i)
-            zname = thermal.get_name()
-            if 'Package' in zname:
-                thermals['CPU'] = thermal
-            elif '0x48' in zname:
-                thermals['0x48'] = thermal
-            elif '0x49' in zname:
-                thermals['0x49'] = thermal
-            elif '0x4a' in zname:
-                thermals['0x4a'] = thermal
-            elif '0x4b' in zname:
-                thermals['0x4b'] = thermal
-            elif 'FPGA_PVT' in zname:
-                thermals['FPGA_PVT'] = thermal
 
+        for i in range(chassis.get_num_thermals()):
             try:
+                thermal = chassis.get_thermal(i)
+                if thermal is None:
+                    continue
+                sensor_name = thermal.get_name()
+
                 temp = thermal.get_temperature()
                 high_threshold = thermal.get_high_threshold()
 
                 if temp is None or high_threshold is None:
-                    helper_logger.log_warning(f"Thermal sensor {thermal.get_name()} returned None value. temp={temp}, high_threshold={high_threshold}")
+                    helper_logger.log_warning(f"Thermal sensor {sensor_name} returned None value. temp={temp}, high_threshold={high_threshold}")
                     continue
 
                 if temp > high_threshold:
-                    helper_logger.log_warning(f"Thermal warning: {thermal.get_name()} temperature {temp} exceeds high threshold {high_threshold}")
-                    warning.append(zname)
+                    helper_logger.log_warning(f"Thermal warning: {sensor_name} temperature {temp} exceeds high threshold {high_threshold}")
+                    warning.append(sensor_name)
+
+                if 'Package' in sensor_name:
+                    current_temps['CPU'] = temp
+                elif '0x48' in sensor_name:
+                    current_temps['0x48'] = temp
+                elif '0x49' in sensor_name:
+                    current_temps['0x49'] = temp
+                elif '0x4a' in sensor_name:
+                    current_temps['0x4a'] = temp
+                elif '0x4b' in sensor_name:
+                    current_temps['0x4b'] = temp
+                elif 'FPGA_PVT' in sensor_name:
+                    current_temps['FPGA_PVT'] = temp
             except Exception as e:
-                helper_logger.log_error(f"Error checking thermal sensor {thermal.get_name()}: {e}")
+                helper_logger.log_error(f"Error checking thermal sensor {sensor_name}: {e}")
                 continue
+
         #Is an alarm triggered?
         if len(warning) > 0:
             helper_logger.log_warning(f"Thermal warning")
             self.speed = 100
-            nows = temps
-            return nows
+            temp_list = max_thresholds
+            return temp_list
 
-        missing_sensors = [s for s in required_sensors if s not in thermals]
-        #Check for the absence of temperature sensors
+        missing_sensors = [s for s in required_sensors if s not in current_temps]
         if missing_sensors:
-            helper_logger.log_error(f"Missing required thermal sensors: {missing_sensors}. Using safe fan speed.")
+            helper_logger.log_error(f"Missing required sensors: {missing_sensors}, setting fan speed to 100%")
             self.speed = 100
-            nows = temps
-            return nows
+            return max_thresholds
 
         for name in required_sensors:
-            try:
-                temp = thermals[name].get_temperature()
-                if temp is None:
-                    helper_logger.log_error(f"Thermal sensor {name} returned None. Using safe temperature {self.SAFE_TEMP}")
-                    temp = self.SAFE_TEMP
-                nows.append(temp)
-            except Exception as e:
-                helper_logger.log_error(f"Error reading temperature from sensor {name}: {e}. Using safe temperature {self.SAFE_TEMP}")
-                nows.append(self.SAFE_TEMP)
+            temp = current_temps[name]
+            temp_list.append(temp)
 
         current_ratio = self.get_ratio(chassis)
         if current_ratio <= 0:
             self.speed = 50
             helper_logger.log_warning(f"Invalid current_ratio: {current_ratio}. Setting speed to 50.")
-            return nows
+            return temp_list
 
         try:
             index = self.fan_speed_ratio.index(current_ratio)
         except ValueError:
             self.speed = 50
             helper_logger.log_warning(f"Current ratio {current_ratio} not found in fan_speed_ratio. Setting speed to 50.")
-            return nows
+            return temp_list
 
         if index < 1:
-            if (nows[0] > self.cpu_up_threshold[0] or
-                nows[1] > self.u48_up_threshold[0] or
-                nows[2] > self.u49_up_threshold[0] or
-                nows[3] > self.u4a_up_threshold[0] or
-                nows[4] > self.u4b_up_threshold[0] or
-                nows[5] > self.pvt_up_threshold[0]):
+            if (temp_list[0] > self.cpu_up_threshold[0] or
+                temp_list[1] > self.u48_up_threshold[0] or
+                temp_list[2] > self.u49_up_threshold[0] or
+                temp_list[3] > self.u4a_up_threshold[0] or
+                temp_list[4] > self.u4b_up_threshold[0] or
+                temp_list[5] > self.pvt_up_threshold[0]):
                 self.speed = self.fan_speed_ratio[index + 1]
-                return nows
+                return temp_list
         
         elif index > 3:
-            if (nows[0] < self.cpu_down_threshold[3] and
-                nows[1] < self.u48_down_threshold[3] and
-                nows[2] < self.u49_down_threshold[3] and
-                nows[3] < self.u4a_down_threshold[3] and
-                nows[4] < self.u4b_down_threshold[3] and
-                nows[5] < self.pvt_down_threshold[3]):
+            if (temp_list[0] < self.cpu_down_threshold[3] and
+                temp_list[1] < self.u48_down_threshold[3] and
+                temp_list[2] < self.u49_down_threshold[3] and
+                temp_list[3] < self.u4a_down_threshold[3] and
+                temp_list[4] < self.u4b_down_threshold[3] and
+                temp_list[5] < self.pvt_down_threshold[3]):
                 self.speed = self.fan_speed_ratio[index - 1]
-                return nows
+                return temp_list
         
         else:
-            if (nows[0] > self.cpu_up_threshold[index] or
-                nows[1] > self.u48_up_threshold[index] or
-                nows[2] > self.u49_up_threshold[index] or
-                nows[3] > self.u4a_up_threshold[index] or
-                nows[4] > self.u4b_up_threshold[index] or
-                nows[5] > self.pvt_up_threshold[index]):
+            if (temp_list[0] > self.cpu_up_threshold[index] or
+                temp_list[1] > self.u48_up_threshold[index] or
+                temp_list[2] > self.u49_up_threshold[index] or
+                temp_list[3] > self.u4a_up_threshold[index] or
+                temp_list[4] > self.u4b_up_threshold[index] or
+                temp_list[5] > self.pvt_up_threshold[index]):
                 self.speed = self.fan_speed_ratio[index + 1]
 
-            elif (nows[0] < self.cpu_down_threshold[index - 1] and
-                  nows[1] < self.u48_down_threshold[index - 1] and
-                  nows[2] < self.u49_down_threshold[index - 1] and
-                  nows[3] < self.u4a_down_threshold[index - 1] and
-                  nows[4] < self.u4b_down_threshold[index - 1] and
-                  nows[5] < self.pvt_down_threshold[index - 1]):
+            elif (temp_list[0] < self.cpu_down_threshold[index - 1] and
+                  temp_list[1] < self.u48_down_threshold[index - 1] and
+                  temp_list[2] < self.u49_down_threshold[index - 1] and
+                  temp_list[3] < self.u4a_down_threshold[index - 1] and
+                  temp_list[4] < self.u4b_down_threshold[index - 1] and
+                  temp_list[5] < self.pvt_down_threshold[index - 1]):
                 self.speed = self.fan_speed_ratio[index - 1]
             else:
                 self.speed = current_ratio
 
-        return nows
+        return temp_list
 
     def save_temps(self, temps: list):
         try:
