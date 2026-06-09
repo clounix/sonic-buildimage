@@ -247,10 +247,49 @@ class Chassis(PddfChassis):
                 power_status_history = self.__api_helper.read_one_line_file(SYS_POWER_STATUS_HISTORY_PATH).strip()
                 
                 if power_status_history and power_status_history.lower() != '0xffff':
+                    raw_val = int(power_status_history, 16)
+
+                    POWER_RAILS = {
+                        15: 'PSU Shutdown', 
+                        14: 'P1V0_STBY', 
+                        13: 'P1V8_STB',
+                        12: 'P3V3_STB', 
+                        11: 'P1V0_MGT_STBY', 
+                        10: 'P1V2_MGT_STBY',
+                        9: 'P5V', 
+                        8: 'CPU Cold Reset', 
+                        7: 'MAC_P1V8_VDDIO',
+                        6: 'MAC_P0V8_VDDK', 
+                        5: 'MAC_P1V25_AVDD', 
+                        4: 'MAC_P1V8_AVDDH',
+                        3: 'P1V8_CLK', 
+                        2: 'P3V3_CLK', 
+                        1: 'P3V3_SFP1', 
+                        0: 'P3V3_SFP2'
+                    }
+
+                    failed_rails = [name for bit, name in POWER_RAILS.items()
+                                    if not (raw_val >> bit) & 1]
+
+                    cmd_bits = []
+
+                    if (raw_val >> 17) & 1:
+                        cmd_bits.append('POWER CYCLE')
+                    if (raw_val >> 18) & 1:
+                        cmd_bits.append('POWER DELAY CYCLE')
+
+                    detail_parts = [f'REG = 0x{raw_val:08X}']
+                    
+                    if failed_rails:
+                        detail_parts.append('FAIL = ' + ','.join(failed_rails))
+                    if cmd_bits:
+                        detail_parts.append('CMD = ' + ','.join(cmd_bits))
+
                     reboot_cause = (
                         self.REBOOT_CAUSE_POWER_LOSS,
-                        f'Power Loss - POWER STATUS HISTORY: {power_status_history}'
+                        'Power Loss: ' + ' | '.join(detail_parts)
                     )
+
                 self._write_reboot_history(reboot_cause[1])
                 time.sleep(0.5)
             except Exception as e:

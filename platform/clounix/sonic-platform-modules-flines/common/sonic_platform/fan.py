@@ -51,18 +51,38 @@ class Fan(PddfFan):
             return status
 
     def get_status(self):
-        speed = self.get_speed()
-        speed_rpm = self.get_speed_rpm()
-        target_speed_rpm = self.get_target_speed_rpm()
-        tolerance_speed_rmp = self.get_speed_tolerance_rpm()
-        if speed != 0:
-            if speed_rpm > (target_speed_rpm - tolerance_speed_rmp) and speed_rpm < (target_speed_rpm + tolerance_speed_rmp):
-                status = True
+        if self.is_psu_fan:
+            if not self.get_presence():
+                return False
+
+            device = "PSU{}".format(self.fans_psu_index)
+
+            output = self.pddf_obj.get_attr_name_output(device, "psu_power_good")
+            if not output:
+                return False
+
+            mode = output['mode']
+            status = output['status']
+
+            vmap = self.plugin_data['PSU']['psu_power_good'][mode]['valmap']
+
+            if status.rstrip('\n') in vmap:
+                return vmap[status.rstrip('\n')]
+            else:
+                return False
+        else:
+            speed = self.get_speed()
+            speed_rpm = self.get_speed_rpm()
+            target_speed_rpm = self.get_target_speed_rpm()
+            tolerance_speed_rmp = self.get_speed_tolerance_rpm()
+            if speed != 0:
+                if speed_rpm > (target_speed_rpm - tolerance_speed_rmp) and speed_rpm < (target_speed_rpm + tolerance_speed_rmp):
+                    status = True
+                else:
+                    status = False
             else:
                 status = False
-        else:
-            status = False
-        return status
+            return status
 
     def get_speed(self):
         """

@@ -24,6 +24,23 @@ class AnyFanFaultCondition(FanCondition):
         fan_info_obj = self.get_fan_info(thermal_info_dict)
         return len(fan_info_obj.get_fault_fans()) > 0 if fan_info_obj else False
 
+@thermal_json_object('insufficient.fan.fault')
+class InsufficientFanFault(FanCondition):
+    JSON_FILED_FAN_FAULT_NUM = "num"
+
+    def __init__(self):
+      self.fault_num = 4
+
+    def load_from_json(self, json_obj):
+        if self.JSON_FILED_FAN_FAULT_NUM in json_obj:
+            fault_num = float(json_obj[self.JSON_FILED_FAN_FAULT_NUM])
+            if fault_num < 0 or fault_num > 10:
+                raise ValueError('InsufficientFanSpeedAction invalid num value {} in JSON policy file, valid value should be [0, 10]'.format(fault_num))
+            self.fault_num = fault_num
+
+    def is_match(self, thermal_info_dict):
+        fan_info_obj = self.get_fan_info(thermal_info_dict)
+        return len(fan_info_obj.get_fault_fans()) >= self.fault_num if fan_info_obj else False
 
 @thermal_json_object('fan.all.presence')
 class AllFanPresenceCondition(FanCondition):

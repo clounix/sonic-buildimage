@@ -9,6 +9,8 @@ import signal
 import sys
 import syslog
 import time
+import os
+import json
 
 try:
     import sonic_platform
@@ -57,6 +59,22 @@ def set_all_fans_max_speed():
     except Exception as e:
         log_warning('Failed to set all fans to max speed: %s' % e)
 
+#wait for database config
+def fan_control_init():
+    db_config_path = '/var/run/redis/sonic-db/database_config.json'
+    max_retries = 30
+    retry_interval = 1
+
+    for i in range(max_retries):
+        if os.path.exists(db_config_path) and os.path.getsize(db_config_path) > 0:
+            try:
+                with open(db_config_path, 'r') as f:
+                    json.load(f)
+                return True
+            except json.JSONDecodeError as e:
+                print(f"{e}, retry ({i+1}/{max_retries})")
+        time.sleep(retry_interval)
+
 class ThermalControl(object):
 
     POLICY_FILE = '/usr/share/sonic/platform/thermal_policy.json'
@@ -89,7 +107,7 @@ class ThermalControl(object):
             set_all_fans_max_speed()
 
 def main():
-
+    fan_control_init()
     thermal = ThermalControl()
     def signal_handler(signum, frame):
         signum_name = signal.Signals(signum).name

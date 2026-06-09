@@ -22,7 +22,7 @@ extern int (*ptr_fpgapci_read)(uint32_t);
 extern int (*ptr_fpgapci_write)(uint32_t, uint32_t);
 extern int (*pddf_i2c_pci_add_numbered_bus)(struct i2c_adapter *, int);
 
-#define DEFAULT_RETRY 3
+#define FPGA_I2C_DEFAULT_RETRY 3
 #define FPGA_I2C_TIMEOUT (msecs_to_jiffies(250))
 #define FPGA_I2C_MASTER_MGR_RST (1 << 31)
 #define FPGA_I2C_MASTER_MGR_ENABLE ((1 << 30) | (1 << 29) | (0x54 << 16))
@@ -43,25 +43,6 @@ extern int (*pddf_i2c_pci_add_numbered_bus)(struct i2c_adapter *, int);
 
 #define XFPGA_RAM_BASE_ADDR  (0x130000)
 #define XFPGA_RAM_SIZE       (0x10000)
-
-#define FPGA_I2C_DEFAULT_RETRY 3
-#define FPGA_I2C_TIMEOUT (msecs_to_jiffies(250))
-#define FPGA_I2C_MASTER_MGR_RST (1 << 31)
-#define FPGA_I2C_MASTER_MGR_ENABLE ((1 << 30) | (1 << 29) | (0x54 << 16))
-#define FPGA_I2C_MASTER_TX_FINISH_MASK (0x80000000UL)
-#define FPGA_I2C_MASTER_TX_ERROR_MASK (0x40000000UL)
-#define FPGA_I2C_MASTER_MGR_RD_BYTE (0x81 << 24)
-#define FPGA_I2C_MASTER_MGR_WT_BYTE (0x84 << 24)
-#define FPGA_I2C_MASTER_MGR_RD_WORD (0x82 << 24)
-#define FPGA_I2C_MASTER_MGR_WT_WORD (0x88 << 24)
-#define FPGA_I2C_MASTER_MGR_WT_NONE (0x85 << 24)
-
-#define FPGA_I2C_MASTER_CFG_ADDR (0x00)
-#define FPGA_I2C_MASTER_CTRL_ADDR (0x04)
-#define FPGA_I2C_MASTER_STATUS_ADDR (0x08)
-#define FPGA_I2C_MASTER_DBG_ADDR (0x0c)
-#define FPGA_I2C_MASTER_16BIT_ADDR (0x10)
-#define FPGA_I2C_MASTER_CHANNEL_SEL_ADDR (0x14)
 
 
 struct master_priv_data {
@@ -506,7 +487,7 @@ static int adap_data_init(struct i2c_adapter *adap, int i2c_ch_index)
     group_priv[i2c_ch_index].adap = adap;
     adap->owner = THIS_MODULE;
     adap->algo = &clounix_i2c_algo;
-    adap->retries = DEFAULT_RETRY;    
+    adap->retries = FPGA_I2C_DEFAULT_RETRY;
     group_priv[i2c_ch_index].mmio =  pci_privdata->fpga_i2c_ch_base_addr +
                           i2c_ch_index* pci_privdata->fpga_i2c_ch_size;
     group_priv[i2c_ch_index].ram_base_addr = ((0x1300 + i2c_ch_index* pci_privdata->fpga_i2c_ch_size) << 8) - (0x1200 + i2c_ch_index* pci_privdata->fpga_i2c_ch_size);
