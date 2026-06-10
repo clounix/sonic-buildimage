@@ -85,7 +85,7 @@ static ssize_t eeprom_read(struct file *filp, struct kobject *kobj,
     size_t i;
 
     if (!data || off >= FM24C02F_SIZE)
-        return 0;
+        return -EINVAL;
     if (off + count > FM24C02F_SIZE)
         count = FM24C02F_SIZE - off;
 

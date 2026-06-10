@@ -1409,7 +1409,7 @@ static int optoe_probe(struct i2c_client *client,
         num_addresses = 1;
     } else {     /* those were the only choices */
         err = -EINVAL;
-        goto exit;
+        goto exit_kfree;
     }
 
     dev_dbg(&client->dev, "dev_class: %d\n", optoe->dev_class);

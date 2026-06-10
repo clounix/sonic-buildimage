@@ -533,7 +533,7 @@ static ssize_t fan_show_hw_version(struct device *dev, struct device_attribute *
 
     if (attr_info==NULL || usr_data==NULL)
     {
-        pddf_err(FAN, "%s is not supported attribute for this client\n", usr_data->aname);
+        pddf_err(FAN, "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
         goto exit;
     }
 
@@ -751,7 +751,7 @@ static ssize_t fan_show_custom(struct device *dev, struct device_attribute *da, 
 
     if (attr_info==NULL || usr_data==NULL)
     {
-        pddf_err(FAN, "%s is not supported attribute for this client\n", usr_data->aname);
+        pddf_err(FAN, "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
         goto exit;
     }
 
@@ -947,7 +947,7 @@ static int fan_post_probe(struct i2c_client *client, const struct i2c_device_id 
     priv = kzalloc(sizeof(*priv), GFP_KERNEL);
     if (!priv) {
         pddf_err(FAN, "Failed to allocate eeprom private data\n");
-        ret = 0;
+        ret = -ENOMEM;
         goto out;
     }
 
