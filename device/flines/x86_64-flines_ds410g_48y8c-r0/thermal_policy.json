@@ -102,7 +102,9 @@
             ],
             "actions": [
                 {
-                    "type": "thermal_control.normalization"
+                    "type": "thermal_control.normalization",
+                    "cpu_up_threshold":[47.0, 55.0, 58.0, 63.0],
+                    "cpu_down_threshold":[45.0, 51.0, 56.0, 60.0]
                 },
                 {
                     "type": "fan.led.set"
