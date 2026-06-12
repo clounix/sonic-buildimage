@@ -296,6 +296,7 @@ class Chassis(PddfChassis):
                 syslog.syslog(syslog.LOG_ERR, f"FPGA power status read failed: {e}")
             finally:
                 try:
+                    time.sleep(0.5)
                     self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "0")
                 except Exception:
                     pass
