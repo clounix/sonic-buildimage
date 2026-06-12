@@ -84,6 +84,7 @@ extern PSU_SYSFS_ATTR_DATA access_psu_model_name;
 extern PSU_SYSFS_ATTR_DATA access_psu_mfr_id;
 extern PSU_SYSFS_ATTR_DATA access_psu_serial_num;
 extern PSU_SYSFS_ATTR_DATA access_psu_fan_dir;
+extern PSU_SYSFS_ATTR_DATA access_psu_alarm;
 
 static int two_complement_to_int(u16 data, u8 valid_bit, int mask)
 {
@@ -255,6 +256,44 @@ int pddf_custom_smbus_get_psu_block(void *client, PSU_DATA_ATTR *adata, void *da
     return 0;
 }
 
+int pddf_custom_smbus_get_psu_alarm(void *client, PSU_DATA_ATTR *adata, void *data)
+{
+
+    int status = 0, retry = 10;
+    struct psu_attr_info *padata = (struct psu_attr_info *)data;
+    uint8_t offset = (uint8_t)adata->offset;
+    int value = 0;
+
+    while (retry) {
+        status = i2c_smbus_read_word_data((struct i2c_client *)client, offset);
+        if (unlikely(status < 0)) {
+            msleep(60);
+            retry--;
+            continue;
+        }
+        break;
+    }
+
+    if (status < 0)
+    {
+        padata->val.shortval = 7;
+        pddf_err(PSU, "%s unable to read a word from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
+    }
+    else
+    {
+        if ((status >> 2) & 0x1) //temperature
+            value |= 0x1;
+        if ((status >> 10) & 0x1)//fan
+            value |= 0x2;
+        if (((status >> 3) & 0x1) || ((status >> 5) & 0x1) || ((status >> 6) & 0x1) || ((status >> 13)) || ((status >> 15) & 0x1)) //vol
+            value |= 0x4;
+        padata->val.shortval = value;
+    }
+
+    pddf_dbg(PSU, "%s: status : %#x, word value : %d\n", __FUNCTION__, status, padata->val.shortval);
+    return 0;
+}
+
 static int __init pddf_custom_psu_init(void)
 {
     access_psu_v_out.show = pddf_show_custom_psu_v_out;
@@ -266,6 +305,8 @@ static int __init pddf_custom_psu_init(void)
     access_psu_mfr_id.do_get = pddf_custom_smbus_get_psu_block;
     access_psu_serial_num.do_get = pddf_custom_smbus_get_psu_block;
     access_psu_fan_dir.do_get = pddf_custom_smbus_get_psu_block;
+
+    access_psu_alarm.do_get = pddf_custom_smbus_get_psu_alarm;
     return 0;
 }
 
