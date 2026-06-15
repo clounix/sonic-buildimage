@@ -278,7 +278,8 @@ static int __init clounix_fpga_sysfs_init(void)
     if(pdev) {
         err = sysfs_create_group(&pdev->dev.kobj,&fpga_attribute_group);
         if (err) {
-	         printk(KERN_ERR  "sysfs_create_file error status %d\n", err);
+            pci_dev_put(pdev);
+            printk(KERN_ERR  "sysfs_create_file error status %d\n", err);
         }
     }else {
         printk(KERN_ERR "no fpga device vendorid:0x%x  deviceid:0x%x\n", FPGA_VENDOR_ID,FPGA_DEVICE_ID);
@@ -292,6 +293,7 @@ static void __exit clounix_fpga_sysfs_exit(void)
     struct pci_dev *pdev = pci_get_device(FPGA_VENDOR_ID, FPGA_DEVICE_ID, NULL);
     if(pdev) {
         sysfs_remove_group(&pdev->dev.kobj, &fpga_attribute_group);
+        pci_dev_put(pdev);
     }
     return;
 }

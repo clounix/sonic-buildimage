@@ -80,7 +80,7 @@ static int *log_level = &wdt_log_level;
 #define WATCHDOG_CONFIG_ENABLE_SIZE 1
 #define WATCHDOG_CONFIG_RST_OFFSET 30
 #define WATCHDOG_CONFIG_RST_SIZE 1
-#define WATCHDOG_CONFIG_CLEAR_OFFSET 24
+#define WATCHDOG_CONFIG_CLEAR_OFFSET 31
 #define WATCHDOG_CONFIG_CLEAR_SIZE 1
 #define WATCHDOG_CONFIG_TIMEOUT_OFFSET 0
 #define WATCHDOG_CONFIG_TIMEOUT_SIZE 8
@@ -332,9 +332,6 @@ static void reset_watchdog(void)
     data= readl(fpga_ctl_addr + WATCHDOG_CONFIG);
     writel(WATCHDOG_BFINS(CONFIG_ENABLE, 0, data), fpga_ctl_addr + WATCHDOG_CONFIG);
 
-    timeout = readl(fpga_ctl_addr + GLOBAL_RST);
-    timeout |= 1 << WATCHDOG_CONFIG_CLEAR_OFFSET;
-    writel(data, fpga_ctl_addr + GLOBAL_RST);
     return;
 }
 

@@ -86,8 +86,6 @@ static int clounix_i2c_wait_bus_tx_done(struct master_priv_data *priv)
             return 0;
         }
 
-        usleep_range(200, 500);
-
     } while (time_before(jiffies, timeout));
 
     pddf_dbg(FPGA, "clounix_i2c_wait_bus_tx_done data ETIMEDOUT error\r\n");
@@ -108,15 +106,10 @@ static int clounix_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int 
     unsigned char addr = 0, r_addr = 0, w_addr = 0, reg_addr = 0;
     unsigned int *tmp_addr = NULL;
     unsigned int tmp_value = 0, i = 0, j = 0;
-    int retry = FPGA_I2C_DEFAULT_RETRY;
 
     mutex_lock(&priv->lock);
 
-retry_xfer:
-
-    reg_addr = 0;
-
-    if (num == 1 && !(msgs[0].flags & I2C_M_RD)) // write
+    if (num == 1) // write
     {
         p = &msgs[0];
 
@@ -138,7 +131,9 @@ retry_xfer:
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
             if (clounix_i2c_wait_bus_tx_done(priv) != 0)
-                goto retry_timeout;
+            {
+                goto out;
+            }
         }
         else if (p->len > 2)
         {
@@ -174,7 +169,9 @@ retry_xfer:
             writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
             if (clounix_i2c_wait_bus_tx_done(priv) != 0)
-                goto retry_timeout;
+            {
+                goto out;
+            }
         }
     }
     else // read
@@ -203,7 +200,7 @@ retry_xfer:
                     writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                     if (clounix_i2c_wait_bus_tx_done(priv) != 0)
-                        goto retry_timeout;
+                        goto out;
                     else
                         p->buf[0] = readb(priv->mmio + FPGA_I2C_MASTER_STATUS_ADDR);
                 }
@@ -214,7 +211,7 @@ retry_xfer:
                     writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                     if (clounix_i2c_wait_bus_tx_done(priv) != 0)
-                        goto retry_timeout;
+                        goto out;
                     else
                     {
                         tmp_addr = (unsigned int *)(priv->mmio + priv->ram_base_addr);
@@ -248,16 +245,8 @@ retry_xfer:
     }
 
     mutex_unlock(&priv->lock);
-    return num;
 
-retry_timeout:
-    if (--retry > 0)
-    {
-        tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE);
-        writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CFG_ADDR);
-        usleep_range(3000, 3500);
-        goto retry_xfer;
-    }
+    return num;
 
 out:
     tmp_value = 0;
@@ -274,13 +263,9 @@ static int clounix_i2c_smbus_xfer(struct i2c_adapter *adap, unsigned short addr,
     unsigned int tmp_value = 0;
     unsigned char r_addr = 0, w_addr = 0, i = 0, data_size = 0;
     unsigned int *tmp_addr = NULL;
-    int retry = FPGA_I2C_DEFAULT_RETRY;
-    unsigned short orig_addr = addr;
 
     mutex_lock(&priv->lock);
     //pddf_dbg(FPGA, "addr: %#x, read_write: %d, command : %#x, size: %d\n", addr, read_write, command, size);
-retry_xfer:
-    addr = orig_addr;
     addr = (addr & 0x7f) << 1;
     w_addr = addr;
     r_addr = (addr | 0x01);
@@ -295,7 +280,7 @@ retry_xfer:
                 tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE | (r_addr << 8) | w_addr);
                 writel((FPGA_I2C_MASTER_MGR_RD_BYTE | ((command & 0xFF) << 16) | (data & 0xFF)), priv->mmio + FPGA_I2C_MASTER_CTRL);
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 } else {
                     data->byte = readb(priv->mmio + FPGA_I2C_MASTER_STAT);
                 }
@@ -306,7 +291,7 @@ retry_xfer:
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 }
             }
 
@@ -323,7 +308,7 @@ retry_xfer:
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 } else {
                     data->byte = readb(priv->mmio + FPGA_I2C_MASTER_STATUS_ADDR);
                 }
@@ -333,7 +318,7 @@ retry_xfer:
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 }
             }
 
@@ -351,7 +336,7 @@ retry_xfer:
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 } else {
                     data->word = readw((priv->mmio + priv->ram_base_addr));
                 }
@@ -362,7 +347,7 @@ retry_xfer:
                 writel(tmp_value, (priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR));
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 }
             }
 
@@ -378,7 +363,7 @@ retry_xfer:
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
 
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 } else {
                     tmp_value = 0;
                     tmp_value = readl(priv->mmio + priv->ram_base_addr);
@@ -425,7 +410,7 @@ retry_xfer:
                 tmp_value = (FPGA_I2C_MASTER_MGR_WT_WORD | ((command & 0xFF) << 16) | ((data_size + 1) << 8));
                 writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CTRL_ADDR);
                 if (clounix_i2c_wait_bus_tx_done(priv) != 0) {
-                    goto retry_timeout;
+                    goto out;
                 }
             }
 
@@ -436,15 +421,6 @@ retry_xfer:
     }
     mutex_unlock(&priv->lock);
     return 0;
-
-retry_timeout:
-    if (--retry > 0)
-    {
-        tmp_value = (FPGA_I2C_MASTER_MGR_RST | FPGA_I2C_MASTER_MGR_ENABLE);
-        writel(tmp_value, priv->mmio + FPGA_I2C_MASTER_CFG_ADDR);
-        usleep_range(3000, 3500);
-        goto retry_xfer;
-    }
 
 out:
     tmp_value = 0;
