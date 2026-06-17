@@ -87,9 +87,9 @@ class Thermal(PddfThermal):
                 if output['mode'] != 0:
                     cmd = "cat " + core_temp_path + "temp{}_max".format(self.thermal_index)
                     output['mode'], output['status'] = getstatusoutput(cmd)
-                #CPU_ use 62 for thermal control (add:20260520)
+                #CPU_ use 74 for thermal control (add:20260520)
                 if 'CPU_' in self.thermal_obj_name:
-                    output['status'] = '62000'
+                    output['status'] = '74000'
                 
                 if output['mode'] != 0:
                     return 0
@@ -209,9 +209,9 @@ class Thermal(PddfThermal):
                 if output['mode'] != 0:
                     cmd = "cat " + core_temp_path + "temp{}_crit".format(self.thermal_index)
                     output['mode'], output['status'] = getstatusoutput(cmd)
-                #CPU_ use 69 for thermal control (add:20260520)
+                #CPU_ use 80 for thermal control (add:20260520)
                 if 'CPU_' in self.thermal_obj_name:
-                    output['status'] = '69000'
+                    output['status'] = '80000'
 
                 if output['mode'] != 0:
                     return 0

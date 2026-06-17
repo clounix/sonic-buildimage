@@ -219,18 +219,18 @@ class NormalizationAction(ThermalPolicyActionBase):
 
     def __init__(self):
         self.speed = 50
-        self.cpu_up_threshold = [48.0, 49.0, 51.0, 55.0]
-        self.cpu_down_threshold = [46.0, 47.0, 49.0, 53.0]
-        self.u48_up_threshold = [45.0, 47.0, 49.0, 53.0]
-        self.u48_down_threshold = [43.0, 45.0, 47.0, 51.0]
-        self.u49_up_threshold = [39.0, 43.0, 46.0, 50.0]
-        self.u49_down_threshold = [37.0, 41.0, 44.0, 48.0]
+        self.cpu_up_threshold = [57.0, 59.0, 61.0, 64.0]
+        self.cpu_down_threshold = [55.0, 57.0, 59.0, 62.0]
+        self.u48_up_threshold = [47.0, 49.0, 51.0, 54.0]
+        self.u48_down_threshold = [45.0, 47.0, 49.0, 52.0]
+        self.u49_up_threshold = [41.0, 44.0, 47.0, 51.0]
+        self.u49_down_threshold = [39.0, 42.0, 45.0, 49.0]
         self.u4a_up_threshold = [37.0, 41.0, 45.0, 49.0]
         self.u4a_down_threshold = [35.0, 39.0, 43.0, 47.0]
         self.u4b_up_threshold = [38.0, 41.0, 45.0, 49.0]
         self.u4b_down_threshold = [36.0, 39.0, 43.0, 47.0]
-        self.pvt_up_threshold = [61.0, 63.0, 65.0, 69.0]
-        self.pvt_down_threshold = [59.0, 61.0, 63.0, 67.0]
+        self.pvt_up_threshold = [68.0, 70.0, 72.0, 74.0]
+        self.pvt_down_threshold = [66.0, 68.0, 70.0, 72.0]
         self.fan_speed_ratio = [30, 50, 70, 90, 100]
 
     def load_from_json(self, json_obj):

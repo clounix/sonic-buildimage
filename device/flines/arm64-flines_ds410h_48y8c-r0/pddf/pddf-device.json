@@ -598,8 +598,8 @@
 			],
 			"virtual_attr_list":
 			[
-				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"62000"},
-				{ "attr_name": "temp1_high_threshold", "attr_value":"56000"}
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"65000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"57000"}
 			]
 		}
 	},
@@ -634,8 +634,8 @@
 			],
 			"virtual_attr_list":
 			[
-				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"66000"},
-				{ "attr_name": "temp1_high_threshold", "attr_value":"59000"}
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"69000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"61000"}
 			]
 		}
 	},
