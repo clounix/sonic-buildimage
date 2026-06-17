@@ -288,6 +288,7 @@ class Thermal(PddfThermal):
     # Helper Functions
     def get_temp_label(self):
         label = None
+        ret = 0
         if self.thermal_obj and 'bmc' in self.pddf_obj.data[self.thermal_obj_name].keys():
             return label
         else:
@@ -301,11 +302,11 @@ class Thermal(PddfThermal):
                     label = self.get_name()
             elif self.is_core_thermal:
                 cmd = "cat " + phytium_temp_path + "temp{}_label".format(self.thermal_index)
-                _, label = getstatusoutput(cmd)
-                if not label:
+                ret, label = getstatusoutput(cmd)
+                if ret != 0 or not label or 'No such file or directory' in label:
                     cmd = "cat " + core_temp_path + "temp{}_label".format(self.thermal_index)
-                    _, label = getstatusoutput(cmd)
+                    ret, label = getstatusoutput(cmd)
             elif self.is_fpga_pvt_thermal:
                 cmd = "cat " + fpga_pvt_temp_path + "pvt_temp{}_label".format(self.thermal_index)
-                _, label = getstatusoutput(cmd)
+                ret, label = getstatusoutput(cmd)
             return (label)
