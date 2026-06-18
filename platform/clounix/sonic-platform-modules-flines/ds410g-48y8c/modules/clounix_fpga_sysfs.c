@@ -197,7 +197,7 @@ static ssize_t get_sys_fpga_pvt_temp_label(struct device *dev, struct device_att
 {  
     return sprintf(buf, "%s\n", "fpga pvt temp");
 }
-static int fpga_pvt_temp_max = 78000;
+static int fpga_pvt_temp_max = 81000;
 static ssize_t get_sys_fpga_pvt_temp_max(struct device *dev, struct device_attribute *da,
              char *buf)
 {  
@@ -222,7 +222,7 @@ static ssize_t set_sys_fpga_pvt_temp_max(struct device *dev,
 
     return count;
 }
-static int fpga_pvt_temp_crit = 85000;
+static int fpga_pvt_temp_crit = 95000;
 static ssize_t get_sys_fpga_pvt_temp_crit(struct device *dev, struct device_attribute *da,
              char *buf)
 {  
@@ -278,12 +278,12 @@ static int __init clounix_fpga_sysfs_init(void)
     if(pdev) {
         err = sysfs_create_group(&pdev->dev.kobj,&fpga_attribute_group);
         if (err) {
-            pci_dev_put(pdev);
             printk(KERN_ERR  "sysfs_create_file error status %d\n", err);
         }
+        pci_dev_put(pdev);
     }else {
         printk(KERN_ERR "no fpga device vendorid:0x%x  deviceid:0x%x\n", FPGA_VENDOR_ID,FPGA_DEVICE_ID);
-        return -1;
+        return -ENODEV;
     }
     return err;
 }

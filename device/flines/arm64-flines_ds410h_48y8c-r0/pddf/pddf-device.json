@@ -386,6 +386,12 @@
 				"dev_addr": "0x58",
 				"dev_type": "psu_pmbus"
 			},
+			"virtual_attr_list":
+			[
+				{"attr_name":"psu_temp1_high_crit_threshold", "attr_value":"70000"},
+				{"attr_name":"psu_temp2_high_crit_threshold", "attr_value":"117000"},
+				{"attr_name":"psu_temp3_high_crit_threshold", "attr_value":"112000"}
+			],
 			"attr_list":
 			[   
 				{ "attr_name":"psu_alarm", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x79", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -471,6 +477,12 @@
 				"dev_addr": "0x5a",
 				"dev_type": "psu_pmbus"
 			},
+			"virtual_attr_list":
+			[
+				{"attr_name":"psu_temp1_high_crit_threshold", "attr_value":"70000"},
+				{"attr_name":"psu_temp2_high_crit_threshold", "attr_value":"117000"},
+				{"attr_name":"psu_temp3_high_crit_threshold", "attr_value":"112000"}
+			],
 			"attr_list":
 			[
 				{ "attr_name":"psu_alarm", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x79", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -586,8 +598,8 @@
 			],
 			"virtual_attr_list":
 			[
-				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"62000"},
-				{ "attr_name": "temp1_high_threshold", "attr_value":"56000"}
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"65000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"57000"}
 			]
 		}
 	},
@@ -622,8 +634,8 @@
 			],
 			"virtual_attr_list":
 			[
-				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"66000"},
-				{ "attr_name": "temp1_high_threshold", "attr_value":"59000"}
+				{ "attr_name": "temp1_high_crit_threshold", "attr_value":"69000"},
+				{ "attr_name": "temp1_high_threshold", "attr_value":"61000"}
 			]
 		}
 	},

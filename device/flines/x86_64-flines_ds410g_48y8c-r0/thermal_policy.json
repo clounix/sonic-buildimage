@@ -10,6 +10,9 @@
         },
         {
             "type": "thermal_info"
+        },
+        {
+            "type": "asic_info"
         }
     ],
     "policies": [
@@ -18,6 +21,19 @@
             "conditions": [
                 {
                     "type": "thermal.over.high_critical_threshold"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "switch.power_cycling"
+                }
+            ]
+        },
+        {
+            "name": "asic over high critical threshold",
+            "conditions": [
+                {
+                    "type": "asic.over.high_critical_threshold"
                 }
             ],
             "actions": [
@@ -74,6 +90,20 @@
             ]
         },
         {
+            "name": "any asic over threshold",
+            "conditions": [
+                {
+                    "type": "asic.over.high_threshold"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "fan.all.set_speed",
+                    "speed": "100"
+                }
+            ]
+        },
+        {
             "name": "any thermal over threshold",
             "conditions": [
                 {
@@ -98,13 +128,14 @@
                 },
                 {
                     "type": "thermal.all.good"
+                },
+                {
+                    "type": "asic.all.good"
                 }
             ],
             "actions": [
                 {
-                    "type": "thermal_control.normalization",
-                    "cpu_up_threshold":[47.0, 55.0, 58.0, 63.0],
-                    "cpu_down_threshold":[45.0, 51.0, 56.0, 60.0]
+                    "type": "thermal_control.normalization"
                 },
                 {
                     "type": "fan.led.set"

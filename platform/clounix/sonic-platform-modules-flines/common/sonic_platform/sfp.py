@@ -29,7 +29,7 @@ class Sfp(PddfSfp):
         if output:
             status = int(output['status'].rstrip())
 
-            if status == 1:
+            if status == 0:
                 lpmode = False
             else:
                 lpmode = True
@@ -64,7 +64,7 @@ class Sfp(PddfSfp):
         if output:
             status = int(output['status'].rstrip())
 
-            if status == 1:
+            if status == 0:
                 reset_status = False
             else:
                 reset_status = True
@@ -92,9 +92,9 @@ class Sfp(PddfSfp):
 
             try:
                 if lpmode:
-                    f.write('0')
-                else:
                     f.write('1')
+                else:
+                    f.write('0')
 
                 f.close()
                 status = True
@@ -134,10 +134,10 @@ class Sfp(PddfSfp):
 
             try:
                 f.seek(0)
-                f.write('0')
+                f.write('1')
                 time.sleep(1)
                 f.seek(0)
-                f.write('1')
+                f.write('0')
 
                 f.close()
                 status = True
