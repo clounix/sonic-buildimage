@@ -176,10 +176,6 @@ class Chassis(PddfChassis):
             pass
 
         sw_cause = self.find_software_reboot_cause_from_reboot_cause_file()
-        if sw_cause and sw_cause != "Unknown":
-            reboot_cause = (self.REBOOT_CAUSE_NON_HARDWARE, sw_cause)
-            self._write_reboot_history(sw_cause)
-            return reboot_cause
 
         if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
             thermal_overload_pos = self.__api_helper.read_one_line_file(
@@ -304,7 +300,7 @@ class Chassis(PddfChassis):
         if cpu_rst_val is not None:
             if cpu_rst_val == '0xfe':
                 reboot_cause = (self.REBOOT_CAUSE_CPU_COLD_RESET, 'CPU Cold Reset')
-            elif cpu_rst_val == '0xff':
+            elif cpu_rst_val == '0xff' and sw_cause == "Unknown": 
                 reboot_cause = (self.REBOOT_CAUSE_CPU_WARM_RESET, 'CPU Warm Reset')
             if reboot_cause[1] != "Unknown":
                 self._write_reboot_history(reboot_cause[1])
