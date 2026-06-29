@@ -6,37 +6,43 @@ cpld_reg=0x8
 flash_change_bit=0
 mask=$(( 1 << $flash_change_bit ))
 MOD_NAME="nor_flash"
+write_file=$1
+write_address=$(($2))
+flash_read_file="/home/admin/flash_read.bin"
+size_byte=$(stat -c "%s" "${write_file}")
+size_byte_dec=$((size_byte))
 
 dot_loop() {
-    while true; do echo -n "."; sleep 0.1; done
+    while true; do echo -n "."; sleep 0.5; done
 }
 
+
 if [ -z "$1" ]; then
-	echo "ÎÄ¼þÂ·¾¶²»ÄÜÎª¿Õ"
+	echo "æ–‡ä»¶è·¯å¾„ä¸èƒ½ä¸ºç©º"
 	exit 1
 else
 	if [ ! -e "$1" ]; then
-		echo "$1 Â·¾¶²»´æÔÚ"
+		echo "$1 è·¯å¾„ä¸å­˜åœ¨"
 		exit 1
 	fi
 fi
 
 if [ -z "$2" ]; then
-	echo "ÒªÐ´ÈëflashµÄµØÖ·²»ÄÜÎª¿Õ"
+	echo "è¦å†™å…¥flashçš„åœ°å€ä¸èƒ½ä¸ºç©º"
 	exit 1
 fi
 
 
 if lsmod | grep -q "^${MOD_NAME} "; then
-	echo "Ä£¿é $MOD_NAME ÒÑ¼ÓÔØ"
+	echo "æ¨¡å— $MOD_NAME å·²åŠ è½½"
 else
-	echo "Ä£¿é $MOD_NAME Î´¼ÓÔØ£¬ÐèÒª¼ÓÔØÄ£¿é"
+	echo "æ¨¡å— $MOD_NAME æœªåŠ è½½ï¼Œéœ€è¦åŠ è½½æ¨¡å—"
 	MOD_FILE=$(modinfo "$MOD_NAME.ko" 2>/dev/null | awk '/^filename:/ {print $2}')
 	if [ -n "${MOD_FILE}" ] && [ -f "${MOD_FILE}" ]; then
-		echo "Ä£¿éÎÄ¼þ´æÔÚ£º${MOD_FILE}£¬¿ªÊ¼¼ÓÔØ"
+		echo "æ¨¡å—æ–‡ä»¶å­˜åœ¨ï¼š${MOD_FILE}ï¼Œå¼€å§‹åŠ è½½"
 		sh -c "insmod $MOD_FILE"
 	else
-		echo "Ä£¿é²»´æÔÚ»ò»ñÈ¡Â·¾¶Ê§°Ü"
+		echo "æ¨¡å—ä¸å­˜åœ¨æˆ–èŽ·å–è·¯å¾„å¤±è´¥"
 		exit 1
 	fi
 fi
@@ -44,41 +50,61 @@ fi
 
 reg_val=$(sudo i2cget -y -a $i2c_channel $cpld_addr $cpld_reg 2>&1)
 if [[ "$reg_val" == Error* ]]; then
-	echo "¶ÁÈ¡¼Ä´æÆ÷Ê§°Ü£º$reg_val"
-	exit 1
+    echo "è¯»å–å¯„å­˜å™¨å¤±è´¥ï¼š$reg_val"
+    exit 1
 fi
 
-echo "Ô­Ê¼¶ÁÈ¡Öµ: $reg_val"
+echo "åŽŸå§‹è¯»å–å€¼: $reg_val"
 
 if [ $(( $((reg_val)) & mask )) -eq 1 ]; then
-	echo "µ±Ç°flashÎª±¸flash£¬ÐèÒªÇÐ»»µ½Ö÷flash"
+    echo "å½“å‰flashä¸ºå¤‡flashï¼Œéœ€è¦åˆ‡æ¢åˆ°ä¸»flash"
 
 	new=$(( $((reg_val)) & ~mask ))
 	sudo i2cset -y -a $i2c_channel $cpld_addr $cpld_reg $new
 	dec_val=$(sudo i2cget -y -a $i2c_channel $cpld_addr $cpld_reg 2>&1)
 	if [[ "$dec_val" == Error* ]]; then
-		echo "Ð´Èëºó¶ÁÈ¡¼Ä´æÆ÷Ê§°Ü£º$dec_val"
+		echo "å†™å…¥åŽè¯»å–å¯„å­˜å™¨å¤±è´¥ï¼š$dec_val"
 		exit 1
 	fi
 	if [ $(( $((dec_val)) & mask )) -eq 0 ]; then
-		echo "µ±Ç°flashÎªÖ÷flash£¬ÇÐ»»flash³É¹¦"
+		echo "å½“å‰flashä¸ºä¸»flashï¼Œåˆ‡æ¢flashæˆåŠŸ"
 	else
-		echo "µ±Ç°flashÎª±¸flash£¬ÇÐ»»Ê§°Ü"
+		echo "å½“å‰flashä¸ºå¤‡flashï¼Œåˆ‡æ¢å¤±è´¥"
 		exit 1
 	fi
-	echo "ÇÐ»»ºóµÄÖµ: $dec_val"
+	echo "åˆ‡æ¢åŽçš„å€¼: $dec_val"
 else
-	echo "µ±Ç°flashÎªÖ÷flash£¬¿ÉÒÔÉÕÂ¼"	
+	echo "å½“å‰flashä¸ºä¸»flashï¼Œå¯ä»¥çƒ§å½•"	
 fi
 
+size_byte_hex=$(printf "0x%x" $size_byte_dec)
+write_address_hex=$(printf "0x%x" $write_address)
 
-echo "¿ªÊ¼ÉÕÐ´$1 µ½ flash µØÖ· $2"
+echo "å¼€å§‹çƒ§å†™$write_fileåˆ° flash åœ°å€ $write_address_hex, æ–‡ä»¶å¤§å°æ˜¯$size_byte_hex å­—èŠ‚"
 dot_loop &
 DOT_PID=$!
 
-sh -c "echo 'buf-write $1 $2'> /proc/nor_flash_mmio"
+sh -c "echo 'buf-write $write_file $write_address_hex'> /proc/nor_flash_mmio"
 
 sleep 1
 kill $DOT_PID
 wait $DOT_PID 2>/dev/null
-echo -e "\n²Ù×÷Íê³É£¡"
+echo -e "\nçƒ§å½•å®Œæˆ,å¼€å§‹å¯¹æ¯”flashå†…å®¹å’Œçƒ§å½•æ–‡ä»¶æ˜¯å¦ä¸€è‡´..."
+
+rm -f $flash_read_file
+
+dot_loop &
+DOT_PID=$!
+
+sh -c "echo 'buf-read $flash_read_file $write_address_hex $size_byte_hex' > /proc/nor_flash_mmio"
+
+sleep 1
+kill $DOT_PID
+wait $DOT_PID 2>/dev/null
+
+if cmp -s "${write_file}" "${flash_read_file}"; then
+	echo "\næ ¡éªŒé€šè¿‡ï¼šçƒ§å½•æ–‡ä»¶ä¸ŽFlashè¯»å‡ºå†…å®¹å®Œå…¨ä¸€è‡´"
+else
+	echo "\næ ¡éªŒå¤±è´¥ï¼šFlashå†…å®¹ä¸ŽåŽŸå§‹æ–‡ä»¶å­˜åœ¨å·®å¼‚"
+fi
+

@@ -18,11 +18,14 @@
 #define MMIO_BUF_LEN (1024 * 1024 * 16)
 #define FLASH_ERASE_SIZE (64 * 1024)
 #define PROC_NAME "nor_flash_mmio"
+#define READ_BUF_LEN_MAX (4096)
+#define FLASH_SIZE (MMIO_BUF_LEN)
 
 static void __iomem *mmio_base = NULL;
 static void __iomem *mmio_buf = NULL;
 static struct proc_dir_entry *proc_entry = NULL;
 static struct mutex flash_op_mtx;
+
 
 static struct resource mmio_res = 
 {
@@ -291,28 +294,65 @@ int NorFlashPlatformWrite (int Address, void *Buffer, unsigned int BufferSizeInB
     return 0;
 }
 
-
-static ssize_t mmio_proc_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+static int kernel_write_file(const char *path, unsigned int address, size_t len)
 {
-    char tmp[128];
-    int len;
-    unsigned int val;
+#define BUF_LEN (64 * 1024)
+    struct file *filp;
+    loff_t pos = 0;
+    ssize_t ret;
+    char *buf = NULL;
+    unsigned int remain_len = 0;
+    unsigned int i = 0;
+    unsigned int read_len = 0;
+    unsigned int curr_addr = 0;
 
-    if (*ppos > 0)
+    filp = filp_open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (IS_ERR(filp)) 
     {
-        return 0;
+        printk("open file %s failed, err:%ld\n", path, PTR_ERR(filp));
+        return PTR_ERR(filp);
+    }
+    
+    buf = kmalloc(BUF_LEN, GFP_KERNEL);
+    if(buf == NULL)
+    {
+        filp_close(filp, current->files);
+        return ret;
     }
 
-    val = ioread32(mmio_base + *ppos);
-    len = snprintf(tmp, sizeof(tmp), "REG[0x%lx] = 0x%08x\n", *ppos, val);
-
-    if(copy_to_user(buf, tmp, len))
+    remain_len = len;
+    pos = 0;
+    curr_addr = address;
+    while(remain_len > 0)
     {
-        return -EFAULT;
+        NorFlashPlatformRead(curr_addr);
+        read_len = remain_len > BUF_LEN ? BUF_LEN : remain_len;
+        for(i = 0; i < read_len; i++)
+        {
+            buf[i] = ioread8(mmio_buf + curr_addr + i);
+        }
+
+        ret = kernel_write(filp, buf, read_len, &pos);
+        if (ret < 0) 
+        {
+            printk("write file failed, ret:%zd\n", ret);
+            filp_close(filp, current->files);
+            kfree(buf);
+            return ret;
+        }
+        else if(ret == 0)
+        {
+            break;
+        }
+        remain_len -= ret;
+        curr_addr += ret;
     }
 
-    *ppos += len;
-    return len;
+    printk("write success, write %zd bytes\n", len);
+
+    filp_close(filp, current->files);
+    kfree(buf);
+    return 0;
 }
 
 
@@ -340,7 +380,7 @@ static int flash_write_file(const char *path, unsigned int addr)
     size = i_size_read(inode);
     printk("file_size : 0x%x byte\n", size);
 
-    for(i = 0; i < ((size + FLASH_ERASE_SIZE - 1) / FLASH_ERASE_SIZE); i++)
+    for(i = 0; i < FLASH_SIZE / FLASH_ERASE_SIZE; i++)
     {
         NorFlashPlatformEraseSingleBlock(addr + FLASH_ERASE_SIZE * i);
         cond_resched();
@@ -416,24 +456,14 @@ static ssize_t mmio_proc_write(struct file *file, const char __user *buf, size_t
     }
     else if(strstr(kbuf, "buf-read"))
     {
-        ret = sscanf(kbuf, "buf-read %lx %lx", &offset, &len);
+        char path[128] = {0};
+        ret = sscanf(kbuf, "buf-read %s %lx %lx", path, &offset, &len);
         if (offset >= MMIO_BUF_LEN || (offset & 3))
         {
             ret = -EINVAL;
             goto out;
         }
-
-        NorFlashPlatformRead(offset);
-
-        for(int i = 0; i < len; i++)
-        {
-            printk("0x%02x ", ioread8(mmio_buf + offset + i));
-            if(i % 16 == 0 && i > 0)
-            {
-                printk("\n");
-            }
-        }
-
+        kernel_write_file(path, offset, len);
     }
     else if(strstr(kbuf, "buf-write"))
     {
@@ -461,7 +491,6 @@ out:
 
 
 static const struct proc_ops mmio_proc_ops = {
-    .proc_read  = mmio_proc_read,
     .proc_write = mmio_proc_write,
 };
 
