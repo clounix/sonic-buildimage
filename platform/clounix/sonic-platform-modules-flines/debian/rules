@@ -20,7 +20,6 @@ KVERSION   ?= $(shell uname -r)
 KERNEL_SRC := /lib/modules/$(KVERSION)
 export KERNEL_SRC
 MOD_SRC_DIR:= $(shell pwd)
-MODULE_DIRS:=  ds410g-48y8c ds410h-48y8c
 MODULE_DIR := modules
 UTILS_DIR := utils
 SERVICE_DIR := service
@@ -34,8 +33,10 @@ DEV_LIST_DS410G_48Y8C := 0
 DEV_LIST_DS410H_48Y8C := 0
 ifeq ($(CONFIGURED_ARCH),amd64)
     TARGET_PLATFORM := x86_64
+	MODULE_DIRS:=  ds410g-48y8c
 else ifeq ($(CONFIGURED_ARCH),arm64)
     TARGET_PLATFORM := arm64
+	MODULE_DIRS:=  ds410h-48y8c
 else
     TARGET_PLATFORM := $(CONFIGURED_ARCH) # default: use CONFIGURED_ARCH as-is if no mapping found
 endif
