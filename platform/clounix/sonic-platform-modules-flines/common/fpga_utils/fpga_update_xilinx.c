@@ -1,6 +1,7 @@
 #include "fpga_pci.h"
 #include "fpga_pci_xilinx.h"
 #include "driver/xilinx/xspi.h"
+#include "update_header.h"
 
 /************************** Constant Definitions *****************************/
 
@@ -496,10 +497,18 @@ int xilinx_program_fpga_image(uint8_t *image, size_t size, uint32_t region,uint8
     int page_num = 0;
     int max_page_num = 0;
     int Index = 0;
+    int offset = 0;
+    uint8_t *fpga_data = NULL;
+    size_t fpga_data_size = 0;
 
+    offset = parse_data_header(image, size, region);
+    if (offset < 0)
+        return offset;
+    fpga_data = image + offset;
+    fpga_data_size = size - offset;
     //0, Check image size
-    if(size > MAX_IMAGE_SIZE){
-        xil_printf("Image size(0x%lx) is lager than 0x%x\n", size, MAX_IMAGE_SIZE); 
+    if(fpga_data_size > MAX_IMAGE_SIZE){
+        xil_printf("Image size(0x%lx) is lager than 0x%x\n", fpga_data_size, MAX_IMAGE_SIZE);
         return -1;
     }
     //1. Erase flash
@@ -518,7 +527,7 @@ int xilinx_program_fpga_image(uint8_t *image, size_t size, uint32_t region,uint8
 
     //2. Program flash
     xil_printf("\nProgram flash......\n"); 
-    page_num = size / PAGE_SIZE + ((size % PAGE_SIZE) ? 1 : 0);
+    page_num = fpga_data_size / PAGE_SIZE + ((fpga_data_size % PAGE_SIZE) ? 1 : 0);
     if(0 == erase_flag)
     {   
         max_page_num = (MAX_IMAGE_SIZE - SECTOR_SIZE)/PAGE_SIZE;
@@ -530,8 +539,8 @@ int xilinx_program_fpga_image(uint8_t *image, size_t size, uint32_t region,uint8
             xil_printf("Programing 0x%x\r", addr + i*PAGE_SIZE); 
         CHECK_RC(SpiFlashWriteEnable(&Spi));
         CHECK_RC(SpiFlashWrite(&Spi, addr + i*PAGE_SIZE, 
-                    image + i*PAGE_SIZE, 
-                    ((size - (i + 1)*PAGE_SIZE) >= 0) ? PAGE_SIZE : (size - (i*PAGE_SIZE))));
+                    fpga_data + i*PAGE_SIZE,
+                    ((fpga_data_size >= (i + 1)*PAGE_SIZE)) ? PAGE_SIZE : (fpga_data_size - (i*PAGE_SIZE))));
     }
 
     //3. Read back and check data
@@ -542,13 +551,13 @@ int xilinx_program_fpga_image(uint8_t *image, size_t size, uint32_t region,uint8
         if(!(i%0x10))
             xil_printf("Verifying 0x%x\r", addr + i*PAGE_SIZE); 
         CHECK_RC(SpiFlashRead(&Spi, addr + i*PAGE_SIZE, 
-                ((size - (i + 1)*PAGE_SIZE) >= 0) ? PAGE_SIZE : (size - (i*PAGE_SIZE))));
-        for(Index = 0; Index < (((size - (i + 1)*PAGE_SIZE) >= 0) ? PAGE_SIZE : (size - (i*PAGE_SIZE))); Index++) {
+                ((fpga_data_size >= (i + 1)*PAGE_SIZE)) ? PAGE_SIZE : (fpga_data_size - (i*PAGE_SIZE))));
+        for(Index = 0; Index < (((fpga_data_size >= (i + 1)*PAGE_SIZE)) ? PAGE_SIZE : (fpga_data_size - (i*PAGE_SIZE))); Index++) {
             if(ReadBuffer[Index + READ_WRITE_EXTRA_BYTES] !=
-                    *(image + (i*PAGE_SIZE) + Index)) {
+                    *(fpga_data + (i*PAGE_SIZE) + Index)) {
                 xil_printf("Error: offset 0x%x, exp 0x%x, act 0x%x\n", 
                         addr + (i*PAGE_SIZE) + Index,
-                        *(image + (i*PAGE_SIZE) + Index),
+                        *(fpga_data + (i*PAGE_SIZE) + Index),
                         ReadBuffer[Index + READ_WRITE_EXTRA_BYTES]);
                 return XST_FAILURE;
             }
@@ -564,8 +573,17 @@ int xilinx_verify_fpga_image(uint8_t *image, size_t size,uint32_t region,uint32_
     int page_num = 0;
     int max_page_num = 0;
     int Index = 0;
+    int offset = 0;
+    uint8_t *fpga_data = NULL;
+    size_t fpga_data_size = 0;
 
-    page_num = size / PAGE_SIZE + ((size % PAGE_SIZE) ? 1 : 0);
+    offset = parse_data_header(image, size, region);
+    if (offset < 0)
+        return offset;
+    fpga_data = image + offset;
+    fpga_data_size = size - offset;
+
+    page_num = fpga_data_size / PAGE_SIZE + ((fpga_data_size % PAGE_SIZE) ? 1 : 0);
     max_page_num = (MAX_IMAGE_SIZE - SECTOR_SIZE)/PAGE_SIZE;
     page_num =  page_num < max_page_num  ? page_num : max_page_num;
 
@@ -576,13 +594,13 @@ int xilinx_verify_fpga_image(uint8_t *image, size_t size,uint32_t region,uint32_
             if(!(i%0x10))
                 printf("Verifying 0x%x\r", addr + i*PAGE_SIZE); 
             CHECK_RC(SpiFlashRead(&Spi, addr + i*PAGE_SIZE, 
-                ((size - (i + 1)*PAGE_SIZE) >= 0) ? PAGE_SIZE : (size - (i*PAGE_SIZE))));
-            for(Index = 0; Index < (((size - (i + 1)*PAGE_SIZE) >= 0) ? PAGE_SIZE : (size - (i*PAGE_SIZE))); Index++) {
+                ((fpga_data_size >= (i + 1)*PAGE_SIZE)) ? PAGE_SIZE : (fpga_data_size - (i*PAGE_SIZE))));
+            for(Index = 0; Index < (((fpga_data_size >= (i + 1)*PAGE_SIZE)) ? PAGE_SIZE : (fpga_data_size - (i*PAGE_SIZE))); Index++) {
                 if(ReadBuffer[Index + READ_WRITE_EXTRA_BYTES] !=
-                    *(image + (i*PAGE_SIZE) + Index)) {
+                        *(fpga_data + (i*PAGE_SIZE) + Index)) {
                     printf("Error: offset 0x%x, exp 0x%x, act 0x%x\n", 
                         addr + (i*PAGE_SIZE) + Index,
-                        *(image + (i*PAGE_SIZE) + Index),
+                        *(fpga_data + (i*PAGE_SIZE) + Index),
                         ReadBuffer[Index + READ_WRITE_EXTRA_BYTES]);
                     return XST_FAILURE;
                 }
