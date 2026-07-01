@@ -233,6 +233,7 @@ int parse_fpga_resource()
     int i = 0,j=0,tmp=0;
     unsigned long bar_start_addr,bar_end_addr;
     unsigned int bar_size;
+    int tmp_len = 0;
 
     char bar_attr[3][20];
     char *resource = malloc(strlen(sysfs_path)+strlen("resource")+1);
@@ -253,8 +254,11 @@ int parse_fpga_resource()
     {
         if(buffer[i] == 0x20)
         {
-            memcpy(bar_attr[j],&buffer[tmp],18);
-            bar_attr[j][i] = '\n';
+            tmp_len = i - tmp;
+            if (tmp_len > 18)
+                tmp_len = 18;
+            memcpy(bar_attr[j],&buffer[tmp],tmp_len);
+            bar_attr[j][tmp_len] = '\n';
             j++;
             tmp = i+1;
         }
