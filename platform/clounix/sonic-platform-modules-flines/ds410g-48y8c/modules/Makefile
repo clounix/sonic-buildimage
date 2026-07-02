@@ -10,6 +10,7 @@ obj-m += pddf_custom_led.o
 obj-m += pddf_custom_sysstatus.o
 obj-m += pddf_custom_xcvr.o
 obj-m += pddf_custom_xilinx_device_algo.o
+obj-m += pddf_custom_lpc_module.o
 CFLAGS_pddf_custom_debug.o = -I$(M)/../../../../pddf/i2c/modules/include
 CFLAGS_pddf_custom_psu.o := -I$(M)/../../../../pddf/i2c/modules/include
 CFLAGS_pddf_custom_fan.o := -I$(M)/../../../../pddf/i2c/modules/include

@@ -158,6 +158,16 @@ class Chassis(PddfChassis):
 
         return software_reboot_cause
 
+    def _get_onie_machine(self):
+        try:
+            with open('/host/machine.conf', 'r') as f:
+                for line in f:
+                    if line.startswith('onie_machine='):
+                        return line.split('=', 1)[1].strip()
+        except Exception:
+            pass
+        return ''
+
     def get_reboot_cause(self):
     
         THERMAL_OVERLOAD_POSITION_FILE = "/host/reboot-cause/platform/thermal_overload_position"
@@ -165,13 +175,33 @@ class Chassis(PddfChassis):
 
         reboot_cause = (self.REBOOT_CAUSE_NON_HARDWARE, "Unknown")
 
+        platform = self._get_onie_machine()
+        is_lpc_platform = 'ds410g_48y8c' in platform
+
         cpu_rst_val = None
         try:
-            ret, val = subprocess.getstatusoutput("i2cget -y -a 1 0x7f 0x7")
-            if ret == 0 and val:
-                cpu_rst_val = val.strip()
-            time.sleep(1)
-            subprocess.getstatusoutput("i2cset -y -a 1 0x7f 0x7 0xff")
+            if is_lpc_platform:
+                addr_file = '/sys/kernel/lpc_cpld/addr'
+                data_file = '/sys/kernel/lpc_cpld/data'
+
+                with open(addr_file, 'w') as f:
+                    time.sleep(0.5)
+                    f.write('0x11')
+                with open(data_file, 'r') as f:
+                    time.sleep(0.5)
+                    raw = f.read().strip()
+                if raw:
+                    cpu_rst_val = raw
+
+                with open(data_file, 'w') as f:
+                    time.sleep(0.5)
+                    f.write('0xff')
+            else:
+                ret, val = subprocess.getstatusoutput("i2cget -y -a 1 0x7f 0x7")
+                if ret == 0 and val:
+                    cpu_rst_val = val.strip()
+                time.sleep(1)
+                subprocess.getstatusoutput("i2cset -y -a 1 0x7f 0x7 0xff")
         except Exception:
             pass
 
