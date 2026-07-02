@@ -46,7 +46,7 @@ int update_fpga(char *file_name, uint32_t region,uint8_t erase_flag)
 {
     uint8_t *image = NULL;
     FILE *fd;
-    size_t size, read_bytes, buffer_size;
+    size_t size, read_bytes;
 
     fd = fopen(file_name,"rb");
     if(!fd)
@@ -61,14 +61,13 @@ int update_fpga(char *file_name, uint32_t region,uint8_t erase_flag)
         FATAL;
     }
 
-    buffer_size = (size / (fpga_func->page_size) + ((size % (fpga_func->page_size)) ? 1 : 0))*(fpga_func->page_size);
-    image = malloc(buffer_size + 1);
+    image = malloc(size + 1);
     if(!image){
         printf("ERROR: failed to alloc memory buffer\n");
         FATAL;
     }
 
-    memset(image, 0xFF, buffer_size);
+    memset(image, 0xFF, size + 1);
     read_bytes = fread(image, 1, size, fd);
     if(size != read_bytes){
         printf("ERROR: failed to read image to memory buffer, exp %ld, act %ld\n", size, read_bytes);
@@ -76,7 +75,7 @@ int update_fpga(char *file_name, uint32_t region,uint8_t erase_flag)
     }
     fclose(fd);
 
-    CHECK_RC(fpga_func->program_image(image, buffer_size, region,erase_flag));
+    CHECK_RC(fpga_func->program_image(image, size, region,erase_flag));
     printf("\nDone!!\n"); 
     return CLX_SUCCESS;
 }
