@@ -2,13 +2,12 @@
 
 set -e
 
-export ZVTYSH=/var/vtysh
-export ZAFU=$ZVTYSH/afulnx_64
-export ZMOD=$ZVTYSH/amifldrv.ko
+export ZAFU=/usr/local/bin/afulnx_64
+export ZMOD=/usr/lib/modules/6.1.0-29-2-amd64/extra/amifldrv.ko
 export ZID=`id -u`
 export ZCODE="\x1b[32m"
 export ZBYPASS_INSTALL=""
-# ZBIOS=/bin/bios.sh
+export ZSH=/usr/local/bin/bios.sh
 
 delay_exit(){
     ZCODE="\x1b[31m"
@@ -24,44 +23,26 @@ delay_exit(){
 }
 
 check_environment(){
-	[ ! -f $ZMOD ] && delay_exit "bios driver is broken." 1
-	[ -z "$1" ] && delay_exit "bin file path is required." 2
-	[ ! -f $1 ] && delay_exit "path is error." 3
 	[[ $ZID != 0 ]] && delay_exit "root priviledge is required." 4
+	[ ! -f $ZAFU ] && delay_exit "missing flash application." 5
+	[[ ! "`file --mime-type $ZAFU`" =~ "application/x-executable" ]] && delay_exit "invalid flash application." 6
+	[ ! -f $ZMOD ] && delay_exit "missing flash driver." 1
+	[[ ! "`file --mime-type $ZMOD`" =~ "application/x-object" ]] && delay_exit "invalid flash application." 6
+	[ -z "$1" ] && delay_exit "missing file path parameter." 2
+	[ ! -f $1 ] && delay_exit "invalid rom file path." 3
+	file $ZAFU
+	file $ZMOD
 	return 0
 }
 
 upgrade(){
-	cp -f $ZMOD amifldrv_mod
-	ls -alh | grep ami
-	insmod amifldrv_mod
+	insmod $ZMOD
 	lsmod | grep ami
-	afulnx_64 $1 /p /b /x /n /r
+	$ZAFU $1 /p /b /x /n /r
+	rmmod amifldrv
 	delay_exit "online BIOS upgrade finished." 0
 	return 0
 }
 
-prepare(){
-	[[ $ZID != 0 ]] && delay_exit "root priviledge is required." 4
-	[ -f $ZAFU ] && ZBYPASS_INSTALL="BYPASS" && return 0
-	[ ! -f afulnx_64 -o ! -f amifldrv_mod ] && delay_exit "current directory is broken." 5
-	[ ! -d $ZVTYSH ] && delay_exit "vtysh directory is broken." 6
-	return 0
-}
-
-install(){
-	cp -f afulnx_64 $ZAFU
-	chmod +x $ZAFU
-	file $ZAFU
-	cp -f amifldrv_mod $ZMOD
-	file $ZMOD
-#	cp -f bios.sh $ZBIOS
-#	chmod +x $ZBIOS
-#	file $ZBIOS
-	return 0
-}
-
-prepare
-[ -z "$ZBYPASS_INSTALL" ] && install
 check_environment $*
 upgrade $*
