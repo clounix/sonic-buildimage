@@ -791,7 +791,7 @@ ENV PATH $PATH:$RUST_ROOT/bin
 
 {% if CONFIGURED_ARCH == "amd64" %}
 # Install cargo-tarpaulin for code coverage
-RUN $RUST_ROOT/bin/cargo install --locked cargo-tarpaulin
+RUN $RUST_ROOT/bin/cargo install --locked cargo-tarpaulin@0.30.0
 {% endif %}
 
 {# Include vendor-defined rules for slave container if it exists.  Contained in ../files #}
