@@ -185,17 +185,19 @@ class Chassis(PddfChassis):
                 data_file = '/sys/kernel/lpc_cpld/data'
 
                 with open(addr_file, 'w') as f:
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     f.write('0x11')
                 with open(data_file, 'r') as f:
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     raw = f.read().strip()
                 if raw:
                     cpu_rst_val = raw
-
                 with open(data_file, 'w') as f:
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     f.write('0xff')
+                with open(addr_file, 'w') as f:
+                    time.sleep(0.1)
+                    f.write('0x00')
             else:
                 ret, val = subprocess.getstatusoutput("i2cget -y -a 1 0x7f 0x7")
                 if ret == 0 and val:

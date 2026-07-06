@@ -280,9 +280,4 @@ MODULE_DESCRIPTION("LPC CPLD driver with sysfs addr/data (no /dev) for Intel Ato
 MODULE_LICENSE("GPL");
 MODULE_VERSION(DRIVER_VERSION);
 
-static const struct pci_device_id lpc_cpld_pci_ids[] = {
-    {PCI_DEVICE(LPC_PCI_VENDOR_INTEL, LPC_PCI_DEVICE_C3000)},
-    {
-        0,
-    }};
-MODULE_DEVICE_TABLE(pci, lpc_cpld_pci_ids);
+
