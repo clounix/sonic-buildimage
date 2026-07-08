@@ -43,9 +43,6 @@ endif
 %:
 	dh $@ --with systemd,python2,python3 --buildsystem=pybuild
 
-override_dh_strip:
-	dh_strip -Xafulnx_64
-
 clean:
 	dh_testdir
 	dh_testroot
@@ -127,7 +124,7 @@ binary-indep:
 	dh_link
 	dh_fixperms
 	dh_compress
-	dh_strip
+	dh_strip -Xafulnx_64
 	dh_installdeb
 	dh_gencontrol
 	dh_md5sums
