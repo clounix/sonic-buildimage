@@ -124,7 +124,7 @@ binary-indep:
 	dh_link
 	dh_fixperms
 	dh_compress
-	dh_strip
+	dh_strip -Xafulnx_64
 	dh_installdeb
 	dh_gencontrol
 	dh_md5sums

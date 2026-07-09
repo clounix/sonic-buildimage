@@ -15,8 +15,8 @@ test:
 
 # Run tests with coverage
 test-coverage:
-	cargo install cargo-tarpaulin || true
-	cargo tarpaulin --out Html --output-dir target/coverage --timeout 120 --all-features
+	cargo install cargo-tarpaulin@0.30.0 || true
+	cargo tarpaulin@0.30.0 --out Html --output-dir target/coverage --timeout 120 --all-features
 
 # Clean build artifacts
 clean:

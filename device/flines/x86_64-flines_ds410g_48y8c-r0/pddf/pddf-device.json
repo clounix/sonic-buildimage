@@ -53,7 +53,7 @@
                 "pddf_custom_xilinx_device_algo",
 				"pddf_cpld_module",
 				"pddf_cpld_driver",
-				"pddf_lpc_module",
+				"pddf_custom_lpc_module",
 				"pddf_cpldmux_module",
 				"pddf_cpldmux_driver",
 				"pddf_fpgai2c_module",
