@@ -148,21 +148,21 @@ def do_platformApiInstall():
     return
 
 def doBurnInTest():
-    signPath = '/home/admin/vtysh.mark'
-    signExecutable = '/usr/local/bin/vtysh'
+    signPath = '/home/admin/record_times.txt'
+    signExecutable = '/usr/local/bin/factory_test'
     if os.path.exists(signPath):
         with open(signPath, 'r') as f:
             c = f.read()
-            if int(c) == 1:
+            if len(c) > 0 and int(c[:1]) >= 0:
                 if os.path.exists(signExecutable):
                     r = os.system(signExecutable)
-                    syslog.syslog(syslog.LOG_INFO, 'vtysh process exit code: {0} '.format(r))
+                    syslog.syslog(syslog.LOG_INFO, 'factory_test process exit code: {0} '.format(r))
                 else:
-                    syslog.syslog(syslog.LOG_WARNING, 'vtysh cannot find executable {0} '.format(signExecutable))
+                    syslog.syslog(syslog.LOG_WARNING, 'factory_test cannot find executable {0} '.format(signExecutable))
             else:
-                syslog.syslog(syslog.LOG_INFO, 'vtysh skip test {0} '.format(c))
+                syslog.syslog(syslog.LOG_INFO, 'factory_test skip test {0} '.format(c))
     else:
-        syslog.syslog(syslog.LOG_WARNING, 'vtysh cannot find mark file {0}'.format(signPath))
+        syslog.syslog(syslog.LOG_WARNING, 'factory_test cannot find mark file {0}'.format(signPath))
 
 def main():
     args = common.sys.argv[1:]
