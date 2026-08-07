@@ -756,11 +756,11 @@
 				{"attr_name": "fan4_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
 				{"attr_name": "fan5_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
 
-				{"attr_name": "fan1_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan2_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan3_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan4_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan5_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan1_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan2_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan3_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan4_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan5_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
 
 				{"attr_name": "fan1_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
 				{"attr_name": "fan2_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
