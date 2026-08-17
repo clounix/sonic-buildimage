@@ -16,6 +16,9 @@ install() {
     if [ -e $DEVICE/$PLATFORM/clx_fpga ]; then
         cp $DEVICE/$PLATFORM/clx_fpga /usr/local/bin/
     fi
+    if [ -e $DEVICE/$PLATFORM/clx_cpld ]; then
+        cp $DEVICE/$PLATFORM/clx_cpld /usr/local/bin/
+    fi
 }
 
 init() {
