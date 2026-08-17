@@ -33,14 +33,14 @@
 				"pddf_xcvr"
 			]
 		},
-		"perm_kos": [
+		"std_perm_kos": [
+			"gpio-pca953x"
 		],
 		"std_kos": [
 			"i2c_mux",
 			"i2c_mux_pca954x",
 			"i2c_dev",
 			"at24",
-			"gpio-pca953x",
 			"tmp75",
 			"jwh6374",
 			"rtc-pcf85063"
