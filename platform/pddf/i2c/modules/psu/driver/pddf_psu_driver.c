@@ -141,6 +141,9 @@ EXPORT_SYMBOL(access_psu_p_in);
 PSU_SYSFS_ATTR_DATA access_psu_alarm = {PSU_ALARM, S_IRUGO, psu_show_default, NULL, sonic_i2c_get_psu_word_default, NULL, NULL, NULL, NULL, NULL};
 EXPORT_SYMBOL(access_psu_alarm);
 
+PSU_SYSFS_ATTR_DATA access_psu_type = {PSU_TYPE, S_IRUGO, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+EXPORT_SYMBOL(access_psu_type);
+
 PSU_SYSFS_ATTR_DATA_ENTRY psu_sysfs_attr_data_tbl[]=
 {
 	{ "psu_present", &access_psu_present},
@@ -171,7 +174,8 @@ PSU_SYSFS_ATTR_DATA_ENTRY psu_sysfs_attr_data_tbl[]=
 	{ "psu_v_in" , &access_psu_v_in},
 	{ "psu_i_in" , &access_psu_i_in},
 	{ "psu_p_in" , &access_psu_p_in},
-	{ "psu_alarm" , &access_psu_alarm}
+	{ "psu_alarm" , &access_psu_alarm},
+	{ "psu_type" , &access_psu_type}
 };
 
 void *get_psu_access_data(char *name)

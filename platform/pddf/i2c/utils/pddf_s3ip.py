@@ -936,8 +936,27 @@ def create_s3ip_psu_sysfs():
         log_os_system(cmd, 1)
 
         # type (AC or DC. Fixing it to AC for now)
-        psutype = 1 # for AC
-        cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/type'.format(psutype, p)
+        try:
+            psutype = 1 # for AC
+            dev = 'PSU{}'.format(p)
+            attr = 'psu_type'
+            bmc_attr = pddf_api.check_bmc_based_attr(dev, attr)
+            if bmc_attr is not None and bmc_attr!={}:
+                output = pddf_api.bmc_get_cmd(bmc_attr)
+                output = output.rstrip()
+                if output.replace('.', '', 1).isdigit():
+                    psutype = int(float(output))
+                cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/type'.format(psutype, p)
+            else:
+                # I2C based attribute
+                node = pddf_api.get_path(dev, attr)
+                if node:
+                    cmd = 'sudo ln -s {} /sys_switch/psu/psu{}/type'.format(node, p)
+                else:
+                    cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/type'.format(psutype, p)
+        except Exception as err:
+            cmd = 'sudo echo "{}" > /sys_switch/psu/psu{}/type'.format(psutype, p)
+
         log_os_system(cmd, 1)
 
         # in_curr (input current in milli amps)

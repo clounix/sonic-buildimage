@@ -49,6 +49,7 @@ enum psu_sysfs_attributes {
     PSU_I_IN,
 	PSU_P_IN,
 	PSU_ALARM,
+	PSU_TYPE,
 	PSU_ATTR_MAX
 };
 
