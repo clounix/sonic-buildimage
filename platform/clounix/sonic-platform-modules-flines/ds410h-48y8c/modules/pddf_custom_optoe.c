@@ -288,7 +288,7 @@ static unsigned int rw_timeout = 25;
 #define CMIS_ADDR 3
 
 #define PORT_MAX_CLX8000 56
-#define PORT_CLK_DIV_CLX8000 (0x32)
+#define PORT_CLK_DIV_CLX8000 (0x15)
 
 static const struct i2c_device_id optoe_ids[] = {
     { "optoe1", ONE_ADDR },
