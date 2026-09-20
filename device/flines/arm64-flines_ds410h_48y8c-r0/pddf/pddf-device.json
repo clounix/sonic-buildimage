@@ -33,14 +33,14 @@
 				"pddf_xcvr"
 			]
 		},
-		"perm_kos": [
+		"std_perm_kos": [
+			"gpio-pca953x"
 		],
 		"std_kos": [
 			"i2c_mux",
 			"i2c_mux_pca954x",
 			"i2c_dev",
 			"at24",
-			"gpio-pca953x",
 			"tmp75",
 			"jwh6374",
 			"rtc-pcf85063"
@@ -399,6 +399,7 @@
 				{ "attr_name":"psu_present", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"0", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
 				{ "attr_name":"psu_power_good", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"1", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
 				{ "attr_name":"psu_acok", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"2", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
+				{ "attr_name":"psu_type", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x80", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"1"},
 				{ "attr_name":"psu_mfr_id", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x99", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"15"},
 				{ "attr_name":"psu_serial_num", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x9e", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"15"},
 				{ "attr_name":"psu_v_in", "attr_devaddr":"0x58", "attr_devtype":"pmbus", "attr_offset":"0x88", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -490,6 +491,7 @@
 				{ "attr_name":"psu_present", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"4", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
 				{ "attr_name":"psu_power_good", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"5", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
 				{ "attr_name":"psu_acok", "attr_devaddr":"0x608", "attr_devtype":"fpgapci", "attr_offset":"6", "attr_mask":"0x1", "attr_cmpval":"0x1", "attr_len":"1"},
+				{ "attr_name":"psu_type", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x80", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"1"},
 				{ "attr_name":"psu_mfr_id", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x99", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"15"},
 				{ "attr_name":"psu_serial_num", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x9e", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"15"},
 				{ "attr_name":"psu_v_in", "attr_devaddr":"0x5a", "attr_devtype":"pmbus", "attr_offset":"0x88", "attr_mask":"0x0", "attr_cmpval":"0xff", "attr_len":"2"},
@@ -773,11 +775,11 @@
 				{"attr_name": "fan4_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
 				{"attr_name": "fan5_eeprom", "attr_devtype": "FAN-CTRL", "attr_offset": "0x00", "attr_mask": "0xff", "attr_len": "256"},
 
-				{"attr_name": "fan1_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan2_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan3_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan4_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
-				{"attr_name": "fan5_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x0F", "attr_mask": "0xff", "attr_len": "13"},
+				{"attr_name": "fan1_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan2_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan3_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan4_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
+				{"attr_name": "fan5_model_name", "attr_devtype": "FAN-CTRL", "attr_offset": "0x16", "attr_mask": "0xff", "attr_len": "6"},
 
 				{"attr_name": "fan1_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
 				{"attr_name": "fan2_sn", "attr_devtype": "FAN-CTRL", "attr_offset": "0x1F", "attr_mask": "0xff", "attr_len": "16"},
@@ -3153,7 +3155,7 @@
 		"attr_list":
 		[  
 			{ "attr_name":"fpga_board_version","attr_devtype":"fpgapci","attr_devaddr":"0x0", "attr_offset":"0x0","attr_mask":"0xffff","attr_len":"0x2"},
-			{ "attr_name":"fpga_firmware_version","attr_devtype":"fpgapci","attr_devaddr":"0x4", "attr_offset":"0x0","attr_mask":"0x7fff","attr_len":"0x2"},
+			{ "attr_name":"fpga_firmware_version","attr_devtype":"fpgapci","attr_devaddr":"0x4", "attr_offset":"0x0","attr_mask":"0xffff","attr_len":"0x2"},
 			{ "attr_name":"cpld1_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld2_version","attr_devtype":"fpgapci","attr_devaddr":"0x304","attr_offset":"0x8","attr_mask":"0xff","attr_len":"0x1"},
 			{ "attr_name":"cpld3_version","attr_devtype":"fpgapci","attr_devaddr":"0x3a4","attr_offset":"0x0","attr_mask":"0xff","attr_len":"0x1"},

@@ -59,6 +59,11 @@ build:
 	python3 setup.py bdist_wheel -d $(MOD_SRC_DIR)/common/utils; \
 	cd $(MOD_SRC_DIR)/common/fpga_utils; \
 	make fpga;\
+	if [ -d $(MOD_SRC_DIR)/common/cpld_utils ]; then \
+		cd $(MOD_SRC_DIR)/common/cpld_utils; \
+		make clean; \
+		make; \
+	fi; \
 	cd $(MOD_SRC_DIR); \
 	(for mod in $(MODULE_DIRS); do \
 		make clean -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/$${mod}/modules; \
@@ -101,6 +106,9 @@ binary-indep:
 				dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410g_48y8c-r$${dev}/pddf; \
 				cp $(MOD_SRC_DIR)/common/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410g_48y8c-r$${dev}/pddf/; \
 				cp $(MOD_SRC_DIR)/common/fpga_utils/fpga debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410g_48y8c-r$${dev}/clx_fpga; \
+				if [ -f $(MOD_SRC_DIR)/common/cpld_utils/cpld_update_app ]; then \
+					cp $(MOD_SRC_DIR)/common/cpld_utils/cpld_update_app debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410g_48y8c-r$${dev}/clx_cpld; \
+				fi; \
 	                done) \
 		fi; \
 		if [ $${mod} = "ds410h-48y8c" ]; then \
@@ -108,6 +116,9 @@ binary-indep:
 				dh_installdirs -p$(PACKAGE_PRE_NAME)-$${mod} /usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410h_48y8c-r$${dev}/pddf; \
 				cp $(MOD_SRC_DIR)/common/$(UTILS_DIR)/*.whl debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410h_48y8c-r$${dev}/pddf/; \
 				cp $(MOD_SRC_DIR)/common/fpga_utils/fpga debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410h_48y8c-r$${dev}/clx_fpga; \
+				if [ -f $(MOD_SRC_DIR)/common/cpld_utils/cpld_update_app ]; then \
+					cp $(MOD_SRC_DIR)/common/cpld_utils/cpld_update_app debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/share/sonic/device/$(TARGET_PLATFORM)-flines_ds410h_48y8c-r$${dev}/clx_cpld; \
+				fi; \
 	                done) \
 		fi; \
 		cp $(MOD_SRC_DIR)/common/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \

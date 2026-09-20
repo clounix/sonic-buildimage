@@ -37,7 +37,7 @@ if lsmod | grep -q "^${MOD_NAME} "; then
 	echo "模块 $MOD_NAME 已加载"
 else
 	echo "模块 $MOD_NAME 未加载，需要加载模块"
-	MOD_FILE=$(modinfo "$MOD_NAME.ko" 2>/dev/null | awk '/^filename:/ {print $2}')
+	MOD_FILE=$(modinfo "${MOD_NAME}" 2>/dev/null | awk '/^filename:/ {print $2}')
 	if [ -n "${MOD_FILE}" ] && [ -f "${MOD_FILE}" ]; then
 		echo "模块文件存在：${MOD_FILE}，开始加载"
 		sh -c "insmod $MOD_FILE"

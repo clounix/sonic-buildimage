@@ -85,6 +85,7 @@ extern PSU_SYSFS_ATTR_DATA access_psu_mfr_id;
 extern PSU_SYSFS_ATTR_DATA access_psu_serial_num;
 extern PSU_SYSFS_ATTR_DATA access_psu_fan_dir;
 extern PSU_SYSFS_ATTR_DATA access_psu_alarm;
+extern PSU_SYSFS_ATTR_DATA access_psu_type;
 
 static int two_complement_to_int(u16 data, u8 valid_bit, int mask)
 {
@@ -294,6 +295,69 @@ int pddf_custom_smbus_get_psu_alarm(void *client, PSU_DATA_ATTR *adata, void *da
     return 0;
 }
 
+ssize_t pddf_custom_show_psu_type(struct device *dev, struct device_attribute *da, char *buf)
+{
+    struct sensor_device_attribute *attr = to_sensor_dev_attr(da);
+    struct i2c_client *client = to_i2c_client(dev);
+    struct psu_data *data = i2c_get_clientdata(client);
+    PSU_PDATA *pdata = (PSU_PDATA *)(client->dev.platform_data);
+    PSU_DATA_ATTR *usr_data = NULL;
+    struct psu_attr_info *sysfs_attr_info = NULL;
+    int i, status=0, retry = 10;
+
+    if (data == NULL || pdata == NULL) {
+        pddf_err(PSU, "Invalid data or pdata pointer\n");
+        goto exit;
+    }
+
+    for (i = 0; i < data->num_attr; i++) {
+        if ( strcmp(attr->dev_attr.attr.name, pdata->psu_attrs[i].aname) == 0) {
+            sysfs_attr_info = &data->attr_info[i];
+            usr_data = &pdata->psu_attrs[i];
+        }
+    }
+
+    if (sysfs_attr_info == NULL || usr_data == NULL) {
+        pddf_err(PSU, "%s is not supported attribute for this client\n", attr->dev_attr.attr.name);
+        goto exit;
+    }
+
+    mutex_lock(&sysfs_attr_info->update_lock);
+    if (time_after(jiffies, sysfs_attr_info->last_updated + HZ + HZ / 2) || !sysfs_attr_info->valid)
+    {
+        pddf_dbg(PSU, "%s Starting update for %s\n", dev_name(&client->dev), sysfs_attr_info->name);
+
+        while (retry) {
+            status = i2c_smbus_read_byte_data((struct i2c_client *)client, (uint8_t)usr_data->offset);
+            if (unlikely(status < 0)) {
+                msleep(60);
+                retry--;
+                continue;
+            }
+            break;
+        }
+        if (status < 0) {
+            pddf_err(PSU, "%s unable to read a byte from (0x%x)\n", dev_name(&((struct i2c_client *)client)->dev), ((struct i2c_client *)client)->addr);
+            sysfs_attr_info->val.shortval = 1;
+        } else {
+            if (status == 0x1)
+                sysfs_attr_info->val.shortval = 1; //AC
+            else if (status == 0x2)
+                sysfs_attr_info->val.shortval = 0; //DC
+            else
+                sysfs_attr_info->val.shortval = 1; //default to AC if unknown value
+        }
+
+        sysfs_attr_info->last_updated = jiffies;
+        sysfs_attr_info->valid = 1;
+    }
+    mutex_unlock(&sysfs_attr_info->update_lock);
+    status = sysfs_attr_info->val.shortval;
+    pddf_dbg(PSU, "%s: psu_type : %s(%d)\n", __FUNCTION__, status ? "AC" : "DC", sysfs_attr_info->val.shortval);
+exit:
+    return sprintf(buf, "%d\n", status);
+}
+
 static int __init pddf_custom_psu_init(void)
 {
     access_psu_v_out.show = pddf_show_custom_psu_v_out;
@@ -307,6 +371,9 @@ static int __init pddf_custom_psu_init(void)
     access_psu_fan_dir.do_get = pddf_custom_smbus_get_psu_block;
 
     access_psu_alarm.do_get = pddf_custom_smbus_get_psu_alarm;
+
+    access_psu_type.show = pddf_custom_show_psu_type;
+
     return 0;
 }
 

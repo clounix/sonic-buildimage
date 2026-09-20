@@ -18,6 +18,7 @@ import common
 import os
 from sonic_py_common import device_info
 from sonic_platform_pddf_base import pddfapi
+import syslog
 
 PLATFORM_CFG_MODULE = "clounix_platform"
 
@@ -146,6 +147,23 @@ def do_platformApiInstall():
     status, output = common.doBash("/usr/local/bin/platform_api_mgnt.sh install")
     return
 
+def doBurnInTest():
+    signPath = '/home/admin/record_times.txt'
+    signExecutable = '/usr/local/bin/factory_test'
+    if os.path.exists(signPath):
+        with open(signPath, 'r') as f:
+            c = f.read()
+            if len(c) > 0 and int(c[:1]) >= 0:
+                if os.path.exists(signExecutable):
+                    r = os.system(signExecutable)
+                    syslog.syslog(syslog.LOG_INFO, 'factory_test process exit code: {0} '.format(r))
+                else:
+                    syslog.syslog(syslog.LOG_WARNING, 'factory_test cannot find executable {0} '.format(signExecutable))
+            else:
+                syslog.syslog(syslog.LOG_INFO, 'factory_test skip test {0} '.format(c))
+    else:
+        syslog.syslog(syslog.LOG_WARNING, 'factory_test cannot find mark file {0}'.format(signPath))
+
 def main():
     args = common.sys.argv[1:]
 
@@ -162,6 +180,7 @@ def main():
         process_adm1166_fault()
         process_adm1166_factors()
         common.doBash("echo 1 > /sys/module/kernel/parameters/crash_kexec_post_notifiers")
+        doBurnInTest()
 
     if args[0] == 'uninstall':
         common.RUN = False
