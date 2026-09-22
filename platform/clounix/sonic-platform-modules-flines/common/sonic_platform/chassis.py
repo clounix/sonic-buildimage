@@ -179,6 +179,8 @@ class Chassis(PddfChassis):
         is_lpc_platform = 'ds410g_48y8c' in platform
 
         cpu_rst_val = None
+        hw_reboot_cause = None
+        power_status_history = None
         try:
             if is_lpc_platform:
                 addr_file = '/sys/kernel/lpc_cpld/addr'
@@ -209,6 +211,46 @@ class Chassis(PddfChassis):
 
         sw_cause = self.find_software_reboot_cause_from_reboot_cause_file()
 
+        try:
+            bus = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['parent_bus'], 0)
+            dev_addr = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['dev_addr'], 0)
+            REBOOT_EEPROM_PATH = '/sys/bus/i2c/devices/{}-{:04x}/eeprom'.format(bus, dev_addr)
+            with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
+                binfile.seek(0)
+                raw_byte = binfile.read(1)
+                hw_reboot_cause = raw_byte.hex().zfill(2)
+                print(f"hw_reboot_cause: {hw_reboot_cause}")
+                if (hw_reboot_cause != 'ff'):
+                    try:
+                        binfile.seek(0)
+                        binfile.write(bytes([0xff]))
+                        binfile.flush()
+                    except Exception as e:
+                        syslog.syslog(syslog.LOG_WARNING, f"Failed to clear reboot_cause: {e}")
+
+        except Exception as e:
+            syslog.syslog(syslog.LOG_ERR, f"Failed to read hardware reboot cause: {e}")
+
+        SYS_POWER_STATUS_HISTORY_PATH = os.popen('find /sys -name power_history_record 2>/dev/null').read().strip()
+        SYS_POWER_STATUS_CTRL_PATH = os.popen('find /sys -name ctrl_history_record 2>/dev/null').read().strip()
+
+        if len(SYS_POWER_STATUS_HISTORY_PATH) == 0 or len(SYS_POWER_STATUS_CTRL_PATH) == 0:
+            print("no power history record node find, pls check driver")
+        elif os.path.isfile(SYS_POWER_STATUS_HISTORY_PATH):
+            try:
+                self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "1")
+                time.sleep(0.5)
+                power_status_history = self.__api_helper.read_one_line_file(SYS_POWER_STATUS_HISTORY_PATH).strip()
+
+            except Exception as e:
+                syslog.syslog(syslog.LOG_ERR, f"FPGA power status read failed: {e}")
+            finally:
+                try:
+                    time.sleep(0.5)
+                    self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "0")
+                except Exception:
+                    pass
+
         if os.path.isfile(THERMAL_OVERLOAD_POSITION_FILE):
             thermal_overload_pos = self.__api_helper.read_one_line_file(
                 THERMAL_OVERLOAD_POSITION_FILE) or "Unknown"
@@ -228,106 +270,70 @@ class Chassis(PddfChassis):
                 self._write_reboot_history(reboot_cause[1])
                 return reboot_cause
 
-        try:
-            bus = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['parent_bus'], 0)
-            dev_addr = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['dev_addr'], 0)
-            REBOOT_EEPROM_PATH = '/sys/bus/i2c/devices/{}-{:04x}/eeprom'.format(bus, dev_addr)
-            with open(REBOOT_EEPROM_PATH, 'rb+') as binfile:
-                binfile.seek(0)
-                raw_byte = binfile.read(1)
-                hw_reboot_cause = raw_byte.hex().zfill(2)
-                print(f"hw_reboot_cause: {hw_reboot_cause}")
-                if (hw_reboot_cause != 'ff'):
-                    reboot_cause = {
-                        '00': (self.REBOOT_CAUSE_NON_HARDWARE, 'Non-Hardware'),
-                        '01': (self.REBOOT_CAUSE_POWER_LOSS, 'Power Loss'),
-                        '02': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_CPU, 'Thermal Overload: CPU'),
-                        '03': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'FPGA PVT Overload: ASIC'),
-                        '04': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, 'Thermal Overload: Other'),
-                        '05': (self.REBOOT_CAUSE_INSUFFICIENT_FAN_SPEED, 'Insufficient Fan Speed'),
-                        '06': (self.REBOOT_CAUSE_WATCHDOG, 'Watchdog'),
-                        '07': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'Hardware - Other'),
-                        '08': (self.REBOOT_CAUSE_CPU_COLD_RESET, 'CPU Cold Reset'),
-                        '09': (self.REBOOT_CAUSE_CPU_WARM_RESET, 'CPU Warm Reset'),
-                        '10': (self.REBOOT_CAUSE_BIOS_RESET, 'BIOS Reset'),
-                        '11': (self.REBOOT_CAUSE_PSU_SHUTDOWN, 'PSU Shutdown'),
-                        '12': (self.REBOOT_CAUSE_BMC_SHUTDOWN, 'BMC Shutdown')
-                    }.get(hw_reboot_cause, (self.REBOOT_CAUSE_HARDWARE_OTHER, f'Hardware - Other (0x{hw_reboot_cause})'))
 
-                    try:
-                        binfile.seek(0)
-                        binfile.write(bytes([0xff]))
-                        binfile.flush()
-                    except Exception as e:
-                        syslog.syslog(syslog.LOG_WARNING, f"Failed to clear reboot_cause: {e}")
+        if (hw_reboot_cause != 'ff'):
+            reboot_cause = {
+                '00': (self.REBOOT_CAUSE_NON_HARDWARE, 'Non-Hardware'),
+                '01': (self.REBOOT_CAUSE_POWER_LOSS, 'Power Loss'),
+                '02': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_CPU, 'Thermal Overload: CPU'),
+                '03': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_ASIC, 'FPGA PVT Overload: ASIC'),
+                '04': (self.REBOOT_CAUSE_THERMAL_OVERLOAD_OTHER, 'Thermal Overload: Other'),
+                '05': (self.REBOOT_CAUSE_INSUFFICIENT_FAN_SPEED, 'Insufficient Fan Speed'),
+                '06': (self.REBOOT_CAUSE_WATCHDOG, 'Watchdog'),
+                '07': (self.REBOOT_CAUSE_HARDWARE_OTHER, 'Hardware - Other'),
+                '08': (self.REBOOT_CAUSE_CPU_COLD_RESET, 'CPU Cold Reset'),
+                '09': (self.REBOOT_CAUSE_CPU_WARM_RESET, 'CPU Warm Reset'),
+                '10': (self.REBOOT_CAUSE_BIOS_RESET, 'BIOS Reset'),
+                '11': (self.REBOOT_CAUSE_PSU_SHUTDOWN, 'PSU Shutdown'),
+                '12': (self.REBOOT_CAUSE_BMC_SHUTDOWN, 'BMC Shutdown')
+            }.get(hw_reboot_cause, (self.REBOOT_CAUSE_HARDWARE_OTHER, f'Hardware - Other (0x{hw_reboot_cause})'))
 
-                    self._write_reboot_history(reboot_cause[1])
-                    return reboot_cause
-        except Exception as e:
-            syslog.syslog(syslog.LOG_ERR, f"Failed to read hardware reboot cause: {e}")
+            self._write_reboot_history(reboot_cause[1])
+            return reboot_cause
 
-        SYS_POWER_STATUS_HISTORY_PATH = os.popen('find /sys -name power_history_record 2>/dev/null').read().strip()
-        SYS_POWER_STATUS_CTRL_PATH = os.popen('find /sys -name ctrl_history_record 2>/dev/null').read().strip()
+        if reboot_cause[1] == "Unknown" and power_status_history and power_status_history.lower() != '0xffff':
+            raw_val = int(power_status_history, 16)
 
-        if len(SYS_POWER_STATUS_HISTORY_PATH) == 0 or len(SYS_POWER_STATUS_CTRL_PATH) == 0:
-            print("no power history record node find, pls check driver")
-        elif reboot_cause[1] == "Unknown" and os.path.isfile(SYS_POWER_STATUS_HISTORY_PATH):
-            try:
-                self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "1")
-                time.sleep(0.5)
-                power_status_history = self.__api_helper.read_one_line_file(SYS_POWER_STATUS_HISTORY_PATH).strip()
+            POWER_RAILS = {
+                15: 'PSU Shutdown',
+                14: 'P1V0_STBY',
+                13: 'P1V8_STB',
+                12: 'P3V3_STB',
+                11: 'P1V0_MGT_STBY',
+                10: 'P1V2_MGT_STBY',
+                9: 'P5V',
+                8: 'CPU Cold Reset',
+                7: 'MAC_P1V8_VDDIO',
+                6: 'MAC_P0V8_VDDK',
+                5: 'MAC_P1V25_AVDD',
+                4: 'MAC_P1V8_AVDDH',
+                3: 'P1V8_CLK',
+                2: 'P3V3_CLK',
+                1: 'P3V3_SFP1',
+                0: 'P3V3_SFP2'
+            }
 
-                if power_status_history and power_status_history.lower() != '0xffff':
-                    raw_val = int(power_status_history, 16)
+            failed_rails = [name for bit, name in POWER_RAILS.items()
+                            if not (raw_val >> bit) & 1]
 
-                    POWER_RAILS = {
-                        15: 'PSU Shutdown',
-                        14: 'P1V0_STBY',
-                        13: 'P1V8_STB',
-                        12: 'P3V3_STB',
-                        11: 'P1V0_MGT_STBY',
-                        10: 'P1V2_MGT_STBY',
-                        9: 'P5V',
-                        8: 'CPU Cold Reset',
-                        7: 'MAC_P1V8_VDDIO',
-                        6: 'MAC_P0V8_VDDK',
-                        5: 'MAC_P1V25_AVDD',
-                        4: 'MAC_P1V8_AVDDH',
-                        3: 'P1V8_CLK',
-                        2: 'P3V3_CLK',
-                        1: 'P3V3_SFP1',
-                        0: 'P3V3_SFP2'
-                    }
+            cmd_bits = []
+            if (raw_val >> 17) & 1:
+                cmd_bits.append('POWER CYCLE')
+            if (raw_val >> 18) & 1:
+                cmd_bits.append('POWER DELAY CYCLE')
 
-                    failed_rails = [name for bit, name in POWER_RAILS.items()
-                                    if not (raw_val >> bit) & 1]
+            detail_parts = [f'REG = 0x{raw_val:08X}']
+            if failed_rails:
+                detail_parts.append('FAIL = ' + ','.join(failed_rails))
+            if cmd_bits:
+                detail_parts.append('CMD = ' + ','.join(cmd_bits))
 
-                    cmd_bits = []
-                    if (raw_val >> 17) & 1:
-                        cmd_bits.append('POWER CYCLE')
-                    if (raw_val >> 18) & 1:
-                        cmd_bits.append('POWER DELAY CYCLE')
-
-                    detail_parts = [f'REG = 0x{raw_val:08X}']
-                    if failed_rails:
-                        detail_parts.append('FAIL = ' + ','.join(failed_rails))
-                    if cmd_bits:
-                        detail_parts.append('CMD = ' + ','.join(cmd_bits))
-
-                    reboot_cause = (
-                        self.REBOOT_CAUSE_POWER_LOSS,
-                        'Power Loss: ' + ' | '.join(detail_parts)
-                    )
-                    self._write_reboot_history(reboot_cause[1])
-                    return reboot_cause
-            except Exception as e:
-                syslog.syslog(syslog.LOG_ERR, f"FPGA power status read failed: {e}")
-            finally:
-                try:
-                    time.sleep(0.5)
-                    self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "0")
-                except Exception:
-                    pass
+            reboot_cause = (
+                self.REBOOT_CAUSE_POWER_LOSS,
+                'Power Loss: ' + ' | '.join(detail_parts)
+            )
+            self._write_reboot_history(reboot_cause[1])
+            return reboot_cause
 
         if cpu_rst_val is not None:
             if cpu_rst_val == '0xfe':
