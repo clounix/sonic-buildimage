@@ -64,6 +64,8 @@ build:
 		make clean; \
 		make; \
 	fi; \
+	cd $(MOD_SRC_DIR)/common/nvme-monitor; \
+	make memtool; \
 	cd $(MOD_SRC_DIR); \
 	(for mod in $(MODULE_DIRS); do \
 		make clean -C $(KERNEL_SRC)/build M=$(MOD_SRC_DIR)/$${mod}/modules; \
@@ -121,6 +123,7 @@ binary-indep:
 				fi; \
 	                done) \
 		fi; \
+		cp $(MOD_SRC_DIR)/common/nvme-monitor/memtool debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
 		cp $(MOD_SRC_DIR)/common/$(SERVICE_DIR)/platform_api_mgnt.sh debian/$(PACKAGE_PRE_NAME)-$${mod}/usr/local/bin/; \
 	done)
 
