@@ -8,6 +8,13 @@
  *   ./memtool reboot                   detect NVMe loss; power-cycle via FPGA
  *                                      GLOBAL_RST only when disk lost
  *                                      (FPGA VID=0x10EE / DID=0x7021)
+ *   ./memtool pwrcycle [3b8|120] [cold] [force]
+ *                                      FPGA reset; BOTH reset controllers work:
+ *                                        default 3b8 -> 0x4 POWER_CYCLE (BIOS default)
+ *                                        3b8 cold    -> 0xC0000000 立即重启
+ *                                        120         -> 0x80000000 GLOBAL_RST
+ *                                        force       -> 跳过丢盘门控(台架对比)
+ *                                      reboot 仍是固定 0x120 + 丢盘门控，保持不变
  *   ./memtool monitor [interval_ms]    [NEW] watch NVMe forever, print loss
  *                                      messages repeatedly to stdout + syslog,
  *                                      listen on /run/flks_nvme_monitor.socket
@@ -390,11 +397,13 @@ static int mem_rw(uint64_t addr, uint32_t *val, int write) {
  * "FPGA PCIe 接口及用户中断"：PCIe x1，速率 5GT/s）：
  *   Vendor ID = 0x10EE (Xilinx)
  *   Device ID = 0x7021
- *   BAR0 物理基址禁止写死（0x4200_0000 只是 FPGA 内部 AXI 基址），
- *   必须从 sysfs resource 属性实时解析。
+ *   BAR0 物理基址必须从 sysfs resource 属性实时解析，禁止写死。
+ *
+ * 注意：手册里的 AXI 地址空间 0x42000000 只是一个举例，**所有寄存器一律用
+ * "BAR0 + 偏移" 表示**，既不能拿 0x42000000 当 BAR 地址，也不要用它推算偏移。
  * Power Cycle 寄存器（依据 references/DS410G(DS410H)_FPGA寄存器说明V1.0.pdf
- * §4.4.6 GLOBAL_RST）：复位管理块 AXI 0x4200_0100，GLOBAL_RST offset 0x20，
- * 即 BAR 内偏移 0x120；global_rst bit31 (W)，写 1 (0x80000000) = 全局复位，无需喂狗。
+ * §4.4.6 GLOBAL_RST）：GLOBAL_RST -> BAR0 + 0x120；global_rst bit31 (W)，
+ * 写 1 (0x80000000) = 全局复位，无需喂狗。
  * 实现过程：
  *   1) 遍历 /sys/bus/pci/devices/ 设备节点，按 vendor=0x10ee & device=0x7021
  *      双匹配找到 FPGA 设备；
@@ -406,8 +415,28 @@ static int mem_rw(uint64_t addr, uint32_t *val, int write) {
 #define FPGA_DID        "0x7021"
 #define FPGA_ID_OFF     0x00u       /* §4.1.1 FPGA_ID，bits15:0 预期 0x6548（只读校验） */
 #define FPGA_ID_EXPECT  0x6548u
-#define GLOBAL_RST_OFF  0x120u      /* AXI 0x4200_0100 + offset 0x20 */
+#define GLOBAL_RST_OFF  0x120u      /* GLOBAL_RST：BAR0 + 0x120 */
 #define GLOBAL_RST_VAL  0x80000000u /* bit31=1 全局复位 */
+
+/* ---------- [NEW-A/B] cpld2_power_config 复位（与上面的 GLOBAL_RST 并存） ----------
+ * 依据 references/DS410G(DS410H)_FPGA寄存器说明V1.1.docx §4.6「CPLD管理」：
+ *   表行原文 "cpld2_power_config | 0xb8 | 电源控制"
+ *   → cpld2_power_config = BAR0 + 0x3b8
+ * 位定义（同一张表）：
+ *   bit31 D2000_COME_FLAG        R/W  1=D2000_COME，0=C3000_COME
+ *   bit30 COME_REBOOT_REQUEST    R/W  1=设备立即重启
+ *   bit29-4                      保留
+ *   bit3  POWER_DELAY_CYCLE      W    1=断电10分钟后再重启（过温保护）
+ *   bit2  POWER_CYCLE            W    1=设备立即断电再重启
+ *   bit1                         保留
+ *   bit0  SFP_PWR_OFF            R/W  关光模块电源（务必只动本 bit）
+ *
+ * 说明：这只是【新增的对比测试路径】，上面 GLOBAL_RST(0x120)/0x80000000 那条
+ * 老路径保持原样不动，两条并存用于 A/B 对比哪条在实物上真能复位整机。
+ */
+#define FPGA_CTRL_OFF        0x3B8u       /* §4.6 cpld2_power_config */
+#define FPGA_POWER_CYCLE_VAL 0x4u         /* bit2 POWER_CYCLE：立即断电再重启 */
+#define FPGA_COLD_RESET_VAL  0xC0000000u  /* bit31 COME_FLAG|bit30 COME_REBOOT_REQUEST：立即重启 */
 
 /* step 1+2: scan sysfs, match VID/DID, parse resource -> BAR0 physical base */
 static int fpga_find_bar(uint64_t *bar0, char *bdf_out, size_t bdf_len) {
@@ -589,6 +618,65 @@ static int fpga_power_cycle(void) {
     return 0;
 }
 
+/* ---------- [NEW-A/B] 用 cpld2_power_config(BAR+0x3b8) 复位 ----------
+ * 与 fpga_power_cycle() 完全并列，互不影响。
+ *
+ * 两个复位控制器在这一版 FPGA 上都可用，这里做成参数，便于 A/B 对比：
+ *   reg_off = 0x120 -> GLOBAL_RST（BAR0 + 0x120，bit31 W）
+ *   reg_off = 0x3b8 -> cpld2_power_config（BAR0 + 0x3b8）
+ * value 由调用方按寄存器给：
+ *   0x120 : 0x80000000 = bit31 全局复位
+ *   0x3b8 : 0x4 = bit2 POWER_CYCLE(立即断电再重启) / 0xC0000000 = bit31+bit30 立即重启
+ * force == 0 : 先跑 detect_lose_nvme() 门控（与 reboot 一致，正常盘拒绝复位）
+ * force != 0 : 跳过门控，台架对比测试时强制复位
+ */
+static int fpga_ctrl_reset(uint32_t reg_off, uint32_t value, int force, const char *what) {
+    if (!force && detect_lose_nvme() != 1) {
+        printf("NVMe status normal, skip FPGA %s "
+               "(append 'force' to override for bench testing).\n", what);
+        return 0;
+    }
+
+    uint64_t bar0 = 0;
+    char bdf[32] = {0};
+    if (fpga_find_bar(&bar0, bdf, sizeof(bdf)) != 0) {
+        fprintf(stderr, "error: FPGA not found (vendor=%s device=%s)\n",
+                FPGA_VID, FPGA_DID);
+        return -1;
+    }
+    printf("FPGA: BDF=%s BAR0=0x%llx\n", bdf, (unsigned long long)bar0);
+
+    int fd = open("/dev/mem", O_RDWR | O_SYNC);
+    if (fd < 0) { perror("open /dev/mem"); return -1; }
+
+    /* 0x3b8 仍落在 BAR0 第一页，两页足够 */
+    uint64_t page = bar0 & ~0xFFFULL;
+    size_t off = (size_t)(bar0 - page);
+    volatile uint32_t *map = mmap(NULL, 0x2000,
+        PROT_READ | PROT_WRITE, MAP_SHARED, fd, (off_t)page);
+    if (map == MAP_FAILED) { perror("mmap"); close(fd); return -1; }
+
+    /* sanity read: FPGA_ID low16 should be 0x6548 (§4.1.1), warn only */
+    uint32_t fid = map[(off + FPGA_ID_OFF) / 4];
+    printf("FPGA_ID @BAR+0x%02x = 0x%08x (low16 expect 0x%04x)\n",
+           FPGA_ID_OFF, fid, FPGA_ID_EXPECT);
+    if ((fid & 0xFFFFu) != FPGA_ID_EXPECT)
+        fprintf(stderr, "warning: FPGA_ID low16=0x%04x mismatch, still writing %s\n",
+                fid & 0xFFFFu, what);
+
+    /* 整字写入，不读改写：POWER_CYCLE / COME_REBOOT_REQUEST 是 W 语义位，
+     * 回读值没有意义。 */
+    printf("write FPGA reset @BAR+0x%03x = 0x%08x (%s) ...\n",
+           reg_off, value, what);
+    map[(off + reg_off) / 4] = value;
+    msync((void *)map, 0x2000, MS_SYNC);  /* flush MMIO write before exit */
+    munmap((void *)map, 0x2000);
+    close(fd);
+    printf("FPGA reset written @BAR+0x%03x (%s), system should reset now.\n",
+           reg_off, what);
+    return 0;
+}
+
 /* =====================================================================
  *  [NEW] monitor -- 后台持续监听 NVMe 丢盘，零外部依赖
  * =====================================================================
@@ -639,16 +727,10 @@ static long long mono_ms(void) {
     return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
-/* ---- wall clock 字符串，不依赖 localtime 的 malloc ---- */
-static void stamp(char *buf, size_t len) {
-    time_t t = time(NULL);
-    struct tm tm;
-    if (localtime_r(&t, &tm) == NULL) {
-        snprintf(buf, len, "1970-01-01 00:00:00");
-        return;
-    }
-    strftime(buf, len, "%Y-%m-%d %H:%M:%S", &tm);
-}
+/* 注：原来这里有一个 stamp() 给每条 monitor 消息加 wall-clock 前缀，
+ * 2026-11-18 按需求去掉（丢盘时 CLOCK_REALTIME 不可信、且 syslog 那一路
+ * 本来就有时间戳）。启动时打印的编译时间戳 build: ... 不受影响，
+ * 仍由 print_build_time() 输出。 */
 
 /* ---- syslog 直连 /dev/log：不依赖 rsyslog 是否安装，尽力而为 ----
  * 用 SOCK_DGRAM + 非阻塞。socket 一旦建立就一直复用，丢盘时不再重复 open。
@@ -789,17 +871,21 @@ static void mon_tty_write(const char *s, size_t n) {
 static void mon_emit(const char *level, const char *fmt, ...) {
     char body[400];
     char line[512];
-    char ts[32];
 
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(body, sizeof(body), fmt, ap);
     va_end(ap);
 
-    stamp(ts, sizeof(ts));
-
-    int n = snprintf(line, sizeof(line), "%s memtool[%s]: %s\n",
-                     ts, level, body);
+    /* 每条消息不再带 wall-clock 时间戳：
+     *   1) 丢盘时 CLOCK_REALTIME 可能被 NTP 跳变/未同步，打出来的时间反而不
+     *      可信，容易误导现场判断；
+     *   2) syslog 那一路由 syslogd/journald 自己加时间戳，重复；
+     *   3) 真正的"哪次构建"信息保留在启动那一行 build: <编译时间>（见
+     *      print_build_time()）。
+     * 所以这里只输出 "memtool[LEVEL]: body"。 */
+    int n = snprintf(line, sizeof(line), "memtool[%s]: %s\n",
+                     level, body);
     if (n > 0) {
         if ((size_t)n > sizeof(line)) n = (int)sizeof(line) - 1;
 
@@ -846,7 +932,7 @@ static int mon_scan_nvme(char *first_bdf, size_t len) {
             /* d_name 理论最长 255，但 BDF 一定形如 0000:01:00.0（12 字符）。
              * 先比长度再拷：既是防御性检查，也让编译器确认不会截断。 */
             size_t dn = strnlen(de->d_name, sizeof(de->d_name));
-            if (dn < len) snprintf(first_bdf, len, "%s", de->d_name);
+            if (dn < len) snprintf(first_bdf, len, "%.*s", (int)dn, de->d_name);
         }
     }
     closedir(dir);
@@ -1219,12 +1305,19 @@ int main(int argc, char *argv[]) {
             "  %s reboot                   detect NVMe loss; FPGA GLOBAL_RST\n"
             "                             power-cycle only when disk lost\n"
             "                             (FPGA VID=0x10EE / DID=0x7021)\n"
+            "  %s pwrcycle [3b8|120] [cold] [force]\n"
+            "                             FPGA reset, both controllers are valid:\n"
+            "                             default 3b8 -> 0x4 POWER_CYCLE (BIOS default)\n"
+            "                             3b8 cold     -> 0xC0000000 立即重启\n"
+            "                             120          -> 0x80000000 GLOBAL_RST\n"
+            "                             force        -> 跳过丢盘门控(台架对比)\n"
             "  %s monitor [interval_ms] [tty]  [NEW] watch NVMe forever (default 3000ms),\n"
             "                             repeat loss message every 3s to PHYSICAL serial\n"
             "                             tty + stdout + syslog (tty default: auto-detect),\n"
             "                             cmd socket %s\n"
             "                             commands: stop | mute | unmute | status\n",
-            argv[0], argv[0], argv[0], argv[0], argv[0], argv[0], MON_SOCK_PATH);
+            argv[0], argv[0], argv[0], argv[0], argv[0],
+            argv[0], argv[0], MON_SOCK_PATH);
         return 1;
     }
 
@@ -1270,6 +1363,59 @@ int main(int argc, char *argv[]) {
     /* ---- reboot: FPGA GLOBAL_RST MMIO power cycle ---- */
     if (strcmp(argv[1], "reboot") == 0) {
         return fpga_power_cycle();
+    }
+
+    /* ---- pwrcycle: FPGA 复位（两个复位控制器都支持，默认 0x3b8） ----
+     * 原有 reboot(固定 0x120 + 丢盘门控) 保持不变；这条是并列的、可选的复位入口：
+     *   ./memtool pwrcycle             -> 0x3b8 = 0x4        (POWER_CYCLE 立即断电再重启，BIOS 默认路径)
+     *   ./memtool pwrcycle cold        -> 0x3b8 = 0xC0000000 (bit31+bit30 立即重启)
+     *   ./memtool pwrcycle 120         -> 0x120 = 0x80000000 (GLOBAL_RST bit31 全局复位)
+     *   ./memtool pwrcycle force       -> 跳过丢盘门控（台架对比测试用，三种都可用）
+     * 两个寄存器在这版 FPGA 上都有效，用哪条由现场对比结果决定。
+     */
+    if (strcmp(argv[1], "pwrcycle") == 0) {
+        int      force   = 0;
+        int      cold    = 0;
+        int      use_120 = 0;
+        int      argi;
+        uint32_t reg_off;
+        uint32_t value;
+        const char *what;
+
+        for (argi = 2; argi < argc; argi++) {
+            if (strcmp(argv[argi], "force") == 0) {
+                force = 1;
+            } else if (strcmp(argv[argi], "cold") == 0) {
+                cold = 1;
+            } else if (strcmp(argv[argi], "120") == 0 ||
+                       strcmp(argv[argi], "0x120") == 0 ||
+                       strcmp(argv[argi], "global") == 0) {
+                use_120 = 1;
+            } else if (strcmp(argv[argi], "3b8") == 0 ||
+                       strcmp(argv[argi], "0x3b8") == 0) {
+                use_120 = 0;
+            } else {
+                fprintf(stderr, "usage: %s pwrcycle [3b8|120] [cold] [force]\n",
+                        argv[0]);
+                return 1;
+            }
+        }
+
+        if (use_120) {
+            /* GLOBAL_RST @ BAR0 + 0x120：只有 bit31 一个位，
+             * 没有 POWER_CYCLE / cold 之分，写了就是全局复位。 */
+            reg_off = GLOBAL_RST_OFF;
+            value   = GLOBAL_RST_VAL;
+            what    = "GLOBAL_RST 0x120 全局复位 0x80000000";
+        } else {
+            /* cpld2_power_config：BIOS 默认路径 */
+            reg_off = FPGA_CTRL_OFF;
+            value   = cold ? FPGA_COLD_RESET_VAL : FPGA_POWER_CYCLE_VAL;
+            what    = cold ? "cpld2_power_config 0x3b8 立即重启 0xC0000000"
+                           : "cpld2_power_config 0x3b8 POWER_CYCLE 0x4";
+        }
+
+        return fpga_ctrl_reset(reg_off, value, force, what);
     }
 
     /* ---- monitor: 后台持续监听 NVMe 丢盘 ---- */
