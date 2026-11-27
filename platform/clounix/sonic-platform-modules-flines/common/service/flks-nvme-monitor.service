@@ -1,0 +1,14 @@
+[Unit]
+Description=NVMe disk-loss monitor (flks)
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/memtool monitor
+Restart=always
+RestartSec=5
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

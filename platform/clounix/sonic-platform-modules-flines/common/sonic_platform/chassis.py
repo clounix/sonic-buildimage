@@ -206,11 +206,12 @@ class Chassis(PddfChassis):
                     cpu_rst_val = val.strip()
                 time.sleep(1)
                 subprocess.getstatusoutput("i2cset -y -a 1 0x7f 0x7 0xff")
+            print(f"cpu_rst_val: {cpu_rst_val}")
         except Exception:
             pass
 
         sw_cause = self.find_software_reboot_cause_from_reboot_cause_file()
-
+        print(f"sw_cause: {sw_cause}")
         try:
             bus = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['parent_bus'], 0)
             dev_addr = int(self.pddf_obj.data['RC_EEPROM']['i2c']['topo_info']['dev_addr'], 0)
@@ -241,7 +242,7 @@ class Chassis(PddfChassis):
                 self.__api_helper.write_txt_file(SYS_POWER_STATUS_CTRL_PATH, "1")
                 time.sleep(0.5)
                 power_status_history = self.__api_helper.read_one_line_file(SYS_POWER_STATUS_HISTORY_PATH).strip()
-
+                print(f"power_status_history: {power_status_history}")
             except Exception as e:
                 syslog.syslog(syslog.LOG_ERR, f"FPGA power status read failed: {e}")
             finally:
@@ -271,7 +272,10 @@ class Chassis(PddfChassis):
                 return reboot_cause
 
 
-        if (hw_reboot_cause != 'ff'):
+        #reboot cause eeprom
+        if hw_reboot_cause != 'ff' and not os.path.isfile("/tmp/notify_firstboot_to_platform"):
+            if hw_reboot_cause == '20' and 'reboot' in sw_cause:
+                return reboot_cause
             reboot_cause = {
                 '00': (self.REBOOT_CAUSE_NON_HARDWARE, 'Non-Hardware'),
                 '01': (self.REBOOT_CAUSE_POWER_LOSS, 'Power Loss'),
@@ -287,11 +291,11 @@ class Chassis(PddfChassis):
                 '11': (self.REBOOT_CAUSE_PSU_SHUTDOWN, 'PSU Shutdown'),
                 '12': (self.REBOOT_CAUSE_BMC_SHUTDOWN, 'BMC Shutdown')
             }.get(hw_reboot_cause, (self.REBOOT_CAUSE_HARDWARE_OTHER, f'Hardware - Other (0x{hw_reboot_cause})'))
-
             self._write_reboot_history(reboot_cause[1])
             return reboot_cause
 
-        if reboot_cause[1] == "Unknown" and power_status_history and power_status_history.lower() != '0xffff':
+        #power status history
+        if reboot_cause[1] == "Unknown" and power_status_history and power_status_history.lower() != '0xffff' and not os.path.isfile("/tmp/notify_firstboot_to_platform"):
             raw_val = int(power_status_history, 16)
 
             POWER_RAILS = {
@@ -335,10 +339,10 @@ class Chassis(PddfChassis):
             self._write_reboot_history(reboot_cause[1])
             return reboot_cause
 
-        if cpu_rst_val is not None:
+        if cpu_rst_val is not None and sw_cause == "Unknown" and not os.path.isfile("/tmp/notify_firstboot_to_platform"):
             if cpu_rst_val == '0xfe':
                 reboot_cause = (self.REBOOT_CAUSE_CPU_COLD_RESET, 'CPU Cold Reset')
-            elif cpu_rst_val == '0xff' and sw_cause == "Unknown": 
+            elif cpu_rst_val == '0xff':
                 reboot_cause = (self.REBOOT_CAUSE_CPU_WARM_RESET, 'CPU Warm Reset')
             if reboot_cause[1] != "Unknown":
                 self._write_reboot_history(reboot_cause[1])

@@ -30,3 +30,9 @@ if [ "$(systemctl is-enabled fan-control.service 2>/dev/null)" = "masked" ]; the
 fi
 systemctl enable fan-control.service
 systemctl start fan-control.service
+
+if [ "$(systemctl is-enabled flks-nvme-monitor.service 2>/dev/null)" = "masked" ]; then
+    systemctl unmask flks-nvme-monitor.service > /dev/null 2>&1
+fi
+systemctl enable flks-nvme-monitor.service
+systemctl start flks-nvme-monitor.service
