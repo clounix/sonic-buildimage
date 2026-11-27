@@ -77,6 +77,10 @@ static int clounix_fpga_cpld_init(void)
         data |= (1 << CPLD1_EN_BIT);
         //printk("data is 0x%x\n",data);
         writel(data, fpga_ctl_addr + CPLD_BASE_ADDRESS);
+        /*D2000_COME_FLAG*/
+        data = readl(fpga_ctl_addr + FPGA_RESET_CFG_BASE);
+        data |= (1 << CPLD2_COME_FLAG);
+        writel(data, fpga_ctl_addr + FPGA_RESET_CFG_BASE);
     }else {
         printk(KERN_INFO "fpga resource is not available.\r\n");
         return -1;
@@ -108,7 +112,7 @@ static int __init clounix_fpga_register_init(void)
     if(ret){
         printk(KERN_INFO "clounix_fpga_register_init fail(0x%x).\r\n",ret);
     }
-      return ret;
+    return ret;
 }
 static void __exit clounix_fpga_register_exit(void)
 {

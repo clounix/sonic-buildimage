@@ -88,5 +88,7 @@
 #define CPLD1_RST_BIT      29
 #define CPLD1_EN_BIT       28
 
+#define CPLD2_COME_FLAG    31
+
 extern void __iomem * fpga_ctl_addr;
 #endif
